@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { type FocusEvent, useActionState } from "react";
 import { useTranslations } from "next-intl";
 import {
   submitCreateUser,
@@ -13,6 +13,10 @@ const initialState: CreateUserFormState = {
   error: null,
   success: null,
 };
+
+function unlockField(event: FocusEvent<HTMLInputElement>) {
+  event.currentTarget.removeAttribute("readonly");
+}
 
 export function CreateUserForm() {
   const [state, formAction, isPending] = useActionState(submitCreateUser, initialState);
@@ -28,21 +32,42 @@ export function CreateUserForm() {
         <h2 className={styles["form-title"]}>{t("users.form.title")}</h2>
         <p className={styles["form-description"]}>{t("users.form.description")}</p>
       </div>
-      <form className={styles["form-grid"]} action={formAction}>
+      <form autoComplete="off" className={styles["form-grid"]} action={formAction}>
         <label className={styles["field"]}>
           <span className={styles["field-label"]}>{t("users.form.display-name")}</span>
-          <input className={styles["field-input"]} name="display-name" required type="text" />
+          <input
+            autoComplete="off"
+            className={styles["field-input"]}
+            name="display-name"
+            onFocus={unlockField}
+            readOnly
+            required
+            type="text"
+          />
         </label>
         <label className={styles["field"]}>
           <span className={styles["field-label"]}>{t("users.form.login")}</span>
-          <input className={styles["field-input"]} name="login" required type="text" />
+          <input
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            className={styles["field-input"]}
+            name="login"
+            onFocus={unlockField}
+            readOnly
+            required
+            type="text"
+          />
         </label>
         <label className={styles["field"]}>
           <span className={styles["field-label"]}>{t("users.form.password")}</span>
           <input
+            autoComplete="new-password"
             className={styles["field-input"]}
             minLength={8}
             name="password"
+            onFocus={unlockField}
+            readOnly
             required
             type="password"
           />
