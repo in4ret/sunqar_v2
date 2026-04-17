@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Production
+build/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env*.local
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and coverage output
+coverage/
+
+# Local database files
+data/*.db
+data/*.db-*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local Codex state
+.codex

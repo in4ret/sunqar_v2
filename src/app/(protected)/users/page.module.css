@@ -1,0 +1,75 @@
+.users-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.page-header,
+.user-list-card {
+  padding: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-header {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--color-accent-500);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title,
+.section-title {
+  margin: 0;
+}
+
+.description,
+.section-copy {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.content-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.section-head {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  padding: 0.9rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.user-table th {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.user-table td {
+  font-size: 0.95rem;
+}

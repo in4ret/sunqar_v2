@@ -1,0 +1,130 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border-default);
+  background: rgba(248, 251, 253, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.brand-icon-shell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-300) 0%,
+    var(--color-primary-500) 100%
+  );
+  -webkit-mask-image: url("/assets/logo.svg");
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-image: url("/assets/logo.svg");
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.brand-label {
+  line-height: 1;
+}
+
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.nav-link:hover {
+  color: var(--color-primary-500);
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+}
+
+.nav-language {
+  display: flex;
+  align-items: center;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.logout-button {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-primary-500);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.logout-button:hover {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.logout-button:focus-visible {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 2px;
+}

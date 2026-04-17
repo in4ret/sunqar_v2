@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Sunqar",
+  description: "Protected application shell",
+};
+
+type RootLayoutProps = Readonly<{
+  children: React.ReactNode;
+}>;
+
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const locale = await getLocale();
+
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}

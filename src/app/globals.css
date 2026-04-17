@@ -1,0 +1,117 @@
+:root {
+  /* === PRIMARY (Deep Caspian Blue) === */
+  --color-primary-50: #ebeff2;
+  --color-primary-100: #d7dfe4;
+  --color-primary-200: #bac7d1;
+  --color-primary-300: #97abb9;
+  --color-primary-400: #708b9f;
+  --color-primary-500: #083759;
+  --color-primary-600: #07304e;
+  --color-primary-700: #062a44;
+  --color-primary-800: #052237;
+  --color-primary-900: #041a2b;
+
+  /* === NEUTRAL === */
+  --color-neutral-50: #f7f8fa;
+  --color-neutral-100: #edf0f3;
+  --color-neutral-200: #dbe1e7;
+  --color-neutral-300: #c2ccd6;
+  --color-neutral-400: #94a3b2;
+  --color-neutral-500: #647484;
+  --color-neutral-600: #4b5a69;
+  --color-neutral-700: #33404c;
+  --color-neutral-800: #1f2933;
+  --color-neutral-900: #101820;
+
+  /* === ACCENT === */
+  --color-accent-50: #faf5e8;
+  --color-accent-100: #f2e4b7;
+  --color-accent-200: #e8d083;
+  --color-accent-300: #dcb74d;
+  --color-accent-400: #c89f26;
+  --color-accent-500: #ad8616;
+
+  /* === STATUS COLORS === */
+  --color-success-100: #dff4ea;
+  --color-success-500: #2d7a57;
+  --color-warning-100: #f9ebcc;
+  --color-warning-500: #b67d18;
+  --color-error-100: #f9dfdf;
+  --color-error-500: #b24b52;
+  --color-info-100: #dcecf8;
+  --color-info-500: #2f6f9f;
+
+  /* === BACKGROUND === */
+  --bg-body: linear-gradient(180deg, #f8fbfd 0%, #f2f6f9 100%);
+  --bg-surface: rgba(255, 255, 255, 0.9);
+  --bg-elevated: #ffffff;
+  --bg-strong: var(--color-primary-500);
+  --bg-soft: var(--color-primary-50);
+
+  /* === TEXT === */
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-500);
+  --text-on-primary: #ffffff;
+  --text-inverse: #f8fbfd;
+
+  /* === BORDERS === */
+  --border-default: rgba(8, 55, 89, 0.14);
+  --border-strong: rgba(8, 55, 89, 0.24);
+  --border-subtle: rgba(8, 55, 89, 0.08);
+
+  /* === EFFECTS === */
+  --shadow-soft: 0 18px 40px rgba(4, 26, 43, 0.08);
+  --shadow-card: 0 24px 60px rgba(4, 26, 43, 0.12);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}
+
+.auth-main {
+  display: flex;
+  flex: 1;
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}

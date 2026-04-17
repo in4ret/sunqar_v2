@@ -1,0 +1,59 @@
+.login-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  background: #ffffff;
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.field-input:focus {
+  outline: 2px solid rgba(173, 134, 22, 0.25);
+  outline-offset: 2px;
+}
+
+.form-error {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.9rem;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  font-size: 0.925rem;
+}
+
+.submit-button {
+  padding: 0.95rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg-strong);
+  color: var(--text-on-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}

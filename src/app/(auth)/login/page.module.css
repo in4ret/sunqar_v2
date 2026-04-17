@@ -1,0 +1,46 @@
+.login-page {
+  display: flex;
+  min-height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  display: grid;
+  gap: 2rem;
+  width: min(100%, 60rem);
+  padding: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(235, 239, 242, 0.95) 100%);
+  box-shadow: var(--shadow-card);
+}
+
+.login-copy {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-500);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
