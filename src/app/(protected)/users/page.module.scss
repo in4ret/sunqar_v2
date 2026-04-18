@@ -55,6 +55,7 @@
 
 .user-table {
   width: 100%;
+  min-width: 56rem;
   border-collapse: collapse;
 }
 
@@ -72,4 +73,28 @@
 
 .user-table td {
   font-size: 0.95rem;
+}
+
+.session-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session-item {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.session-ip {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.session-location,
+.empty-sessions {
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }

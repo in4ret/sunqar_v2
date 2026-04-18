@@ -1,3 +1,5 @@
+@use "../../../styles/breakpoints" as *;
+
 .site-header {
   position: sticky;
   top: 0;
@@ -15,6 +17,11 @@
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
   padding: 1rem 0;
+}
+
+.desktop-navigation {
+  display: flex;
+  align-items: center;
 }
 
 .brand-link {
@@ -91,40 +98,30 @@
   align-items: center;
 }
 
-.user-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.55rem 0.85rem;
-  border: 1px solid var(--border-default);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
+@media (max-width: $breakpoint-mobile) {
+  .header-inner {
+    gap: 0.65rem;
+    width: min(100% - 1rem, 72rem);
+    padding: 0.75rem 0;
+  }
 
-.logout-button {
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--color-primary-500);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-}
+  .brand-link {
+    margin-right: auto;
+    gap: 0.55rem;
+    font-size: 1rem;
+  }
 
-.logout-button:hover {
-  border-color: var(--color-primary-300);
-  background: var(--color-primary-50);
-  color: var(--color-primary-700);
-}
+  .brand-icon-shell,
+  .brand-icon {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
 
-.logout-button:focus-visible {
-  outline: 2px solid var(--color-primary-300);
-  outline-offset: 2px;
+  .nav-list {
+    gap: 0.5rem;
+  }
+
+  .nav-list > li:not(.nav-language):not(.nav-user) {
+    display: none;
+  }
 }

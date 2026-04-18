@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import styles from "./footer.module.css";
+import styles from "./footer.module.scss";
 
 export async function Footer() {
   const currentYear = new Date().getFullYear();

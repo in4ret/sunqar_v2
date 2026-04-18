@@ -22,6 +22,10 @@ export const sessions = sqliteTable("sessions", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   tokenHash: text("token_hash").notNull().unique(),
+  ip: text("ip"),
+  ipGeoCountry: text("ip_geo_country"),
+  ipGeoRegion: text("ip_geo_region"),
+  ipGeoCity: text("ip_geo_city"),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()

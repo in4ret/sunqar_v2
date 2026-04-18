@@ -1,0 +1,157 @@
+.dashboard-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.hero-panel,
+.admin-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-500);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title,
+.section-title {
+  margin: 0;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
+}
+
+.description,
+.section-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.sessions-block {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sessions-title {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.session-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session-item {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.session-item:last-child {
+  padding-bottom: 0;
+}
+
+.session-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.current-session-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(45, 122, 87, 0.22);
+  border-radius: 999px;
+  background: var(--color-success-100);
+  color: var(--color-success-500);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.terminate-session-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--color-error-500) 28%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-error-500);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.terminate-session-button:hover,
+.terminate-session-button:focus-visible {
+  background: color-mix(in srgb, var(--color-error-100) 54%, transparent);
+}
+
+.session-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.session-details div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.session-details dt {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.session-details dd {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.empty-sessions {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.action-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  background: var(--bg-strong);
+  color: var(--text-on-primary);
+  font-weight: 700;
+  text-decoration: none;
+}

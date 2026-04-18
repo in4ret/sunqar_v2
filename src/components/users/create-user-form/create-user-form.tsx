@@ -7,7 +7,7 @@ import {
   type CreateUserFormState,
 } from "@/app/(protected)/users/actions";
 import { Dropdown } from "@/ui";
-import styles from "./create-user-form.module.css";
+import styles from "./create-user-form.module.scss";
 
 const initialState: CreateUserFormState = {
   error: null,

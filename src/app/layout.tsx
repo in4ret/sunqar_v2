@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
-import "./globals.css";
+import "@/styles/globals.scss";
 
 export const metadata: Metadata = {
   title: "Sunqar",

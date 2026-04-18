@@ -16,6 +16,9 @@
     }
   },
   "header": {
+    "close-menu": "Мәзірді жабу",
+    "menu": "Мәзір",
+    "open-menu": "Мәзірді ашу",
     "primary-navigation": "Негізгі навигация",
     "reports": "Есептер",
     "sign-in": "Кіру",
@@ -35,9 +38,20 @@
     "submitting": "Кіру..."
   },
   "dashboard": {
-    "eyebrow": "Қорғалған жұмыс кеңістігі",
+    "eyebrow": "Жеке кабинет",
     "title": "Қайта қош келдіңіз, {name}",
-    "description": "Сіздің сессияңыз белсенді және бұл қолданбадағы әрбір маршрут сервер деңгейінде қорғалған. Жұмысты жалғастыру үшін навигацияны пайдаланыңыз.",
+    "sessions-title": "Белсенді сессиялар",
+    "session-label": "Сессия {number}",
+    "current-session": "Ағымдағы сессия",
+    "terminate-session": "Аяқтау",
+    "session-created": "Құрылған",
+    "session-last-seen": "Соңғы белсенділік",
+    "session-expires": "Аяқталады",
+    "session-ip": "IP мекенжайы",
+    "session-ip-unavailable": "Анықталмады",
+    "session-location": "Гео",
+    "session-location-unavailable": "Анықталмады",
+    "no-active-sessions": "Белсенді сессиялар жоқ.",
     "role": "Рөлі: {role}",
     "status": "Күйі: {status}",
     "admin-title": "Әкімшілеу",
@@ -53,11 +67,15 @@
     "description": "Команда үшін жаңа тіркелгілер жасаңыз және ағымдағы қолжетімділік тізімін қарап шығыңыз.",
     "current-users": "Ағымдағы пайдаланушылар",
     "accounts-count": "Тіркелгілер саны: {count}",
+    "no-active-sessions": "Белсенді сессиялар жоқ",
+    "session-ip-unavailable": "IP анықталмады",
+    "session-location-unavailable": "Гео анықталмады",
     "table": {
       "display-name": "Аты",
       "login": "Логин",
       "role": "Рөлі",
       "status": "Күйі",
+      "active-sessions": "Белсенді сессиялар",
       "created": "Құрылған"
     },
     "form": {

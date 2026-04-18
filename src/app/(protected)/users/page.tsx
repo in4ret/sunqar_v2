@@ -1,13 +1,25 @@
 import { getTranslations } from "next-intl/server";
 import { CreateUserForm } from "@/components/users";
-import { listUsers, requireRole } from "@/lib/auth/auth";
-import styles from "./page.module.css";
+import { listUsersWithActiveSessions, requireRole } from "@/lib/auth/auth";
+import styles from "./page.module.scss";
+
+function formatSessionLocation(session: {
+  ipGeo: {
+    country: string | null;
+    region: string | null;
+    city: string | null;
+  } | null;
+}) {
+  return [session.ipGeo?.country, session.ipGeo?.region, session.ipGeo?.city]
+    .filter(Boolean)
+    .join(", ");
+}
 
 export default async function UsersPage() {
   await requireRole("admin");
 
   const t = await getTranslations();
-  const allUsers = await listUsers();
+  const allUsers = await listUsersWithActiveSessions();
 
   return (
     <section className={styles["users-page"]}>
@@ -33,6 +45,7 @@ export default async function UsersPage() {
                   <th>{t("users.table.login")}</th>
                   <th>{t("users.table.role")}</th>
                   <th>{t("users.table.status")}</th>
+                  <th>{t("users.table.active-sessions")}</th>
                   <th>{t("users.table.created")}</th>
                 </tr>
               </thead>
@@ -46,6 +59,27 @@ export default async function UsersPage() {
                       {user.isActive
                         ? t("common.statuses.active")
                         : t("common.statuses.inactive")}
+                    </td>
+                    <td>
+                      {user.activeSessions.length > 0 ? (
+                        <ul className={styles["session-list"]}>
+                          {user.activeSessions.map((session) => (
+                            <li className={styles["session-item"]} key={session.id}>
+                              <span className={styles["session-ip"]}>
+                                {session.ip ?? t("users.session-ip-unavailable")}
+                              </span>
+                              <span className={styles["session-location"]}>
+                                {formatSessionLocation(session) ||
+                                  t("users.session-location-unavailable")}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className={styles["empty-sessions"]}>
+                          {t("users.no-active-sessions")}
+                        </span>
+                      )}
                     </td>
                     <td>{user.createdAt.toLocaleDateString()}</td>
                   </tr>

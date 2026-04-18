@@ -4,7 +4,7 @@ import { useEffect, useRef, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { localeCookieName, locales, type AppLocale } from "@/lib/i18n/shared";
-import styles from "./language-switcher.module.css";
+import styles from "./language-switcher.module.scss";
 
 const localeLabels: Record<AppLocale, string> = {
   ru: "RU",

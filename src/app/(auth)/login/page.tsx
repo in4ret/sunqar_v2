@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth";
 import { getCurrentUser } from "@/lib/auth/auth";
-import styles from "./page.module.css";
+import styles from "./page.module.scss";
 
 export default async function LoginPage() {
   const user = await getCurrentUser();

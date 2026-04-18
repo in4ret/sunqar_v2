@@ -16,6 +16,9 @@
     }
   },
   "header": {
+    "close-menu": "Закрыть меню",
+    "menu": "Меню",
+    "open-menu": "Открыть меню",
     "primary-navigation": "Основная навигация",
     "reports": "Отчёты",
     "sign-in": "Войти",
@@ -35,9 +38,20 @@
     "submitting": "Вход..."
   },
   "dashboard": {
-    "eyebrow": "Защищённое рабочее пространство",
+    "eyebrow": "Личный кабинет",
     "title": "С возвращением, {name}",
-    "description": "Ваша сессия активна, и каждый маршрут этого приложения защищён на сервере. Используйте навигацию, чтобы продолжить работу.",
+    "sessions-title": "Активные сессии",
+    "session-label": "Сессия {number}",
+    "current-session": "Текущая сессия",
+    "terminate-session": "Завершить",
+    "session-created": "Создана",
+    "session-last-seen": "Последняя активность",
+    "session-expires": "Истекает",
+    "session-ip": "IP-адрес",
+    "session-ip-unavailable": "Не определён",
+    "session-location": "Гео",
+    "session-location-unavailable": "Не определено",
+    "no-active-sessions": "Активных сессий нет.",
     "role": "Роль: {role}",
     "status": "Статус: {status}",
     "admin-title": "Администрирование",
@@ -53,11 +67,15 @@
     "description": "Создавайте новые учётные записи для команды и просматривайте текущий список доступа.",
     "current-users": "Текущие пользователи",
     "accounts-count": "Учётных записей: {count}",
+    "no-active-sessions": "Нет активных сессий",
+    "session-ip-unavailable": "IP не определён",
+    "session-location-unavailable": "Гео не определено",
     "table": {
       "display-name": "Имя",
       "login": "Логин",
       "role": "Роль",
       "status": "Статус",
+      "active-sessions": "Активные сессии",
       "created": "Создан"
     },
     "form": {

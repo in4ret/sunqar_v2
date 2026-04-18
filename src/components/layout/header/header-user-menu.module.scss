@@ -1,0 +1,138 @@
+.user-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.user-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 4.5rem;
+  max-width: 14rem;
+  height: 2.55rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0.5rem 1.35rem rgba(8, 55, 89, 0.08);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.user-trigger:hover,
+.user-trigger[aria-expanded="true"] {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.user-trigger-admin {
+  border-color: color-mix(in srgb, var(--color-error-500) 34%, transparent);
+  background: color-mix(in srgb, var(--color-error-100) 92%, transparent);
+  color: var(--color-error-500);
+  box-shadow: 0 0.5rem 1.35rem color-mix(in srgb, var(--color-error-500) 14%, transparent);
+}
+
+.user-trigger-admin:hover,
+.user-trigger-admin[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--color-error-500) 52%, transparent);
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.user-trigger:focus-visible,
+.logout-button:focus-visible {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 2px;
+}
+
+.trigger-login {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-icon {
+  width: 0;
+  height: 0;
+  flex-shrink: 0;
+  border-top: 0.3rem solid currentColor;
+  border-right: 0.25rem solid transparent;
+  border-left: 0.25rem solid transparent;
+  transition: transform 160ms ease;
+}
+
+.user-trigger[aria-expanded="true"] .trigger-icon {
+  transform: rotate(180deg);
+}
+
+.user-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 0.85rem;
+  width: min(16rem, calc(100vw - 2rem));
+  padding: 0.9rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1.1rem 2.5rem rgba(8, 55, 89, 0.16);
+}
+
+.user-details {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.display-name {
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.role-label {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.45rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-primary-500);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.logout-button:hover {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}

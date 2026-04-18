@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ne } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { sessions, users, type User } from "@/lib/db/schema";
 import { hashPassword, verifyPassword } from "./password";
@@ -24,6 +24,50 @@ type SessionRecord = {
   sessionId: string;
   user: User;
 };
+
+export type ActiveSession = {
+  id: string;
+  createdAt: Date;
+  expiresAt: Date;
+  ip: string | null;
+  ipGeo: {
+    country: string | null;
+    region: string | null;
+    city: string | null;
+  } | null;
+  lastSeenAt: Date;
+};
+
+export type UserWithActiveSessions = User & {
+  activeSessions: ActiveSession[];
+};
+
+function mapActiveSession(input: {
+  id: string;
+  createdAt: Date;
+  expiresAt: Date;
+  ip: string | null;
+  ipGeoCity: string | null;
+  ipGeoCountry: string | null;
+  ipGeoRegion: string | null;
+  lastSeenAt: Date;
+}): ActiveSession {
+  return {
+    createdAt: input.createdAt,
+    expiresAt: input.expiresAt,
+    id: input.id,
+    ip: input.ip,
+    ipGeo:
+      input.ipGeoCountry || input.ipGeoRegion || input.ipGeoCity
+        ? {
+            city: input.ipGeoCity,
+            country: input.ipGeoCountry,
+            region: input.ipGeoRegion,
+          }
+        : null,
+    lastSeenAt: input.lastSeenAt,
+  };
+}
 
 const readCurrentSession = cache(async (): Promise<SessionRecord | null> => {
   const token = await readSessionToken();
@@ -74,6 +118,43 @@ export async function getCurrentUser() {
   const session = await readCurrentSession();
 
   return session?.user ?? null;
+}
+
+export async function listActiveSessionsByUserId(userId: string): Promise<ActiveSession[]> {
+  return db
+    .select({
+      createdAt: sessions.createdAt,
+      expiresAt: sessions.expiresAt,
+      id: sessions.id,
+      ip: sessions.ip,
+      ipGeoCity: sessions.ipGeoCity,
+      ipGeoCountry: sessions.ipGeoCountry,
+      ipGeoRegion: sessions.ipGeoRegion,
+      lastSeenAt: sessions.lastSeenAt,
+    })
+    .from(sessions)
+    .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, new Date())))
+    .orderBy(asc(sessions.createdAt))
+    .all()
+    .map(mapActiveSession);
+}
+
+export async function terminateActiveSession(sessionId: string) {
+  const currentSession = await readCurrentSession();
+
+  if (!currentSession || sessionId === currentSession.sessionId) {
+    return;
+  }
+
+  db.delete(sessions)
+    .where(
+      and(
+        eq(sessions.id, sessionId),
+        eq(sessions.userId, currentSession.user.id),
+        ne(sessions.id, currentSession.sessionId),
+      ),
+    )
+    .run();
 }
 
 export async function requireAuth() {
@@ -169,4 +250,55 @@ export async function createUserByAdmin(input: {
 
 export async function listUsers() {
   return db.select().from(users).orderBy(desc(users.createdAt)).all();
+}
+
+export async function listUsersWithActiveSessions(): Promise<UserWithActiveSessions[]> {
+  const rows = db
+    .select({
+      sessionCreatedAt: sessions.createdAt,
+      sessionExpiresAt: sessions.expiresAt,
+      sessionId: sessions.id,
+      sessionIp: sessions.ip,
+      sessionIpGeoCity: sessions.ipGeoCity,
+      sessionIpGeoCountry: sessions.ipGeoCountry,
+      sessionIpGeoRegion: sessions.ipGeoRegion,
+      sessionLastSeenAt: sessions.lastSeenAt,
+      user: users,
+    })
+    .from(users)
+    .leftJoin(sessions, and(eq(sessions.userId, users.id), gt(sessions.expiresAt, new Date())))
+    .orderBy(desc(users.createdAt), asc(sessions.createdAt))
+    .all();
+
+  const usersById = new Map<string, UserWithActiveSessions>();
+
+  for (const row of rows) {
+    const existingUser =
+      usersById.get(row.user.id) ??
+      ({
+        ...row.user,
+        activeSessions: [],
+      } satisfies UserWithActiveSessions);
+
+    if (!usersById.has(row.user.id)) {
+      usersById.set(row.user.id, existingUser);
+    }
+
+    if (row.sessionId && row.sessionCreatedAt && row.sessionExpiresAt && row.sessionLastSeenAt) {
+      existingUser.activeSessions.push(
+        mapActiveSession({
+          createdAt: row.sessionCreatedAt,
+          expiresAt: row.sessionExpiresAt,
+          id: row.sessionId,
+          ip: row.sessionIp,
+          ipGeoCity: row.sessionIpGeoCity,
+          ipGeoCountry: row.sessionIpGeoCountry,
+          ipGeoRegion: row.sessionIpGeoRegion,
+          lastSeenAt: row.sessionLastSeenAt,
+        }),
+      );
+    }
+  }
+
+  return Array.from(usersById.values());
 }
