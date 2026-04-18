@@ -20,6 +20,13 @@ export default async function UsersPage() {
 
   const t = await getTranslations();
   const allUsers = await listUsersWithActiveSessions();
+  const tableLabels = {
+    activeSessions: t("users.table.active-sessions"),
+    created: t("users.table.created"),
+    nameLogin: t("users.table.name-login"),
+    role: t("users.table.role"),
+    status: t("users.table.status"),
+  };
 
   return (
     <section className={styles["users-page"]}>
@@ -31,7 +38,6 @@ export default async function UsersPage() {
         </div>
       </div>
       <div className={styles["content-grid"]}>
-        <CreateUserForm />
         <section className={styles["user-list-card"]}>
           <div className={styles["section-head"]}>
             <h2 className={styles["section-title"]}>{t("users.current-users")}</h2>
@@ -41,26 +47,37 @@ export default async function UsersPage() {
             <table className={styles["user-table"]}>
               <thead>
                 <tr>
-                  <th>{t("users.table.display-name")}</th>
-                  <th>{t("users.table.login")}</th>
-                  <th>{t("users.table.role")}</th>
-                  <th>{t("users.table.status")}</th>
-                  <th>{t("users.table.active-sessions")}</th>
-                  <th>{t("users.table.created")}</th>
+                  <th>{tableLabels.nameLogin}</th>
+                  <th>{tableLabels.role}</th>
+                  <th>{tableLabels.status}</th>
+                  <th>{tableLabels.activeSessions}</th>
+                  <th>{tableLabels.created}</th>
                 </tr>
               </thead>
               <tbody>
                 {allUsers.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.displayName}</td>
-                    <td>{user.login}</td>
-                    <td>{user.role === "admin" ? t("common.roles.admin") : t("common.roles.user")}</td>
-                    <td>
+                    <td data-label={tableLabels.nameLogin}>
+                      <span className={styles["name-login-cell"]}>
+                        <span className={styles["display-name"]}>
+                          {user.displayName}
+                        </span>
+                        <span className={styles["login-name"]}>
+                          {user.login}
+                        </span>
+                      </span>
+                    </td>
+                    <td data-label={tableLabels.role}>
+                      {user.role === "admin"
+                        ? t("common.roles.admin")
+                        : t("common.roles.user")}
+                    </td>
+                    <td data-label={tableLabels.status}>
                       {user.isActive
                         ? t("common.statuses.active")
                         : t("common.statuses.inactive")}
                     </td>
-                    <td>
+                    <td data-label={tableLabels.activeSessions}>
                       {user.activeSessions.length > 0 ? (
                         <ul className={styles["session-list"]}>
                           {user.activeSessions.map((session) => (
@@ -81,13 +98,16 @@ export default async function UsersPage() {
                         </span>
                       )}
                     </td>
-                    <td>{user.createdAt.toLocaleDateString()}</td>
+                    <td data-label={tableLabels.created}>
+                      {user.createdAt.toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </section>
+        <CreateUserForm />
       </div>
     </section>
   );

@@ -73,6 +73,7 @@
     "table": {
       "display-name": "Имя",
       "login": "Логин",
+      "name-login": "Имя/Логин",
       "role": "Роль",
       "status": "Статус",
       "active-sessions": "Активные сессии",

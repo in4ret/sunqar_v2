@@ -124,4 +124,8 @@
   .nav-list > li:not(.nav-language):not(.nav-user) {
     display: none;
   }
+
+  .nav-user {
+    display: none;
+  }
 }

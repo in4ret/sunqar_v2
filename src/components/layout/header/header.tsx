@@ -38,9 +38,20 @@ export async function Header() {
         <MobileNavigation
           closeLabel={t("header.close-menu")}
           items={mobileNavigationItems}
-          menuLabel={t("header.menu")}
           navigationLabel={t("header.primary-navigation")}
           openLabel={t("header.open-menu")}
+          user={
+            user
+              ? {
+                  displayName: user.displayName,
+                  isAdmin: user.role === "admin",
+                  login: user.login,
+                  logoutAction: submitLogout,
+                  logoutLabel: t("header.logout"),
+                  roleLabel: userRoleLabel,
+                }
+              : undefined
+          }
         />
         <Link className={styles["brand-link"]} href="/">
           <span className={styles["brand-icon-shell"]} aria-hidden="true">

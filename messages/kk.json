@@ -73,6 +73,7 @@
     "table": {
       "display-name": "Аты",
       "login": "Логин",
+      "name-login": "Аты/Логин",
       "role": "Рөлі",
       "status": "Күйі",
       "active-sessions": "Белсенді сессиялар",
