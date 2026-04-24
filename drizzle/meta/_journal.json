@@ -15,6 +15,20 @@
       "when": 1776520299627,
       "tag": "0001_busy_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1776924119240,
+      "tag": "0002_green_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1776925296108,
+      "tag": "0003_clumsy_omega_sentinel",
+      "breakpoints": true
     }
   ]
 }

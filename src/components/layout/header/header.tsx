@@ -1,100 +1,107 @@
+"use client";
+
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-import { submitLogout } from "@/app/(protected)/actions";
-import { getCurrentUser } from "@/lib/auth/auth";
-import { HeaderUserMenu } from "./header-user-menu";
+import { useEffect, useState } from "react";
+import {
+  SIDEBAR_STATE_EVENT,
+  SIDEBAR_TOGGLE_EVENT,
+  type SidebarStateDetail,
+} from "../sidebar/sidebar-events";
 import { LanguageSwitcher } from "../language-switcher/language-switcher";
-import { MobileNavigation } from "../mobile-navigation/mobile-navigation";
 import styles from "./header.module.scss";
 
-export async function Header() {
-  const user = await getCurrentUser();
-  const t = await getTranslations();
-  const isAuthenticated = Boolean(user);
-  const userRoleLabel =
-    user?.role === "admin" ? t("common.roles.admin") : t("common.roles.user");
-  const mobileNavigationItems = [
-    ...(isAuthenticated
-      ? [
-          {
-            href: "/reports",
-            label: t("header.reports"),
-          },
-        ]
-      : []),
-    ...(user?.role === "admin"
-      ? [
-          {
-            href: "/users",
-            label: t("header.users"),
-          },
-        ]
-      : []),
-  ];
+type HeaderProps = {
+  brandHref?: string;
+  hasSidebar?: boolean;
+  closeSidebarLabel?: string;
+  openSidebarLabel?: string;
+};
+
+export function Header({
+  brandHref = "/",
+  hasSidebar = false,
+  closeSidebarLabel = "",
+  openSidebarLabel = "",
+}: HeaderProps) {
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!hasSidebar) {
+      return;
+    }
+
+    function handleSidebarStateChange(event: Event) {
+      const customEvent = event as CustomEvent<SidebarStateDetail>;
+
+      setIsSidebarCollapsed(customEvent.detail.isCollapsed);
+      setIsSidebarOpen(customEvent.detail.isOpen);
+    }
+
+    window.addEventListener(SIDEBAR_STATE_EVENT, handleSidebarStateChange as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        SIDEBAR_STATE_EVENT,
+        handleSidebarStateChange as EventListener,
+      );
+    };
+  }, [hasSidebar]);
+
+  useEffect(() => {
+    if (!hasSidebar) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const updateViewportState = () => {
+      setIsMobileViewport(mediaQuery.matches);
+    };
+
+    updateViewportState();
+    mediaQuery.addEventListener("change", updateViewportState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateViewportState);
+    };
+  }, [hasSidebar]);
+
+  const isSidebarExpanded = isMobileViewport ? isSidebarOpen : !isSidebarCollapsed;
+  const sidebarToggleLabel = isSidebarExpanded ? closeSidebarLabel : openSidebarLabel;
+  const shouldShowSidebarControls = !hasSidebar || isMobileViewport || !isSidebarExpanded;
 
   return (
     <header className={styles["site-header"]}>
-      <div className={styles["header-inner"]}>
-        <MobileNavigation
-          closeLabel={t("header.close-menu")}
-          items={mobileNavigationItems}
-          navigationLabel={t("header.primary-navigation")}
-          openLabel={t("header.open-menu")}
-          user={
-            user
-              ? {
-                  displayName: user.displayName,
-                  isAdmin: user.role === "admin",
-                  login: user.login,
-                  logoutAction: submitLogout,
-                  logoutLabel: t("header.logout"),
-                  roleLabel: userRoleLabel,
-                }
-              : undefined
-          }
-        />
-        <Link className={styles["brand-link"]} href="/">
-          <span className={styles["brand-icon-shell"]} aria-hidden="true">
-            <span className={styles["brand-icon"]} />
-          </span>
-          <span className={styles["brand-label"]}>Sunqar</span>
-        </Link>
-        <nav
-          aria-label={t("header.primary-navigation")}
-          className={styles["desktop-navigation"]}
-        >
-          <ul className={styles["nav-list"]}>
-            {isAuthenticated ? (
-              <li>
-                <Link className={styles["nav-link"]} href="/reports">
-                  {t("header.reports")}
-                </Link>
-              </li>
+      <div
+        className={`${styles["header-inner"]} ${hasSidebar ? styles["header-inner-with-sidebar"] : ""}`}
+      >
+        {shouldShowSidebarControls ? (
+          <div className={styles["brand-group"]}>
+            {hasSidebar ? (
+              <button
+                aria-expanded={isSidebarExpanded}
+                aria-label={sidebarToggleLabel}
+                className={styles["sidebar-toggle-button"]}
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent(SIDEBAR_TOGGLE_EVENT));
+                }}
+              >
+                <span className={styles["sidebar-toggle-icon"]} aria-hidden="true" />
+              </button>
             ) : null}
-            {user?.role === "admin" ? (
-              <li>
-                <Link className={styles["nav-link"]} href="/users">
-                  {t("header.users")}
-                </Link>
-              </li>
-            ) : null}
-            <li className={styles["nav-language"]}>
-              <LanguageSwitcher />
-            </li>
-            {user ? (
-              <li className={styles["nav-user"]}>
-                <HeaderUserMenu
-                  displayName={user.displayName}
-                  isAdmin={user.role === "admin"}
-                  login={user.login}
-                  logoutAction={submitLogout}
-                  logoutLabel={t("header.logout")}
-                  roleLabel={userRoleLabel}
-                />
-              </li>
-            ) : null}
-          </ul>
-        </nav>
+            <Link className={styles["brand-link"]} href={brandHref}>
+              <span className={styles["brand-icon-shell"]} aria-hidden="true">
+                <span className={styles["brand-icon"]} />
+              </span>
+              <span className={styles["brand-label"]}>Sunqar</span>
+            </Link>
+          </div>
+        ) : null}
+        <div className={styles["header-actions"]}>
+          <LanguageSwitcher />
+        </div>
       </div>
     </header>
   );

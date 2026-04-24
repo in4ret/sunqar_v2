@@ -49,8 +49,7 @@
   font: inherit;
 }
 
-.form-error,
-.form-success {
+.form-error {
   margin: 0;
   padding: 0.75rem 0.9rem;
   border-radius: 0.9rem;
@@ -60,11 +59,6 @@
 .form-error {
   background: var(--color-error-100);
   color: var(--color-error-500);
-}
-
-.form-success {
-  background: var(--color-success-100);
-  color: var(--color-success-500);
 }
 
 .submit-button {

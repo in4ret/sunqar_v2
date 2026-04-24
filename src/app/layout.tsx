@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { ToastProvider } from "@/ui/toast/toast-provider";
 import "@/styles/globals.scss";
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

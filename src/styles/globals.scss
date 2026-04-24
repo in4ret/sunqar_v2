@@ -1,3 +1,5 @@
+@use "./breakpoints" as *;
+
 :root {
   /* === PRIMARY (Deep Caspian Blue) === */
   --color-primary-50: #ebeff2;
@@ -63,6 +65,10 @@
   /* === EFFECTS === */
   --shadow-soft: 0 18px 40px rgba(4, 26, 43, 0.08);
   --shadow-card: 0 24px 60px rgba(4, 26, 43, 0.12);
+
+  /* === LAYOUT === */
+  --layout-header-height: 4.75rem;
+  --layout-mobile-header-height: 4rem;
 }
 
 html,
@@ -95,9 +101,25 @@ textarea {
   font: inherit;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
 .app-shell {
   display: flex;
   min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-shell-with-sidebar {
+  flex-direction: row;
+}
+
+.app-content-shell {
+  display: flex;
+  min-width: 0;
+  flex: 1;
   flex-direction: column;
 }
 
@@ -106,6 +128,12 @@ textarea {
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
   padding: 3rem 0 4rem;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .app-shell-with-sidebar {
+    flex-direction: column;
+  }
 }
 
 .auth-main {

@@ -1,0 +1,80 @@
+@use "../../styles/breakpoints" as *;
+
+.toast-viewport {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  display: grid;
+  gap: 0.75rem;
+  width: min(100% - 2rem, 24rem);
+  pointer-events: none;
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: 0.55rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  min-height: 3.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-card);
+  animation: toast-lifetime var(--toast-duration, 3000ms) ease forwards;
+  pointer-events: auto;
+}
+
+.toast-marker {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.toast-message {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.toast-success {
+  color: var(--color-success-500);
+  background: color-mix(in srgb, var(--color-success-100) 78%, white);
+}
+
+.toast-warning {
+  color: var(--color-warning-500);
+  background: color-mix(in srgb, var(--color-warning-100) 82%, white);
+}
+
+.toast-error {
+  color: var(--color-error-500);
+  background: color-mix(in srgb, var(--color-error-100) 82%, white);
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .toast-viewport {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+  }
+}
+
+@keyframes toast-lifetime {
+  0%,
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+}

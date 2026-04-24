@@ -167,11 +167,15 @@ export async function requireAuth() {
   return session.user;
 }
 
+export function getDefaultRouteForRole(role: UserRole) {
+  return role === "admin" ? "/users" : "/reports";
+}
+
 export async function requireRole(role: UserRole) {
   const user = await requireAuth();
 
   if (user.role !== role) {
-    redirect("/");
+    redirect(getDefaultRouteForRole(user.role));
   }
 
   return user;

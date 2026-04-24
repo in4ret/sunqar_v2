@@ -22,6 +22,8 @@
     "primary-navigation": "Основная навигация",
     "reports": "Отчёты",
     "sign-in": "Войти",
+    "ai-models": "AI модели",
+    "sources": "Источники",
     "users": "Пользователи",
     "logout": "Выйти"
   },
@@ -54,9 +56,15 @@
     "no-active-sessions": "Активных сессий нет.",
     "role": "Роль: {role}",
     "status": "Статус: {status}",
-    "admin-title": "Администрирование",
+    "admin-title": "Администрирование пользователей",
     "admin-description": "Создавайте пользователей и управляйте доступом на экране администрирования.",
-    "admin-link": "Открыть управление пользователями"
+    "admin-link": "Открыть управление пользователями",
+    "sources-admin-title": "Администрирование списка источников",
+    "sources-admin-description": "Добавляйте, переименовывайте и удаляйте источники для отчётов и данных.",
+    "sources-admin-link": "Открыть управление источниками",
+    "ai-models-admin-title": "Администрирование AI моделей",
+    "ai-models-admin-description": "Добавляйте, изменяйте и отключайте модели, доступные для AI функций.",
+    "ai-models-admin-link": "Открыть управление AI моделями"
   },
   "reports": {
     "title": "Отчёты"
@@ -90,15 +98,86 @@
       "submitting": "Создание..."
     }
   },
+  "sources": {
+    "eyebrow": "Только для администраторов",
+    "title": "Управление источниками",
+    "description": "Редактируйте справочник источников, который используется для отчётов и данных.",
+    "current-sources": "Текущие источники",
+    "sources-count": "Источников: {count}",
+    "empty": "Источники пока не добавлены.",
+    "delete-confirmation": "Удалить источник «{name}»?",
+    "table": {
+      "name": "Название",
+      "actions": "Действия",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "delete": "Удалить",
+      "deleting": "Удаление..."
+    },
+    "form": {
+      "title": "Добавить источник",
+      "description": "Укажите одно или несколько уникальных названий через запятую.",
+      "name": "Названия источников",
+      "placeholder": "Например: сайт, интервью, отчёт",
+      "submit": "Добавить источники",
+      "submitting": "Добавление..."
+    }
+  },
+  "ai-models": {
+    "eyebrow": "Только для администраторов",
+    "title": "Управление AI моделями",
+    "description": "Редактируйте справочник AI моделей, доступных для работы приложения.",
+    "current-ai-models": "Текущие AI модели",
+    "ai-models-count": "AI моделей: {count}",
+    "empty": "AI модели пока не добавлены.",
+    "delete-confirmation": "Удалить AI модель «{name}»?",
+    "table": {
+      "provider": "Провайдер",
+      "model-id": "Model ID",
+      "display-name": "Название",
+      "active": "Активна",
+      "actions": "Действия",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "delete": "Удалить",
+      "deleting": "Удаление..."
+    },
+    "form": {
+      "title": "Добавить AI модель",
+      "description": "Укажите технический идентификатор, отображаемое название и статус модели.",
+      "provider": "Провайдер",
+      "provider-placeholder": "Например: openai",
+      "model-id": "Model ID",
+      "model-id-placeholder": "Например: gpt-5.4",
+      "display-name": "Название",
+      "display-name-placeholder": "Например: GPT-5.4",
+      "active": "Модель активна",
+      "submit": "Добавить AI модель",
+      "submitting": "Добавление..."
+    }
+  },
   "errors": {
     "login-required": "Логин и пароль обязательны.",
     "invalid-credentials": "Неверный логин или пароль.",
     "user-fields-required": "Имя, логин и пароль обязательны.",
     "password-too-short": "Пароль должен быть не короче 8 символов.",
     "user-login-exists": "Пользователь с таким логином уже существует.",
-    "invalid-role": "Пожалуйста, выберите корректную роль."
+    "invalid-role": "Пожалуйста, выберите корректную роль.",
+    "ai-model-fields-required": "Провайдер, Model ID и название обязательны.",
+    "ai-model-exists": "AI модель с таким провайдером и Model ID уже существует.",
+    "ai-model-not-found": "AI модель не найдена.",
+    "source-fields-required": "Название источника обязательно.",
+    "source-name-exists": "Источник с таким названием уже существует.",
+    "source-not-found": "Источник не найден."
   },
   "messages": {
-    "user-created": "Пользователь успешно создан."
+    "user-created": "Пользователь успешно создан.",
+    "ai-model-created": "AI модель «{name}» успешно добавлена.",
+    "ai-model-updated": "AI модель «{name}» успешно обновлена.",
+    "ai-model-deleted": "AI модель «{name}» успешно удалена.",
+    "source-created": "Источник «{name}» успешно добавлен.",
+    "sources-created": "Источники успешно добавлены: {count}.",
+    "source-updated": "Источник «{name}» успешно обновлён.",
+    "source-deleted": "Источник «{name}» успешно удалён."
   }
 }

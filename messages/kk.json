@@ -22,6 +22,8 @@
     "primary-navigation": "Негізгі навигация",
     "reports": "Есептер",
     "sign-in": "Кіру",
+    "ai-models": "AI модельдер",
+    "sources": "Дереккөздер",
     "users": "Пайдаланушылар",
     "logout": "Шығу"
   },
@@ -56,7 +58,13 @@
     "status": "Күйі: {status}",
     "admin-title": "Әкімшілеу",
     "admin-description": "Пайдаланушыларды жасаңыз және әкімшілеу бетінде қолжетімділікті басқарыңыз.",
-    "admin-link": "Пайдаланушыларды басқаруды ашу"
+    "admin-link": "Пайдаланушыларды басқаруды ашу",
+    "sources-admin-title": "Дереккөздер тізімін әкімшілеу",
+    "sources-admin-description": "Есептер мен деректерге арналған дереккөздерді қосыңыз, өзгертіңіз және жойыңыз.",
+    "sources-admin-link": "Дереккөздерді басқаруды ашу",
+    "ai-models-admin-title": "AI модельдерді әкімшілеу",
+    "ai-models-admin-description": "AI функцияларына қолжетімді модельдерді қосыңыз, өзгертіңіз және өшіріңіз.",
+    "ai-models-admin-link": "AI модельдерді басқаруды ашу"
   },
   "reports": {
     "title": "Есептер"
@@ -90,15 +98,86 @@
       "submitting": "Құрылуда..."
     }
   },
+  "sources": {
+    "eyebrow": "Тек әкімшілерге",
+    "title": "Дереккөздерді басқару",
+    "description": "Есептер мен деректерде қолданылатын дереккөздер анықтамалығын өңдеңіз.",
+    "current-sources": "Ағымдағы дереккөздер",
+    "sources-count": "Дереккөздер саны: {count}",
+    "empty": "Дереккөздер әлі қосылмаған.",
+    "delete-confirmation": "«{name}» дереккөзін жою керек пе?",
+    "table": {
+      "name": "Атауы",
+      "actions": "Әрекеттер",
+      "save": "Сақтау",
+      "saving": "Сақталуда...",
+      "delete": "Жою",
+      "deleting": "Жойылуда..."
+    },
+    "form": {
+      "title": "Дереккөз қосу",
+      "description": "Бір немесе бірнеше бірегей атауды үтір арқылы енгізіңіз.",
+      "name": "Дереккөз атаулары",
+      "placeholder": "Мысалы: сайт, сұхбат, есеп",
+      "submit": "Дереккөздерді қосу",
+      "submitting": "Қосылуда..."
+    }
+  },
+  "ai-models": {
+    "eyebrow": "Тек әкімшілерге",
+    "title": "AI модельдерді басқару",
+    "description": "Қолданба жұмысына қолжетімді AI модельдер анықтамалығын өңдеңіз.",
+    "current-ai-models": "Ағымдағы AI модельдер",
+    "ai-models-count": "AI модельдер саны: {count}",
+    "empty": "AI модельдер әлі қосылмаған.",
+    "delete-confirmation": "«{name}» AI моделін жою керек пе?",
+    "table": {
+      "provider": "Провайдер",
+      "model-id": "Model ID",
+      "display-name": "Атауы",
+      "active": "Белсенді",
+      "actions": "Әрекеттер",
+      "save": "Сақтау",
+      "saving": "Сақталуда...",
+      "delete": "Жою",
+      "deleting": "Жойылуда..."
+    },
+    "form": {
+      "title": "AI модель қосу",
+      "description": "Модельдің техникалық идентификаторын, көрсетілетін атауын және күйін енгізіңіз.",
+      "provider": "Провайдер",
+      "provider-placeholder": "Мысалы: openai",
+      "model-id": "Model ID",
+      "model-id-placeholder": "Мысалы: gpt-5.4",
+      "display-name": "Атауы",
+      "display-name-placeholder": "Мысалы: GPT-5.4",
+      "active": "Модель белсенді",
+      "submit": "AI модель қосу",
+      "submitting": "Қосылуда..."
+    }
+  },
   "errors": {
     "login-required": "Логин мен құпиясөз міндетті.",
     "invalid-credentials": "Логин немесе құпиясөз қате.",
     "user-fields-required": "Аты, логин және құпиясөз міндетті.",
     "password-too-short": "Құпиясөз кемінде 8 таңбадан тұруы керек.",
     "user-login-exists": "Мұндай логині бар пайдаланушы бұрыннан бар.",
-    "invalid-role": "Дұрыс рөлді таңдаңыз."
+    "invalid-role": "Дұрыс рөлді таңдаңыз.",
+    "ai-model-fields-required": "Провайдер, Model ID және атауы міндетті.",
+    "ai-model-exists": "Мұндай провайдері және Model ID мәні бар AI модель бұрыннан бар.",
+    "ai-model-not-found": "AI модель табылмады.",
+    "source-fields-required": "Дереккөз атауы міндетті.",
+    "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
+    "source-not-found": "Дереккөз табылмады."
   },
   "messages": {
-    "user-created": "Пайдаланушы сәтті құрылды."
+    "user-created": "Пайдаланушы сәтті құрылды.",
+    "ai-model-created": "«{name}» AI моделі сәтті қосылды.",
+    "ai-model-updated": "«{name}» AI моделі сәтті жаңартылды.",
+    "ai-model-deleted": "«{name}» AI моделі сәтті жойылды.",
+    "source-created": "«{name}» дереккөзі сәтті қосылды.",
+    "sources-created": "Дереккөздер сәтті қосылды: {count}.",
+    "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",
+    "source-deleted": "«{name}» дереккөзі сәтті жойылды."
   }
 }

@@ -1,5 +1,4 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { getCurrentSession, listActiveSessionsByUserId } from "@/lib/auth/auth";
 import { submitTerminateSession } from "./actions";
 import styles from "./page.module.scss";
@@ -92,17 +91,6 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
-      {user?.role === "admin" ? (
-        <section className={styles["admin-panel"]}>
-          <div>
-            <h2 className={styles["section-title"]}>{t("dashboard.admin-title")}</h2>
-            <p className={styles["section-copy"]}>{t("dashboard.admin-description")}</p>
-          </div>
-          <Link className={styles["action-link"]} href="/users">
-            {t("dashboard.admin-link")}
-          </Link>
-        </section>
-      ) : null}
     </section>
   );
 }

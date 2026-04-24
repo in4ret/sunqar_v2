@@ -2,7 +2,7 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { login } from "@/lib/auth/auth";
+import { getCurrentUser, getDefaultRouteForRole, login } from "@/lib/auth/auth";
 
 export type LoginFormState = {
   error: string | null;
@@ -30,5 +30,7 @@ export async function submitLogin(
     };
   }
 
-  redirect("/");
+  const user = await getCurrentUser();
+
+  redirect(user ? getDefaultRouteForRole(user.role) : "/login");
 }
