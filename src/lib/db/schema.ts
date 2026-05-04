@@ -57,7 +57,7 @@ export const reports = sqliteTable("reports", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   period: text("period").notNull(),
-  status: text("status").notNull(),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
   blocks: text("blocks", { mode: "json" }).$type<ReportBlocks>().notNull(),
   createdBy: text("created_by").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
