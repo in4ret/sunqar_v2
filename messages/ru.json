@@ -67,7 +67,8 @@
     "ai-models-admin-link": "Открыть управление AI моделями"
   },
   "reports": {
-    "title": "Отчёты"
+    "title": "Отчёты",
+    "new-report": "Новый отчет"
   },
   "users": {
     "eyebrow": "Только для администраторов",

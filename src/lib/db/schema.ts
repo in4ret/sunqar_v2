@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import type { ReportBlocks } from "@/lib/reports/report-blocks";
 
 export const aiModels = sqliteTable(
   "ai_models",
@@ -51,6 +52,19 @@ export const sources = sqliteTable(
   (table) => [uniqueIndex("sources_name_unique").on(table.name)],
 );
 
+export const reports = sqliteTable("reports", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  period: text("period").notNull(),
+  status: text("status").notNull(),
+  blocks: text("blocks", { mode: "json" }).$type<ReportBlocks>().notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -76,4 +90,6 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Source = typeof sources.$inferSelect;
 export type NewSource = typeof sources.$inferInsert;
+export type Report = typeof reports.$inferSelect;
+export type NewReport = typeof reports.$inferInsert;
 export type Session = typeof sessions.$inferSelect;

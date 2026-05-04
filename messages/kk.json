@@ -67,7 +67,8 @@
     "ai-models-admin-link": "AI модельдерді басқаруды ашу"
   },
   "reports": {
-    "title": "Есептер"
+    "title": "Есептер",
+    "new-report": "Жаңа есеп"
   },
   "users": {
     "eyebrow": "Тек әкімшілерге",

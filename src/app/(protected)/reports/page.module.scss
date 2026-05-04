@@ -1,0 +1,59 @@
+@use "@/styles/breakpoints.scss" as breakpoints;
+
+.reports-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
+}
+
+.new-report-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.new-report-link:hover,
+.new-report-link:focus-visible {
+  background: var(--button-primary-bg-hover);
+  color: var(--button-primary-text-hover);
+}
+
+.new-report-link:active {
+  background: var(--button-primary-bg-active);
+  color: var(--button-primary-text-active);
+}
+
+@media (max-width: breakpoints.$breakpoint-mobile) {
+  .page-header {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .new-report-link {
+    width: 100%;
+  }
+}

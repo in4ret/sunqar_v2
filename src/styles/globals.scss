@@ -57,6 +57,16 @@
   --text-on-primary: #ffffff;
   --text-inverse: #f8fbfd;
 
+  /* === BUTTONS === */
+  --button-primary-bg: var(--color-primary-500);
+  --button-primary-text: var(--text-inverse);
+  --button-primary-bg-hover: var(--color-primary-400);
+  --button-primary-text-hover: var(--text-inverse);
+  --button-primary-bg-active: var(--color-primary-700);
+  --button-primary-text-active: var(--text-inverse);
+  --button-primary-bg-disabled: var(--color-neutral-300);
+  --button-primary-text-disabled: var(--color-neutral-600);
+
   /* === BORDERS === */
   --border-default: rgba(8, 55, 89, 0.14);
   --border-strong: rgba(8, 55, 89, 0.24);

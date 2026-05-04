@@ -122,8 +122,8 @@
 
 .submit-button {
   padding: 0.95rem 1.1rem;
-  background: var(--bg-strong);
-  color: var(--text-on-primary);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
 }
 
 .save-button,
@@ -148,7 +148,12 @@
   flex: 0 0 auto;
 }
 
-.submit-button:disabled,
+.submit-button:disabled {
+  background: var(--button-primary-bg-disabled);
+  color: var(--button-primary-text-disabled);
+  cursor: wait;
+}
+
 .save-button:disabled,
 .delete-button:disabled {
   cursor: wait;
