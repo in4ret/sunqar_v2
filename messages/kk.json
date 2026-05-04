@@ -68,7 +68,15 @@
   },
   "reports": {
     "title": "Есептер",
-    "new-report": "Жаңа есеп"
+    "new-report": "Жаңа есеп",
+    "empty": "Есептер әлі жоқ.",
+    "table": {
+      "title": "Атауы",
+      "description": "Сипаттамасы",
+      "period": "Кезеңі",
+      "author": "Авторы",
+      "active": "Белсенді"
+    }
   },
   "users": {
     "eyebrow": "Тек әкімшілерге",
