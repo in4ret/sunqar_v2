@@ -1,1 +1,6 @@
-export { listReports, type ReportListItem } from "./reports";
+export {
+  createReport,
+  listReports,
+  type ReportListItem,
+  type ReportMutationErrorCode,
+} from "./reports";

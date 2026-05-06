@@ -70,6 +70,21 @@
     "title": "Отчёты",
     "new-report": "Новый отчет",
     "empty": "Отчетов пока нет.",
+    "new": {
+      "eyebrow": "Создание отчета",
+      "title": "Новый отчет",
+      "description": "Заполните основные данные отчета. Блоки содержимого можно будет настроить позже."
+    },
+    "form": {
+      "title": "Новый отчет",
+      "description": "Укажите название, описание, период и статус нового отчета.",
+      "report-title": "Название",
+      "report-description": "Описание",
+      "report-period": "Период",
+      "submit": "Сохранить",
+      "submitting": "Сохранение...",
+      "cancel": "Отмена"
+    },
     "table": {
       "title": "Название",
       "description": "Описание",
@@ -175,6 +190,7 @@
     "ai-model-fields-required": "Провайдер, Model ID и название обязательны.",
     "ai-model-exists": "AI модель с таким провайдером и Model ID уже существует.",
     "ai-model-not-found": "AI модель не найдена.",
+    "report-fields-required": "Название, описание и период обязательны.",
     "source-fields-required": "Название источника обязательно.",
     "source-name-exists": "Источник с таким названием уже существует.",
     "source-not-found": "Источник не найден."
@@ -184,6 +200,7 @@
     "ai-model-created": "AI модель «{name}» успешно добавлена.",
     "ai-model-updated": "AI модель «{name}» успешно обновлена.",
     "ai-model-deleted": "AI модель «{name}» успешно удалена.",
+    "report-created": "Отчет «{title}» успешно создан.",
     "source-created": "Источник «{name}» успешно добавлен.",
     "sources-created": "Источники успешно добавлены: {count}.",
     "source-updated": "Источник «{name}» успешно обновлён.",

@@ -1,6 +1,10 @@
+import crypto from "node:crypto";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { reports, users } from "@/lib/db/schema";
+import type { ReportBlocks } from "./report-blocks";
+
+export type ReportMutationErrorCode = "report-fields-required";
 
 export type ReportListItem = {
   active: boolean;
@@ -34,4 +38,62 @@ export async function listReports(): Promise<ReportListItem[]> {
     period: row.period,
     title: row.title,
   }));
+}
+
+const defaultReportBlocks: ReportBlocks = [
+  {
+    aiModel: "",
+    keywords: [],
+    prompt: "",
+    sources: [],
+    title: "",
+  },
+];
+
+function normalizeReportInput(input: {
+  active: boolean;
+  createdBy: string;
+  description: string;
+  period: string;
+  title: string;
+}) {
+  return {
+    active: input.active,
+    createdBy: input.createdBy.trim(),
+    description: input.description.trim(),
+    period: input.period.trim(),
+    title: input.title.trim(),
+  };
+}
+
+export async function createReport(input: {
+  active: boolean;
+  createdBy: string;
+  description: string;
+  period: string;
+  title: string;
+}) {
+  const report = normalizeReportInput(input);
+
+  if (!report.createdBy || !report.title || !report.description || !report.period) {
+    return { error: "report-fields-required" as ReportMutationErrorCode };
+  }
+
+  db.insert(reports)
+    .values({
+      active: report.active,
+      blocks: defaultReportBlocks,
+      createdAt: new Date(),
+      createdBy: report.createdBy,
+      description: report.description,
+      id: crypto.randomUUID(),
+      period: report.period,
+      title: report.title,
+    })
+    .run();
+
+  return {
+    error: null,
+    reportTitle: report.title,
+  };
 }

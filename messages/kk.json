@@ -70,6 +70,21 @@
     "title": "Есептер",
     "new-report": "Жаңа есеп",
     "empty": "Есептер әлі жоқ.",
+    "new": {
+      "eyebrow": "Есеп құру",
+      "title": "Жаңа есеп",
+      "description": "Есептің негізгі деректерін толтырыңыз. Мазмұн блоктарын кейінірек баптауға болады."
+    },
+    "form": {
+      "title": "Жаңа есеп",
+      "description": "Жаңа есептің атауын, сипаттамасын, кезеңін және күйін енгізіңіз.",
+      "report-title": "Атауы",
+      "report-description": "Сипаттамасы",
+      "report-period": "Кезеңі",
+      "submit": "Сақтау",
+      "submitting": "Сақталуда...",
+      "cancel": "Бас тарту"
+    },
     "table": {
       "title": "Атауы",
       "description": "Сипаттамасы",
@@ -175,6 +190,7 @@
     "ai-model-fields-required": "Провайдер, Model ID және атауы міндетті.",
     "ai-model-exists": "Мұндай провайдері және Model ID мәні бар AI модель бұрыннан бар.",
     "ai-model-not-found": "AI модель табылмады.",
+    "report-fields-required": "Атауы, сипаттамасы және кезеңі міндетті.",
     "source-fields-required": "Дереккөз атауы міндетті.",
     "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
     "source-not-found": "Дереккөз табылмады."
@@ -184,6 +200,7 @@
     "ai-model-created": "«{name}» AI моделі сәтті қосылды.",
     "ai-model-updated": "«{name}» AI моделі сәтті жаңартылды.",
     "ai-model-deleted": "«{name}» AI моделі сәтті жойылды.",
+    "report-created": "«{title}» есебі сәтті құрылды.",
     "source-created": "«{name}» дереккөзі сәтті қосылды.",
     "sources-created": "Дереккөздер сәтті қосылды: {count}.",
     "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",
