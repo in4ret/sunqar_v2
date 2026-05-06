@@ -1,15 +1,19 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ReportRowActions } from "@/components/reports";
 import { requireRole } from "@/lib/auth/auth";
-import { listReports } from "@/lib/reports";
+import { formatStoredReportPeriod, listReports } from "@/lib/reports";
 import styles from "./page.module.scss";
 
 export default async function ReportsPage() {
   await requireRole("user");
+  const locale = await getLocale();
   const t = await getTranslations();
+  const recurrenceT = await getTranslations("recurrence-picker");
   const reportItems = await listReports();
   const tableLabels = {
     active: t("reports.table.active"),
+    actions: t("reports.table.actions"),
     author: t("reports.table.author"),
     description: t("reports.table.description"),
     period: t("reports.table.period"),
@@ -29,6 +33,7 @@ export default async function ReportsPage() {
                   <th>{tableLabels.period}</th>
                   <th>{tableLabels.author}</th>
                   <th>{tableLabels.active}</th>
+                  <th className={styles["actions-heading"]}>{tableLabels.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -36,12 +41,21 @@ export default async function ReportsPage() {
                   <tr key={report.id}>
                     <td data-label={tableLabels.title}>{report.title}</td>
                     <td data-label={tableLabels.description}>{report.description}</td>
-                    <td data-label={tableLabels.period}>{report.period}</td>
+                    <td data-label={tableLabels.period}>
+                      {formatStoredReportPeriod({
+                        locale,
+                        period: report.period,
+                        t: (key, values) => recurrenceT(key, values),
+                      })}
+                    </td>
                     <td data-label={tableLabels.author}>{report.authorName}</td>
                     <td data-label={tableLabels.active}>
                       {report.active
                         ? t("common.statuses.active")
                         : t("common.statuses.inactive")}
+                    </td>
+                    <td className={styles["actions-cell"]} data-label={tableLabels.actions}>
+                      <ReportRowActions reportId={report.id} reportTitle={report.title} />
                     </td>
                   </tr>
                 ))}

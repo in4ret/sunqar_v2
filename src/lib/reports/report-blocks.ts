@@ -37,8 +37,11 @@ export function isReportBlock(value: unknown): value is ReportBlock {
 
   return (
     typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
     typeof value.aiModel === "string" &&
+    value.aiModel.trim().length > 0 &&
     typeof value.prompt === "string" &&
+    value.prompt.trim().length > 0 &&
     isStringArray(value.sources) &&
     isStringArray(value.keywords)
   );

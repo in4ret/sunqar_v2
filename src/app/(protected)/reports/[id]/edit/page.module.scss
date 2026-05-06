@@ -1,0 +1,12 @@
+@use "../../../../../styles/breakpoints" as *;
+
+.edit-report-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .edit-report-page {
+    min-width: 0;
+  }
+}

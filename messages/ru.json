@@ -70,17 +70,39 @@
     "title": "Отчёты",
     "new-report": "Новый отчет",
     "empty": "Отчетов пока нет.",
+    "delete-confirmation": "Удалить отчёт «{title}»?",
     "new": {
       "eyebrow": "Создание отчета",
       "title": "Новый отчет",
-      "description": "Заполните основные данные отчета. Блоки содержимого можно будет настроить позже."
+      "description": "Заполните основные данные отчета и настройте блоки содержимого."
+    },
+    "edit": {
+      "title": "Редактировать отчёт",
+      "description": "Обновите название, описание, периодичность и блоки существующего отчёта."
     },
     "form": {
       "title": "Новый отчет",
-      "description": "Укажите название, описание, период и статус нового отчета.",
+      "description": "Укажите название, описание, период, статус и блоки нового отчета.",
       "report-title": "Название",
       "report-description": "Описание",
       "report-period": "Период",
+      "blocks-title": "Блоки отчета",
+      "blocks-description": "Добавьте один или несколько блоков содержимого для нового отчета.",
+      "block-title-template": "Блок {index}",
+      "block-title": "Название блока",
+      "block-ai-model": "AI модель",
+      "block-ai-model-placeholder": "Выберите AI модель",
+      "block-prompt": "Промпт",
+      "block-sources": "Источники",
+      "block-sources-placeholder": "Например: сайт, интервью, отчёт",
+      "block-keywords": "Ключевые слова",
+      "block-keywords-placeholder": "Например: рынок, тренды, аналитика",
+      "remove-block": "Удалить блок",
+      "add-block": "+ Добавить блок",
+      "no-ai-models": "Нет доступных AI моделей",
+      "no-ai-models-hint": "Сейчас нет активных AI моделей. Добавьте и активируйте модель, чтобы выбрать ее для блока.",
+      "update": "Обновить",
+      "updating": "Обновление...",
       "submit": "Сохранить",
       "submitting": "Сохранение...",
       "cancel": "Отмена"
@@ -90,7 +112,11 @@
       "description": "Описание",
       "period": "Период",
       "author": "Автор",
-      "active": "Активен"
+      "active": "Активен",
+      "actions": "Действия",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "deleting": "Удаление..."
     }
   },
   "users": {
@@ -180,6 +206,74 @@
       "submitting": "Добавление..."
     }
   },
+  "recurrence-picker": {
+    "field": {
+      "placeholder": "Выберите периодичность",
+      "edit": "Изменить"
+    },
+    "modal": {
+      "title": "Настроить периодичность"
+    },
+    "actions": {
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "frequency": {
+      "label": "Периодичность",
+      "daily": "Ежедневно",
+      "weekly": "Еженедельно",
+      "monthly": "Ежемесячно"
+    },
+    "interval": {
+      "label": "Интервал"
+    },
+    "weekdays": {
+      "label": "Дни недели",
+      "hint": "Выберите один или несколько дней для повторения.",
+      "short": {
+        "monday": "Пн",
+        "tuesday": "Вт",
+        "wednesday": "Ср",
+        "thursday": "Чт",
+        "friday": "Пт",
+        "saturday": "Сб",
+        "sunday": "Вс"
+      },
+      "long": {
+        "monday": "понедельник",
+        "tuesday": "вторник",
+        "wednesday": "среду",
+        "thursday": "четверг",
+        "friday": "пятницу",
+        "saturday": "субботу",
+        "sunday": "воскресенье"
+      }
+    },
+    "month-days": {
+      "label": "Дни месяца",
+      "hint": "Выберите дни месяца, в которые должно срабатывать правило."
+    },
+    "times": {
+      "label": "Время",
+      "hint": "Можно указать одно или несколько времен запуска в формате 24 часа.",
+      "add": "+ Добавить время",
+      "remove": "Удалить время",
+      "remove-short": "−",
+      "row-label": "Время {index}"
+    },
+    "preview": {
+      "label": "Как это выглядит",
+      "frequency": {
+        "daily": "Каждые {interval} дн.",
+        "weekly": "Каждые {interval} нед.",
+        "monthly": "Каждые {interval} мес."
+      },
+      "weekdays": "по {weekdays}",
+      "month-days": "в дни {monthDays}",
+      "times": "в {times}",
+      "no-times": "время не выбрано"
+    }
+  },
   "errors": {
     "login-required": "Логин и пароль обязательны.",
     "invalid-credentials": "Неверный логин или пароль.",
@@ -191,6 +285,9 @@
     "ai-model-exists": "AI модель с таким провайдером и Model ID уже существует.",
     "ai-model-not-found": "AI модель не найдена.",
     "report-fields-required": "Название, описание и период обязательны.",
+    "report-block-fields-required": "Заполните обязательные поля каждого блока: название, AI модель и промпт.",
+    "report-period-invalid": "Пожалуйста, укажите корректную периодичность отчёта.",
+    "report-not-found": "Отчёт не найден.",
     "source-fields-required": "Название источника обязательно.",
     "source-name-exists": "Источник с таким названием уже существует.",
     "source-not-found": "Источник не найден."
@@ -201,6 +298,8 @@
     "ai-model-updated": "AI модель «{name}» успешно обновлена.",
     "ai-model-deleted": "AI модель «{name}» успешно удалена.",
     "report-created": "Отчет «{title}» успешно создан.",
+    "report-updated": "Отчёт «{title}» успешно обновлён.",
+    "report-deleted": "Отчёт «{title}» успешно удалён.",
     "source-created": "Источник «{name}» успешно добавлен.",
     "sources-created": "Источники успешно добавлены: {count}.",
     "source-updated": "Источник «{name}» успешно обновлён.",

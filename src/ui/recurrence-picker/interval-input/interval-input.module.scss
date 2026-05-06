@@ -1,0 +1,29 @@
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  background: #ffffff;
+  color: var(--text-primary);
+  font: inherit;
+  padding: 0.9rem 1rem;
+}
+
+.input:focus-visible {
+  border-color: var(--color-primary-500);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-info-500) 18%, transparent),
+    0 10px 24px rgba(4, 26, 43, 0.08);
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}

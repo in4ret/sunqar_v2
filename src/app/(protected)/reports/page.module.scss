@@ -41,6 +41,15 @@
   font-size: 0.95rem;
 }
 
+.actions-heading {
+  width: 5.5rem;
+  text-align: right;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
 .reports-table tbody tr:last-child td {
   border-bottom: 0;
 }
@@ -135,6 +144,11 @@
 
   .reports-table td:last-child {
     border-bottom: 0;
+  }
+
+  .actions-cell {
+    grid-template-columns: minmax(0, 7.5rem) auto;
+    align-items: center;
   }
 
   .reports-table td::before {

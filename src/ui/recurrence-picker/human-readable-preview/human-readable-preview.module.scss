@@ -1,0 +1,24 @@
+.preview {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--bg-subtle);
+}
+
+.label,
+.text {
+  margin: 0;
+}
+
+.label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.text {
+  color: var(--text-primary);
+  line-height: 1.6;
+}

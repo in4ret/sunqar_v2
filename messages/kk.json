@@ -70,17 +70,39 @@
     "title": "Есептер",
     "new-report": "Жаңа есеп",
     "empty": "Есептер әлі жоқ.",
+    "delete-confirmation": "«{title}» есебін жою керек пе?",
     "new": {
       "eyebrow": "Есеп құру",
       "title": "Жаңа есеп",
-      "description": "Есептің негізгі деректерін толтырыңыз. Мазмұн блоктарын кейінірек баптауға болады."
+      "description": "Есептің негізгі деректерін толтырып, мазмұн блоктарын баптаңыз."
+    },
+    "edit": {
+      "title": "Есепті өңдеу",
+      "description": "Бар есептің атауын, сипаттамасын, қайталануын және блоктарын жаңартыңыз."
     },
     "form": {
       "title": "Жаңа есеп",
-      "description": "Жаңа есептің атауын, сипаттамасын, кезеңін және күйін енгізіңіз.",
+      "description": "Жаңа есептің атауын, сипаттамасын, кезеңін, күйін және блоктарын енгізіңіз.",
       "report-title": "Атауы",
       "report-description": "Сипаттамасы",
       "report-period": "Кезеңі",
+      "blocks-title": "Есеп блоктары",
+      "blocks-description": "Жаңа есеп үшін бір немесе бірнеше мазмұн блогын қосыңыз.",
+      "block-title-template": "{index}-блок",
+      "block-title": "Блок атауы",
+      "block-ai-model": "AI моделі",
+      "block-ai-model-placeholder": "AI моделін таңдаңыз",
+      "block-prompt": "Промпт",
+      "block-sources": "Дереккөздер",
+      "block-sources-placeholder": "Мысалы: сайт, сұхбат, есеп",
+      "block-keywords": "Кілт сөздер",
+      "block-keywords-placeholder": "Мысалы: нарық, трендтер, талдау",
+      "remove-block": "Блокты жою",
+      "add-block": "+ Блок қосу",
+      "no-ai-models": "Қолжетімді AI модельдері жоқ",
+      "no-ai-models-hint": "Қазір белсенді AI модельдері жоқ. Блок үшін модель таңдау үшін алдымен модель қосып, оны белсендіріңіз.",
+      "update": "Жаңарту",
+      "updating": "Жаңартылуда...",
       "submit": "Сақтау",
       "submitting": "Сақталуда...",
       "cancel": "Бас тарту"
@@ -90,7 +112,11 @@
       "description": "Сипаттамасы",
       "period": "Кезеңі",
       "author": "Авторы",
-      "active": "Белсенді"
+      "active": "Белсенді",
+      "actions": "Әрекеттер",
+      "edit": "Өңдеу",
+      "delete": "Жою",
+      "deleting": "Жойылуда..."
     }
   },
   "users": {
@@ -180,6 +206,74 @@
       "submitting": "Қосылуда..."
     }
   },
+  "recurrence-picker": {
+    "field": {
+      "placeholder": "Қайталану жиілігін таңдаңыз",
+      "edit": "Өзгерту"
+    },
+    "modal": {
+      "title": "Қайталану жиілігін баптау"
+    },
+    "actions": {
+      "cancel": "Бас тарту",
+      "save": "Сақтау"
+    },
+    "frequency": {
+      "label": "Қайталану жиілігі",
+      "daily": "Күн сайын",
+      "weekly": "Апта сайын",
+      "monthly": "Ай сайын"
+    },
+    "interval": {
+      "label": "Аралығы"
+    },
+    "weekdays": {
+      "label": "Апта күндері",
+      "hint": "Қайталану үшін бір немесе бірнеше күнді таңдаңыз.",
+      "short": {
+        "monday": "Дс",
+        "tuesday": "Сс",
+        "wednesday": "Ср",
+        "thursday": "Бс",
+        "friday": "Жм",
+        "saturday": "Сб",
+        "sunday": "Жс"
+      },
+      "long": {
+        "monday": "дүйсенбі",
+        "tuesday": "сейсенбі",
+        "wednesday": "сәрсенбі",
+        "thursday": "бейсенбі",
+        "friday": "жұма",
+        "saturday": "сенбі",
+        "sunday": "жексенбі"
+      }
+    },
+    "month-days": {
+      "label": "Ай күндері",
+      "hint": "Ереже іске қосылатын ай күндерін таңдаңыз."
+    },
+    "times": {
+      "label": "Уақыты",
+      "hint": "24 сағат форматында бір немесе бірнеше іске қосылу уақытын көрсетуге болады.",
+      "add": "+ Уақыт қосу",
+      "remove": "Уақытты жою",
+      "remove-short": "−",
+      "row-label": "{index}-уақыт"
+    },
+    "preview": {
+      "label": "Көрінісі",
+      "frequency": {
+        "daily": "Әр {interval} күн сайын",
+        "weekly": "Әр {interval} апта сайын",
+        "monthly": "Әр {interval} ай сайын"
+      },
+      "weekdays": "{weekdays} күндері",
+      "month-days": "{monthDays} күндері",
+      "times": "{times} уақытында",
+      "no-times": "уақыты таңдалмаған"
+    }
+  },
   "errors": {
     "login-required": "Логин мен құпиясөз міндетті.",
     "invalid-credentials": "Логин немесе құпиясөз қате.",
@@ -191,6 +285,9 @@
     "ai-model-exists": "Мұндай провайдері және Model ID мәні бар AI модель бұрыннан бар.",
     "ai-model-not-found": "AI модель табылмады.",
     "report-fields-required": "Атауы, сипаттамасы және кезеңі міндетті.",
+    "report-block-fields-required": "Әр блоктың міндетті өрістерін толтырыңыз: атауы, AI моделі және промпт.",
+    "report-period-invalid": "Есептің қайталану жиілігін дұрыс көрсетіңіз.",
+    "report-not-found": "Есеп табылмады.",
     "source-fields-required": "Дереккөз атауы міндетті.",
     "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
     "source-not-found": "Дереккөз табылмады."
@@ -201,6 +298,8 @@
     "ai-model-updated": "«{name}» AI моделі сәтті жаңартылды.",
     "ai-model-deleted": "«{name}» AI моделі сәтті жойылды.",
     "report-created": "«{title}» есебі сәтті құрылды.",
+    "report-updated": "«{title}» есебі сәтті жаңартылды.",
+    "report-deleted": "«{title}» есебі сәтті жойылды.",
     "source-created": "«{name}» дереккөзі сәтті қосылды.",
     "sources-created": "Дереккөздер сәтті қосылды: {count}.",
     "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",

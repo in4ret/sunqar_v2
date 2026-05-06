@@ -1,0 +1,14 @@
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field-control {
+  width: 100%;
+}

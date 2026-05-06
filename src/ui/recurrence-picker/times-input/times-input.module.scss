@@ -1,0 +1,96 @@
+.section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.section-head {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.section-title,
+.section-hint {
+  margin: 0;
+}
+
+.section-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.section-hint {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+}
+
+.input {
+  width: 9.5rem;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  background: #ffffff;
+  color: var(--text-primary);
+  font: inherit;
+  padding: 0.9rem 1rem;
+}
+
+.input:focus-visible,
+.remove-button:focus-visible,
+.add-button:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.remove-button,
+.add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.remove-button {
+  min-width: 2.9rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.add-button {
+  width: fit-content;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.remove-button:disabled,
+.add-button:disabled,
+.input:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
