@@ -140,6 +140,14 @@
   border-radius: 0.9rem;
   background: var(--bg-elevated);
   box-shadow: var(--shadow-card);
+  max-height: min(var(--multi-select-list-max-height, 20rem), calc(100vh - 1.5rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.multi-select-root[data-placement="top"] .multi-select-list {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
 }
 
 .multi-select-option,

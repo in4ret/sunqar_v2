@@ -95,6 +95,14 @@
   border-radius: 0.9rem;
   background: var(--bg-elevated);
   box-shadow: var(--shadow-card);
+  max-height: min(var(--dropdown-list-max-height, 20rem), calc(100vh - 1.5rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dropdown-root[data-placement="top"] .dropdown-list {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
 }
 
 .dropdown-option {
