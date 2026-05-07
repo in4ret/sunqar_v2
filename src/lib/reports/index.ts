@@ -6,6 +6,7 @@ export {
   type ReportListItem,
   type ReportEditorItem,
   type ReportMutationErrorCode,
+  updateReportActiveByUser,
   updateReportByUser,
 } from "./reports";
 export {

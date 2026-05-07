@@ -28,7 +28,7 @@
   padding: 0.85rem 0.45rem;
   border-bottom: 1px solid var(--border-subtle);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
   overflow-wrap: anywhere;
 }
 
@@ -48,6 +48,10 @@
 
 .actions-cell {
   text-align: right;
+}
+
+.active-cell {
+  width: 7.25rem;
 }
 
 .reports-table tbody tr:last-child td {
@@ -147,6 +151,11 @@
   }
 
   .actions-cell {
+    grid-template-columns: minmax(0, 7.5rem) auto;
+    align-items: center;
+  }
+
+  .active-cell {
     grid-template-columns: minmax(0, 7.5rem) auto;
     align-items: center;
   }

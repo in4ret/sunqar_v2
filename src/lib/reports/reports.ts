@@ -224,6 +224,48 @@ export async function updateReportByUser(input: {
   };
 }
 
+export async function updateReportActiveByUser(input: {
+  active: boolean;
+  id: string;
+  updatedBy: string;
+}) {
+  const normalizedId = input.id.trim();
+  const normalizedUpdatedBy = input.updatedBy.trim();
+
+  if (!normalizedId || !normalizedUpdatedBy) {
+    return { error: "report-not-found" as ReportMutationErrorCode };
+  }
+
+  const existingReport = db
+    .select({
+      id: reports.id,
+      title: reports.title,
+    })
+    .from(reports)
+    .where(eq(reports.id, normalizedId))
+    .get();
+
+  if (!existingReport) {
+    return { error: "report-not-found" as ReportMutationErrorCode };
+  }
+
+  db.update(reports)
+    .set({
+      active: input.active,
+      updatedAt: new Date(),
+      updatedBy: normalizedUpdatedBy,
+    })
+    .where(eq(reports.id, existingReport.id))
+    .run();
+
+  return {
+    active: input.active,
+    error: null,
+    reportId: existingReport.id,
+    reportTitle: existingReport.title,
+  };
+}
+
 export async function deleteReportByUser(id: string) {
   const normalizedId = id.trim();
 

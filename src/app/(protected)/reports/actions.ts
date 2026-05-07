@@ -8,16 +8,19 @@ import {
   deleteReportByUser,
   parseStoredReportPeriod,
   serializeStoredReportPeriod,
+  updateReportActiveByUser,
   updateReportByUser,
 } from "@/lib/reports";
 import type { ReportBlocks } from "@/lib/reports/report-blocks";
 
 export type ReportMutationState = {
+  active?: boolean;
   error: string | null;
   reportId: string | null;
   success: string | null;
 };
 export type ReportDeleteState = ReportMutationState;
+export type ReportActiveState = ReportMutationState;
 
 const reportsPath = "/reports";
 
@@ -206,5 +209,41 @@ export async function submitDeleteReport(
     error: null,
     reportId: result.reportId,
     success: t("messages.report-deleted", { title: result.reportTitle }),
+  };
+}
+
+export async function submitToggleReportActive(
+  _previousState: ReportActiveState,
+  formData: FormData,
+): Promise<ReportActiveState> {
+  const user = await requireRole("user");
+  const t = await getTranslations();
+  const reportId = String(formData.get("id") ?? "").trim();
+  const nextActive = String(formData.get("active") ?? "").trim() === "true";
+  const result = await updateReportActiveByUser({
+    active: nextActive,
+    id: reportId,
+    updatedBy: user.id,
+  });
+
+  if (result.error) {
+    return {
+      active: undefined,
+      error: t(`errors.${result.error}`),
+      reportId,
+      success: null,
+    };
+  }
+
+  revalidatePath(reportsPath);
+  revalidatePath(`/reports/${result.reportId}/edit`);
+
+  return {
+    active: result.active,
+    error: null,
+    reportId: result.reportId,
+    success: result.active
+      ? t("messages.report-activated", { title: result.reportTitle })
+      : t("messages.report-deactivated", { title: result.reportTitle }),
   };
 }

@@ -8,7 +8,7 @@ import {
   submitUpdateReport,
   type ReportMutationState,
 } from "@/app/(protected)/reports/actions";
-import { Dropdown, RecurrencePicker, type RecurrenceValue } from "@/ui";
+import { Dropdown, MultiSelect, RecurrencePicker, type RecurrenceValue } from "@/ui";
 import styles from "./create-report-form.module.scss";
 
 const initialState: ReportMutationState = {
@@ -22,11 +22,16 @@ type CreateReportFormAiModel = {
   value: string;
 };
 
+type CreateReportFormSourceOption = {
+  label: string;
+  value: string;
+};
+
 type ReportBlockFormValue = {
   aiModel: string;
   keywords: string;
   prompt: string;
-  sources: string;
+  sources: string[];
   title: string;
 };
 
@@ -36,6 +41,7 @@ type ReportBlockDraft = ReportBlockFormValue & {
 
 type CreateReportFormProps = {
   aiModels: CreateReportFormAiModel[];
+  sourceOptions: CreateReportFormSourceOption[];
   initialValues?: {
     blocks: ReportBlockFormValue[];
     description: string;
@@ -50,7 +56,7 @@ const emptyBlock: ReportBlockFormValue = {
   aiModel: "",
   keywords: "",
   prompt: "",
-  sources: "",
+  sources: [],
   title: "",
 };
 
@@ -107,6 +113,7 @@ function createBlockDraft(block?: Partial<ReportBlockFormValue>): ReportBlockDra
 
 export function CreateReportForm({
   aiModels,
+  sourceOptions,
   initialValues,
   mode = "create",
 }: CreateReportFormProps) {
@@ -133,7 +140,7 @@ export function CreateReportForm({
   function updateBlock(
     index: number,
     field: keyof ReportBlockFormValue,
-    value: string,
+    value: string | string[],
   ) {
     setBlocks((currentBlocks) =>
       currentBlocks.map((block, blockIndex) =>
@@ -250,19 +257,24 @@ export function CreateReportForm({
                     />
                   </label>
                   <div className={styles["block-bottom-fields"]}>
-                    <label className={styles["field"]}>
+                    <div className={styles["field"]}>
                       <span className={styles["field-label"]}>
                         {t("reports.form.block-sources")}
                       </span>
-                      <input
-                        className={styles["field-input"]}
+                      <MultiSelect
+                        aria-label={t("reports.form.block-sources")}
+                        disabled={isPending}
+                        emptyLabel={t("reports.form.block-sources-empty")}
                         name={`blocks[${index}].sources`}
-                        onChange={(event) => updateBlock(index, "sources", event.currentTarget.value)}
+                        onChange={(value) => updateBlock(index, "sources", value)}
+                        options={sourceOptions}
                         placeholder={t("reports.form.block-sources-placeholder")}
-                        type="text"
+                        removeButtonLabel={(label) =>
+                          t("reports.form.remove-selected-source", { source: label })
+                        }
                         value={block.sources}
                       />
-                    </label>
+                    </div>
                     <label className={styles["field"]}>
                       <span className={styles["field-label"]}>
                         {t("reports.form.block-keywords")}
