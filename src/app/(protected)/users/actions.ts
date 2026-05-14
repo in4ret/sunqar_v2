@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import { createUserByAdmin,requireRole } from "@/lib/auth/auth";
+import { createUserByAdmin, requireRole } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 
 export type CreateUserFormState = {
   error: string | null;
@@ -43,7 +44,7 @@ export async function submitCreateUser(
     };
   }
 
-  revalidatePath("/users");
+  revalidatePath(routes.users);
 
   return {
     error: null,

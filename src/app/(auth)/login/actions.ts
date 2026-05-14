@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentUser, login } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 
 export type LoginFormState = {
   error: string | null;
@@ -33,5 +34,5 @@ export async function submitLogin(
 
   const user = await getCurrentUser();
 
-  redirect(user ? "/" : "/login");
+  redirect(user ? routes.home : routes.login);
 }

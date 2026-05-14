@@ -134,7 +134,7 @@ async function lookupIpApiInfo(ip: string | null): Promise<SessionClientInfo | n
 
     const response = await fetch(url, {
       cache: "no-store",
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {

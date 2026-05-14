@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth";
 import { getCurrentUser } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 
 import styles from "./page.module.scss";
 
@@ -11,7 +12,7 @@ export default async function LoginPage() {
   const t = await getTranslations();
 
   if (user) {
-    redirect("/");
+    redirect(routes.home);
   }
 
   return (

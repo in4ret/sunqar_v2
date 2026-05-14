@@ -13,6 +13,7 @@ import {
   updateReportByUser,
 } from "@/lib/reports";
 import type { ReportBlocks } from "@/lib/reports/report-blocks";
+import { getReportEditRoute, routes } from "@/lib/routes";
 
 export type ReportMutationState = {
   active?: boolean;
@@ -23,7 +24,7 @@ export type ReportMutationState = {
 export type ReportDeleteState = ReportMutationState;
 export type ReportActiveState = ReportMutationState;
 
-const reportsPath = "/reports";
+const reportsPath = routes.reports;
 
 function getBlockIndex(name: string) {
   const match = /^blocks\[(\d+)\]\./.exec(name);
@@ -74,7 +75,7 @@ export async function submitCreateReport(
   _previousState: ReportMutationState,
   formData: FormData,
 ): Promise<ReportMutationState> {
-  const user = await requireRole("user");
+  const user = await requireRole(["admin", "user"]);
   const t = await getTranslations();
   let blocks: ReportBlocks;
   let period: string;
@@ -131,7 +132,7 @@ export async function submitUpdateReport(
   _previousState: ReportMutationState,
   formData: FormData,
 ): Promise<ReportMutationState> {
-  const user = await requireRole("user");
+  const user = await requireRole(["admin", "user"]);
   const t = await getTranslations();
   const reportId = String(formData.get("reportId") ?? "").trim();
   let blocks: ReportBlocks;
@@ -177,7 +178,7 @@ export async function submitUpdateReport(
   }
 
   revalidatePath(reportsPath);
-  revalidatePath(`/reports/${result.reportId}/edit`);
+  revalidatePath(getReportEditRoute(result.reportId));
 
   return {
     error: null,
@@ -190,7 +191,7 @@ export async function submitDeleteReport(
   _previousState: ReportDeleteState,
   formData: FormData,
 ): Promise<ReportDeleteState> {
-  await requireRole("user");
+  await requireRole(["admin", "user"]);
   const t = await getTranslations();
   const reportId = String(formData.get("id") ?? "").trim();
   const result = await deleteReportByUser(reportId);
@@ -204,7 +205,7 @@ export async function submitDeleteReport(
   }
 
   revalidatePath(reportsPath);
-  revalidatePath(`/reports/${result.reportId}/edit`);
+  revalidatePath(getReportEditRoute(result.reportId));
 
   return {
     error: null,
@@ -217,7 +218,7 @@ export async function submitToggleReportActive(
   _previousState: ReportActiveState,
   formData: FormData,
 ): Promise<ReportActiveState> {
-  const user = await requireRole("user");
+  const user = await requireRole(["admin", "user"]);
   const t = await getTranslations();
   const reportId = String(formData.get("id") ?? "").trim();
   const nextActive = String(formData.get("active") ?? "").trim() === "true";
@@ -237,7 +238,7 @@ export async function submitToggleReportActive(
   }
 
   revalidatePath(reportsPath);
-  revalidatePath(`/reports/${result.reportId}/edit`);
+  revalidatePath(getReportEditRoute(result.reportId));
 
   return {
     active: result.active,

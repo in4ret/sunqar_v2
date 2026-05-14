@@ -9,6 +9,7 @@ import {
   updateAiModelByAdmin,
 } from "@/lib/ai-models/ai-models";
 import { requireRole } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 
 export type AiModelFormState = {
   aiModelId: string | null;
@@ -16,7 +17,7 @@ export type AiModelFormState = {
   success: string | null;
 };
 
-const aiModelsPath = "/ai_models";
+const aiModelsPath = routes.aiModels;
 
 function getIsActive(formData: FormData) {
   return formData.get("isActive") === "on";

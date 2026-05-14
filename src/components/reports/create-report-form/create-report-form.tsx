@@ -9,6 +9,7 @@ import {
   submitCreateReport,
   submitUpdateReport,
 } from "@/app/(protected)/reports/actions";
+import { routes } from "@/lib/routes";
 import { Dropdown, MultiSelect, RecurrencePicker, type RecurrenceValue } from "@/ui";
 
 import styles from "./create-report-form.module.scss";
@@ -161,7 +162,7 @@ export function CreateReportForm({
 
   useEffect(() => {
     if (state.success) {
-      router.push("/reports");
+      router.push(routes.reports);
     }
   }, [router, state.success]);
 
@@ -333,7 +334,7 @@ export function CreateReportForm({
           <button
             className={styles["cancel-button"]}
             disabled={isPending}
-            onClick={() => router.push("/reports")}
+            onClick={() => router.push(routes.reports)}
             type="button"
           >
             {t("reports.form.cancel")}

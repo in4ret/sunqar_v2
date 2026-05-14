@@ -6,7 +6,7 @@ import { listSources } from "@/lib/sources/sources";
 import styles from "./page.module.scss";
 
 export default async function NewReportPage() {
-  await requireRole("user");
+  await requireRole(["admin", "user"]);
   const [aiModels, sources] = await Promise.all([listAiModels(), listSources()]);
   const activeAiModels = aiModels
     .filter((aiModel) => aiModel.isActive)

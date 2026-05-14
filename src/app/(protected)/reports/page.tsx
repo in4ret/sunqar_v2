@@ -4,11 +4,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ReportActiveToggle, ReportRowActions } from "@/components/reports";
 import { requireRole } from "@/lib/auth/auth";
 import { formatStoredReportPeriod, listReports } from "@/lib/reports";
+import { routes } from "@/lib/routes";
 
 import styles from "./page.module.scss";
 
 export default async function ReportsPage() {
-  await requireRole("user");
+  await requireRole(["admin", "user"]);
   const locale = await getLocale();
   const t = await getTranslations();
   const recurrenceT = await getTranslations("recurrence-picker");
@@ -71,7 +72,7 @@ export default async function ReportsPage() {
         )}
       </div>
       <div className={styles["actions"]}>
-        <Link className={styles["new-report-link"]} href="/reports/new">
+        <Link className={styles["new-report-link"]} href={routes.newReport}>
           {t("reports.new-report")}
         </Link>
       </div>

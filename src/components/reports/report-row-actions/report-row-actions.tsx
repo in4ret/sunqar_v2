@@ -9,6 +9,7 @@ import {
   type ReportDeleteState,
   submitDeleteReport,
 } from "@/app/(protected)/reports/actions";
+import { getReportEditRoute } from "@/lib/routes";
 import { useToast } from "@/ui";
 
 import styles from "./report-row-actions.module.scss";
@@ -128,7 +129,7 @@ export function ReportRowActions({
       <Link
         aria-label={t("reports.table.edit")}
         className={styles["edit-link"]}
-        href={`/reports/${reportId}/edit`}
+        href={getReportEditRoute(reportId)}
       >
         <EditIcon />
       </Link>

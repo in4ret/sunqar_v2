@@ -15,7 +15,7 @@ type EditReportPageProps = {
 };
 
 export default async function EditReportPage({ params }: EditReportPageProps) {
-  await requireRole("user");
+  await requireRole(["admin", "user"]);
   const { id } = await params;
   const [report, aiModels, sources] = await Promise.all([getReportById(id), listAiModels(), listSources()]);
 

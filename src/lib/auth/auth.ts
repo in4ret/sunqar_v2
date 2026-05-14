@@ -4,7 +4,8 @@ import { and, asc, desc, eq, gt, ne } from "drizzle-orm";
 import crypto from "node:crypto";
 
 import { db } from "@/lib/db/client";
-import { sessions, type User,users } from "@/lib/db/schema";
+import { sessions, type User, users } from "@/lib/db/schema";
+import { routes } from "@/lib/routes";
 
 import { hashPassword, verifyPassword } from "./password";
 import {
@@ -163,17 +164,18 @@ export async function requireAuth() {
   const session = await readCurrentSession();
 
   if (!session) {
-    redirect("/login");
+    redirect(routes.login);
   }
 
   return session.user;
 }
 
-export async function requireRole(role: UserRole) {
+export async function requireRole(role: UserRole | UserRole[]) {
   const user = await requireAuth();
+  const allowedRoles = Array.isArray(role) ? role : [role];
 
-  if (user.role !== role) {
-    redirect("/");
+  if (!allowedRoles.includes(user.role)) {
+    redirect(routes.home);
   }
 
   return user;

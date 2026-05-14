@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { requireRole } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 import {
   createSourcesByAdmin,
   deleteSourceByAdmin,
@@ -33,7 +34,7 @@ export async function submitCreateSource(
     };
   }
 
-  revalidatePath("/sources");
+  revalidatePath(routes.sources);
 
   return {
     error: null,
@@ -63,7 +64,7 @@ export async function submitUpdateSource(
     };
   }
 
-  revalidatePath("/sources");
+  revalidatePath(routes.sources);
 
   return {
     error: null,
@@ -89,7 +90,7 @@ export async function submitDeleteSource(
     };
   }
 
-  revalidatePath("/sources");
+  revalidatePath(routes.sources);
 
   return {
     error: null,

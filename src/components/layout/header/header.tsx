@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { routes } from "@/lib/routes";
+
 import { LanguageSwitcher } from "../language-switcher/language-switcher";
 import {
   SIDEBAR_STATE_EVENT,
@@ -20,7 +22,7 @@ type HeaderProps = {
 };
 
 export function Header({
-  brandHref = "/",
+  brandHref = routes.home,
   hasSidebar = false,
   closeSidebarLabel = "",
   openSidebarLabel = "",

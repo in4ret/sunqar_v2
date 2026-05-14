@@ -4,12 +4,15 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { routes } from "@/lib/routes";
+
 import {
   SIDEBAR_STATE_EVENT,
   SIDEBAR_TOGGLE_EVENT,
 } from "./sidebar-events";
 
 import styles from "./sidebar.module.scss";
+
 
 type SidebarItem = {
   href: string;
@@ -42,7 +45,7 @@ type SidebarProps = {
 };
 
 export function Sidebar({
-  brandHref = "/",
+  brandHref = routes.home,
   closeLabel,
   navigationLabel,
   openLabel,
@@ -243,7 +246,7 @@ type SidebarContentProps = {
 };
 
 function SidebarContent({
-  brandHref = "/",
+  brandHref = routes.home,
   navigationLabel,
   onNavigate,
   pathname,
@@ -301,7 +304,7 @@ function SidebarContent({
 }
 
 function Brand({
-  href = "/",
+  href = routes.home,
   onNavigate,
 }: {
   href?: string;

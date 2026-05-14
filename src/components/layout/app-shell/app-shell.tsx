@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { submitLogout } from "@/app/(protected)/actions";
 import { getCurrentUser } from "@/lib/auth/auth";
+import { routes } from "@/lib/routes";
 
 import { Footer } from "../footer/footer";
 import { Header } from "../header/header";
@@ -15,26 +16,26 @@ type AppShellProps = Readonly<{
 export async function AppShell({ children, mainClassName = "app-main" }: AppShellProps) {
   const user = await getCurrentUser();
   const t = await getTranslations();
-  const homeHref = "/";
+  const homeHref = routes.home;
   const userRoleLabel =
     user?.role === "admin" ? t("common.roles.admin") : t("common.roles.user");
   const userNavigationItems = [
     {
-      href: "/reports",
+      href: routes.reports,
       label: t("header.reports"),
     },
   ];
   const adminNavigationItems = [
     {
-      href: "/users",
+      href: routes.users,
       label: t("header.users"),
     },
     {
-      href: "/sources",
+      href: routes.sources,
       label: t("header.sources"),
     },
     {
-      href: "/ai_models",
+      href: routes.aiModels,
       label: t("header.ai-models"),
     },
   ];
@@ -72,7 +73,7 @@ export async function AppShell({ children, mainClassName = "app-main" }: AppShel
           openLabel={t("header.open-menu")}
           sections={navigationSections}
           user={{
-            accountHref: "/account",
+            accountHref: routes.account,
             accountLabel: t("header.account"),
             displayName: user.displayName,
             isAdmin: user.role === "admin",
