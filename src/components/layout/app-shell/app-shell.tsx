@@ -18,33 +18,49 @@ export async function AppShell({ children, mainClassName = "app-main" }: AppShel
   const homeHref = "/";
   const userRoleLabel =
     user?.role === "admin" ? t("common.roles.admin") : t("common.roles.user");
-  const navigationItems = [
+  const userNavigationItems = [
+    {
+      href: "/reports",
+      label: t("header.reports"),
+    },
+  ];
+  const adminNavigationItems = [
+    {
+      href: "/users",
+      label: t("header.users"),
+    },
+    {
+      href: "/sources",
+      label: t("header.sources"),
+    },
+    {
+      href: "/ai_models",
+      label: t("header.ai-models"),
+    },
+  ];
+  const navigationSections = [
     ...(user?.role === "user"
       ? [
           {
-            href: "/reports",
-            label: t("header.reports"),
+            items: userNavigationItems,
           },
         ]
       : []),
     ...(user?.role === "admin"
       ? [
           {
-            href: "/users",
-            label: t("header.users"),
+            items: userNavigationItems,
           },
           {
-            href: "/sources",
-            label: t("header.sources"),
-          },
-          {
-            href: "/ai_models",
-            label: t("header.ai-models"),
+            eyebrow: t("header.admin-navigation"),
+            items: adminNavigationItems,
           },
         ]
       : []),
   ];
-  const hasSidebar = Boolean(user && navigationItems.length > 0);
+  const hasSidebar = Boolean(
+    user && navigationSections.some((section) => section.items.length > 0),
+  );
 
   return (
     <div className={hasSidebar ? "app-shell app-shell-with-sidebar" : "app-shell"}>
@@ -52,9 +68,9 @@ export async function AppShell({ children, mainClassName = "app-main" }: AppShel
         <Sidebar
           brandHref={homeHref}
           closeLabel={t("header.close-menu")}
-          items={navigationItems}
           navigationLabel={t("header.primary-navigation")}
           openLabel={t("header.open-menu")}
+          sections={navigationSections}
           user={{
             accountHref: "/account",
             accountLabel: t("header.account"),

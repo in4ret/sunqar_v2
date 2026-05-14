@@ -170,7 +170,7 @@ export async function requireAuth() {
 }
 
 export function getDefaultRouteForRole(role: UserRole) {
-  return role === "admin" ? "/users" : "/reports";
+  return role === "admin" ? "/" : "/reports";
 }
 
 export async function requireRole(role: UserRole) {

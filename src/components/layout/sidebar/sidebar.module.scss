@@ -125,6 +125,27 @@
   overflow-y: auto;
 }
 
+.nav-sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.nav-section {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.nav-section-eyebrow {
+  margin: 0;
+  padding: 1rem 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 82%, white);
+  color: color-mix(in srgb, var(--text-secondary) 68%, white);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .nav-list {
   display: grid;
   gap: 0.45rem;

@@ -16,6 +16,11 @@ type SidebarItem = {
   label: string;
 };
 
+type SidebarSection = {
+  eyebrow?: string;
+  items: SidebarItem[];
+};
+
 type SidebarUser = {
   accountHref: string;
   accountLabel: string;
@@ -30,18 +35,18 @@ type SidebarUser = {
 type SidebarProps = {
   brandHref?: string;
   closeLabel: string;
-  items: SidebarItem[];
   navigationLabel: string;
   openLabel: string;
+  sections: SidebarSection[];
   user: SidebarUser;
 };
 
 export function Sidebar({
   brandHref = "/",
   closeLabel,
-  items,
   navigationLabel,
   openLabel,
+  sections,
   user,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -157,9 +162,9 @@ export function Sidebar({
       >
         <SidebarContent
           brandHref={brandHref}
-          items={items}
           navigationLabel={navigationLabel}
           pathname={pathname}
+          sections={sections}
           toggleButton={
             <button
               aria-label={isCollapsed ? openLabel : closeLabel}
@@ -209,10 +214,10 @@ export function Sidebar({
             </div>
             <SidebarContent
               brandHref={brandHref}
-              items={items}
               navigationLabel={navigationLabel}
               onNavigate={closeDrawer}
               pathname={pathname}
+              sections={sections}
               user={user}
               showBrand={false}
             />
@@ -228,10 +233,10 @@ const MOBILE_BREAKPOINT_PX = "768px";
 
 type SidebarContentProps = {
   brandHref?: string;
-  items: SidebarItem[];
   navigationLabel: string;
   onNavigate?: () => void;
   pathname: string;
+  sections: SidebarSection[];
   showBrand?: boolean;
   toggleButton?: React.ReactNode;
   user: SidebarUser;
@@ -239,10 +244,10 @@ type SidebarContentProps = {
 
 function SidebarContent({
   brandHref = "/",
-  items,
   navigationLabel,
   onNavigate,
   pathname,
+  sections,
   showBrand = true,
   toggleButton,
   user,
@@ -257,25 +262,37 @@ function SidebarContent({
       ) : null}
       <div className={styles["sidebar-body"]}>
         <nav aria-label={navigationLabel} className={styles["navigation"]}>
-          <ul className={styles["nav-list"]}>
-            {items.map((item) => {
-              const isActive = pathname === item.href;
+          <div className={styles["nav-sections"]}>
+            {sections.map((section, sectionIndex) => (
+              <div
+                className={styles["nav-section"]}
+                key={section.eyebrow ?? `section-${sectionIndex}`}
+              >
+                {section.eyebrow ? (
+                  <p className={styles["nav-section-eyebrow"]}>{section.eyebrow}</p>
+                ) : null}
+                <ul className={styles["nav-list"]}>
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href;
 
-              return (
-                <li key={item.href}>
-                  <Link
-                    aria-current={isActive ? "page" : undefined}
-                    className={styles["nav-link"]}
-                    data-active={isActive ? "true" : undefined}
-                    href={item.href}
-                    onClick={onNavigate}
-                  >
-                    <span className={styles["nav-label"]}>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          aria-current={isActive ? "page" : undefined}
+                          className={styles["nav-link"]}
+                          data-active={isActive ? "true" : undefined}
+                          href={item.href}
+                          onClick={onNavigate}
+                        >
+                          <span className={styles["nav-label"]}>{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
         </nav>
         <UserPanel onNavigate={onNavigate} pathname={pathname} user={user} />
       </div>
