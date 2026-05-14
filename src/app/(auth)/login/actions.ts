@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { getCurrentUser, getDefaultRouteForRole, login } from "@/lib/auth/auth";
+import { getCurrentUser, login } from "@/lib/auth/auth";
 
 export type LoginFormState = {
   error: string | null;
@@ -33,5 +33,5 @@ export async function submitLogin(
 
   const user = await getCurrentUser();
 
-  redirect(user ? getDefaultRouteForRole(user.role) : "/login");
+  redirect(user ? "/" : "/login");
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth";
-import { getCurrentUser, getDefaultRouteForRole } from "@/lib/auth/auth";
+import { getCurrentUser } from "@/lib/auth/auth";
 
 import styles from "./page.module.scss";
 
@@ -11,7 +11,7 @@ export default async function LoginPage() {
   const t = await getTranslations();
 
   if (user) {
-    redirect(getDefaultRouteForRole(user.role));
+    redirect("/");
   }
 
   return (
