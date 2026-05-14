@@ -2,11 +2,13 @@
 
 import { type FocusEvent, useActionState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+
 import {
-  submitCreateUser,
   type CreateUserFormState,
+  submitCreateUser,
 } from "@/app/(protected)/users/actions";
 import { Dropdown, useToast } from "@/ui";
+
 import styles from "./create-user-form.module.scss";
 
 const initialState: CreateUserFormState = {

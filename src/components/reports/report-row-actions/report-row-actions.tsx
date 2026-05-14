@@ -4,11 +4,13 @@ import { type FormEvent, useActionState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+
 import {
-  submitDeleteReport,
   type ReportDeleteState,
+  submitDeleteReport,
 } from "@/app/(protected)/reports/actions";
 import { useToast } from "@/ui";
+
 import styles from "./report-row-actions.module.scss";
 
 const initialState: ReportDeleteState = {

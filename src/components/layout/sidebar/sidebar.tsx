@@ -1,12 +1,14 @@
 "use client";
 
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+
 import {
   SIDEBAR_STATE_EVENT,
   SIDEBAR_TOGGLE_EVENT,
 } from "./sidebar-events";
+
 import styles from "./sidebar.module.scss";
 
 type SidebarItem = {
@@ -15,6 +17,8 @@ type SidebarItem = {
 };
 
 type SidebarUser = {
+  accountHref: string;
+  accountLabel: string;
   displayName: string;
   isAdmin: boolean;
   login: string;
@@ -207,9 +211,9 @@ export function Sidebar({
               brandHref={brandHref}
               items={items}
               navigationLabel={navigationLabel}
+              onNavigate={closeDrawer}
               pathname={pathname}
               user={user}
-              onNavigate={closeDrawer}
               showBrand={false}
             />
           </aside>
@@ -261,19 +265,19 @@ function SidebarContent({
                 <li key={item.href}>
                   <Link
                     aria-current={isActive ? "page" : undefined}
-                  className={styles["nav-link"]}
-                  data-active={isActive ? "true" : undefined}
-                  href={item.href}
-                  onClick={onNavigate}
-                >
-                  <span className={styles["nav-label"]}>{item.label}</span>
-                </Link>
-              </li>
-            );
+                    className={styles["nav-link"]}
+                    data-active={isActive ? "true" : undefined}
+                    href={item.href}
+                    onClick={onNavigate}
+                  >
+                    <span className={styles["nav-label"]}>{item.label}</span>
+                  </Link>
+                </li>
+              );
             })}
           </ul>
         </nav>
-        <UserPanel user={user} />
+        <UserPanel onNavigate={onNavigate} pathname={pathname} user={user} />
       </div>
     </div>
   );
@@ -301,8 +305,12 @@ function Brand({
 }
 
 function UserPanel({
+  onNavigate,
+  pathname,
   user,
 }: {
+  onNavigate?: () => void;
+  pathname: string;
   user: SidebarUser;
 }) {
   return (
@@ -314,15 +322,26 @@ function UserPanel({
         <span className={styles["user-login"]}>{user.login}</span>
         <span className={styles["user-role"]}>{user.roleLabel}</span>
       </div>
-      <form action={user.logoutAction}>
-        <button
-          aria-label={user.logoutLabel}
-          className={styles["logout-button"]}
-          type="submit"
+      <div className={styles["user-actions"]}>
+        <Link
+          aria-current={pathname === user.accountHref ? "page" : undefined}
+          className={styles["account-link"]}
+          data-active={pathname === user.accountHref ? "true" : undefined}
+          href={user.accountHref}
+          onClick={onNavigate}
         >
-          <span className={styles["logout-label"]}>{user.logoutLabel}</span>
-        </button>
-      </form>
+          {user.accountLabel}
+        </Link>
+        <form action={user.logoutAction}>
+          <button
+            aria-label={user.logoutLabel}
+            className={styles["logout-button"]}
+            type="submit"
+          >
+            <span className={styles["logout-label"]}>{user.logoutLabel}</span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

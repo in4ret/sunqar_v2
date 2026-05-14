@@ -1,13 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+
+import { LanguageSwitcher } from "../language-switcher/language-switcher";
 import {
   SIDEBAR_STATE_EVENT,
   SIDEBAR_TOGGLE_EVENT,
   type SidebarStateDetail,
 } from "../sidebar/sidebar-events";
-import { LanguageSwitcher } from "../language-switcher/language-switcher";
+
 import styles from "./header.module.scss";
 
 type HeaderProps = {

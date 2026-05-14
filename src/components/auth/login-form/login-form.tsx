@@ -2,7 +2,9 @@
 
 import { type FocusEvent, useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { submitLogin, type LoginFormState } from "@/app/(auth)/login/actions";
+
+import { type LoginFormState,submitLogin } from "@/app/(auth)/login/actions";
+
 import styles from "./login-form.module.scss";
 
 const initialState: LoginFormState = {

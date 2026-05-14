@@ -1,8 +1,10 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import type { RecurrenceValue } from "../recurrence-picker.types";
+
 import { formatRecurrenceLabel } from "../format-recurrence-label";
+import type { RecurrenceValue } from "../recurrence-picker.types";
+
 import styles from "./human-readable-preview.module.scss";
 
 type HumanReadablePreviewProps = {

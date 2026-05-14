@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+
 import { CreateUserForm } from "@/components/users";
 import { listUsersWithActiveSessions, requireRole } from "@/lib/auth/auth";
+
 import styles from "./page.module.scss";
 
 function formatSessionLocation(session: {

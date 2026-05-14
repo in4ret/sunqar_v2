@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties } from "react";
+
 import styles from "./toast.module.scss";
 
 export type ToastStatus = "success" | "warning" | "error";

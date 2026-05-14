@@ -1,5 +1,6 @@
-import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
+import crypto from "node:crypto";
+
 import { hashPassword } from "../src/lib/auth/password";
 import { db } from "../src/lib/db/client";
 import { users } from "../src/lib/db/schema";

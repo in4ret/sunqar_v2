@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import type { Weekday } from "../recurrence-picker.types";
 import { weekdays } from "../recurrence-picker.types";
 import { normalizeWeekdays } from "../recurrence-picker.utils";
+
 import styles from "./weekdays-selector.module.scss";
 
 type WeekdaysSelectorProps = {

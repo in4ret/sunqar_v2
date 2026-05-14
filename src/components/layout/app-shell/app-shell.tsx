@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+
 import { submitLogout } from "@/app/(protected)/actions";
 import { getCurrentUser } from "@/lib/auth/auth";
+
 import { Footer } from "../footer/footer";
 import { Header } from "../header/header";
 import { Sidebar } from "../sidebar/sidebar";
@@ -54,6 +56,8 @@ export async function AppShell({ children, mainClassName = "app-main" }: AppShel
           navigationLabel={t("header.primary-navigation")}
           openLabel={t("header.open-menu")}
           user={{
+            accountHref: "/account",
+            accountLabel: t("header.account"),
             displayName: user.displayName,
             isAdmin: user.role === "admin",
             login: user.login,

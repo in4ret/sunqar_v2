@@ -3,9 +3,10 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+
 import {
-  submitToggleReportActive,
   type ReportActiveState,
+  submitToggleReportActive,
 } from "@/app/(protected)/reports/actions";
 import { ToggleSwitch, useToast } from "@/ui";
 

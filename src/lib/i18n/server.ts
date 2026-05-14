@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
-import { isLocale, localeCookieName, type AppLocale } from "./shared";
+
+import { type AppLocale,isLocale, localeCookieName } from "./shared";
 
 function matchLocale(value: string): AppLocale | null {
   const normalizedValue = value.trim().toLowerCase();

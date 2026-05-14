@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+
 import { normalizeTimes } from "../recurrence-picker.utils";
+
 import styles from "./times-input.module.scss";
 
 type TimesInputProps = {

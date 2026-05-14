@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+
 import type { ReportBlocks } from "@/lib/reports/report-blocks";
 
 export const aiModels = sqliteTable(

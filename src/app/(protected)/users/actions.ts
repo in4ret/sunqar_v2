@@ -1,8 +1,9 @@
 "use server";
 
-import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
-import { requireRole, createUserByAdmin } from "@/lib/auth/auth";
+import { getTranslations } from "next-intl/server";
+
+import { createUserByAdmin,requireRole } from "@/lib/auth/auth";
 
 export type CreateUserFormState = {
   error: string | null;

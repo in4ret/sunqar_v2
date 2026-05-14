@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+
 import { AiModelManager } from "@/components/ai-models";
-import { requireRole } from "@/lib/auth/auth";
 import { listAiModels } from "@/lib/ai-models/ai-models";
+import { requireRole } from "@/lib/auth/auth";
+
 import styles from "./page.module.scss";
 
 export default async function AiModelsPage() {

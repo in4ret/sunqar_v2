@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import styles from "./footer.module.scss";
 
 export async function Footer() {

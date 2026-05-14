@@ -1,8 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import { Dropdown } from "@/ui";
+
 import type { RecurrenceFrequency } from "../recurrence-picker.types";
+
 import styles from "./frequency-select.module.scss";
 
 type FrequencySelectProps = {

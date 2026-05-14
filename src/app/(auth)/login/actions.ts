@@ -1,7 +1,8 @@
 "use server";
 
-import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+
 import { getCurrentUser, getDefaultRouteForRole, login } from "@/lib/auth/auth";
 
 export type LoginFormState = {

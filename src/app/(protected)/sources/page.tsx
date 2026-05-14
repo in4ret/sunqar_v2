@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+
 import { SourceManager } from "@/components/sources";
 import { requireRole } from "@/lib/auth/auth";
 import { listSources } from "@/lib/sources/sources";
+
 import styles from "./page.module.scss";
 
 export default async function SourcesPage() {

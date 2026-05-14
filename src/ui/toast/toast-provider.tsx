@@ -9,7 +9,9 @@ import {
   useRef,
   useState,
 } from "react";
+
 import { Toast, type ToastStatus } from "./toast";
+
 import styles from "./toast.module.scss";
 
 type ToastItem = {

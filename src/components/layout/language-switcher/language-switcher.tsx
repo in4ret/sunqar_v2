@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useTransition } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { localeCookieName, locales, type AppLocale } from "@/lib/i18n/shared";
+import { useLocale, useTranslations } from "next-intl";
+
+import { type AppLocale,localeCookieName, locales } from "@/lib/i18n/shared";
+
 import styles from "./language-switcher.module.scss";
 
 const localeLabels: Record<AppLocale, string> = {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import { normalizeMonthDays } from "../recurrence-picker.utils";
+
 import styles from "./month-days-selector.module.scss";
 
 type MonthDaysSelectorProps = {

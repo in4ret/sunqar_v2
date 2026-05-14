@@ -1,15 +1,17 @@
 "use client";
 
 import { type FormEvent, useActionState, useEffect, useRef } from "react";
-import type { Dispatch } from "react";
 import { useTranslations } from "next-intl";
+import type { Dispatch } from "react";
+
 import {
+  type AiModelFormState,
   submitCreateAiModel,
   submitDeleteAiModel,
   submitUpdateAiModel,
-  type AiModelFormState,
 } from "@/app/(protected)/ai_models/actions";
 import { useToast } from "@/ui";
+
 import styles from "./ai-model-manager.module.scss";
 
 type AiModelManagerModel = {

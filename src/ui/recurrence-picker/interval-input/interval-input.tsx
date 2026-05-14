@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+
 import { normalizeInterval } from "../recurrence-picker.utils";
+
 import styles from "./interval-input.module.scss";
 
 type IntervalInputProps = {

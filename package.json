@@ -11,6 +11,7 @@
     "db:seed-admin": "tsx scripts/seed-admin.ts",
     "db:seed-ai-models": "tsx scripts/seed-ai-models.ts",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "9.37.0",
     "eslint-config-next": "16.2.3",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
     "sass": "^1.99.0",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"

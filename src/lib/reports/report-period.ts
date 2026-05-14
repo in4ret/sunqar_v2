@@ -1,12 +1,12 @@
+import {
+  formatRecurrenceLabel,
+  type RecurrenceLabelTranslator,
+} from "@/ui/recurrence-picker/format-recurrence-label";
 import type {
   RecurrenceFrequency,
   RecurrenceValue,
   Weekday,
 } from "@/ui/recurrence-picker/recurrence-picker.types";
-import {
-  formatRecurrenceLabel,
-  type RecurrenceLabelTranslator,
-} from "@/ui/recurrence-picker/format-recurrence-label";
 import { weekdays } from "@/ui/recurrence-picker/recurrence-picker.types";
 import {
   normalizeMonthDays,

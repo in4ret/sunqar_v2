@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { type CSSProperties,useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+
 import styles from "./multi-select.module.scss";
 
 type MultiSelectOption = {

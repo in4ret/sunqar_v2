@@ -184,6 +184,11 @@
   background: color-mix(in srgb, var(--color-error-100) 74%, white);
 }
 
+.user-actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .user-details {
   display: grid;
   gap: 0.25rem;
@@ -216,6 +221,7 @@
   font-weight: 600;
 }
 
+.account-link,
 .logout-button {
   display: inline-flex;
   align-items: center;
@@ -223,17 +229,34 @@
   width: 100%;
   min-height: 2.45rem;
   padding: 0.65rem 0.9rem;
-  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--color-primary-500);
   font: inherit;
   font-weight: 800;
-  cursor: pointer;
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
     color 160ms ease;
+}
+
+.account-link {
+  border: 1px solid var(--border-default);
+  background: color-mix(in srgb, var(--color-primary-50) 68%, white);
+  color: var(--color-primary-700);
+  text-decoration: none;
+}
+
+.account-link:hover,
+.account-link[data-active="true"] {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.logout-button {
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-primary-500);
+  cursor: pointer;
 }
 
 .logout-label {
@@ -280,6 +303,7 @@
 .collapse-button:focus-visible,
 .drawer-backdrop:focus-visible,
 .nav-link:focus-visible,
+.account-link:focus-visible,
 .logout-button:focus-visible {
   outline: 2px solid var(--color-info-500);
   outline-offset: 2px;
@@ -290,8 +314,7 @@
   flex-shrink: 0;
 }
 
-.collapse-icon,
-.expand-icon {
+.collapse-icon {
   width: 0.6rem;
   height: 0.6rem;
   border-top: 0.13rem solid currentColor;

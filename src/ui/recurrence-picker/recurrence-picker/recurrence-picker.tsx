@@ -2,15 +2,17 @@
 
 import { useEffect, useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { RecurrencePickerProps } from "../recurrence-picker.types";
-import { FrequencySelect } from "../frequency-select/frequency-select";
+
 import { formatRecurrenceLabel } from "../format-recurrence-label";
+import { FrequencySelect } from "../frequency-select/frequency-select";
 import { HumanReadablePreview } from "../human-readable-preview/human-readable-preview";
 import { IntervalInput } from "../interval-input/interval-input";
 import { MonthDaysSelector } from "../month-days-selector/month-days-selector";
+import type { RecurrencePickerProps } from "../recurrence-picker.types";
 import { normalizeRecurrenceValue } from "../recurrence-picker.utils";
 import { TimesInput } from "../times-input/times-input";
 import { WeekdaysSelector } from "../weekdays-selector/weekdays-selector";
+
 import styles from "./recurrence-picker.module.scss";
 
 function EditIcon() {

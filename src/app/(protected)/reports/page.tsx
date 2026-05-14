@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+
 import { ReportActiveToggle, ReportRowActions } from "@/components/reports";
 import { requireRole } from "@/lib/auth/auth";
 import { formatStoredReportPeriod, listReports } from "@/lib/reports";
+
 import styles from "./page.module.scss";
 
 export default async function ReportsPage() {
