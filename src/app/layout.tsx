@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 
+import { NavigationHistoryProvider } from "@/lib/providers";
 import { ToastProvider } from "@/ui/toast/toast-provider";
 
 import "@/styles/globals.scss";
@@ -22,7 +23,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     <html lang={locale}>
       <body>
         <NextIntlClientProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <NavigationHistoryProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </NavigationHistoryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

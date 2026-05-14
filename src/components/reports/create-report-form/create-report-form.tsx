@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import {
@@ -9,6 +8,7 @@ import {
   submitCreateReport,
   submitUpdateReport,
 } from "@/app/(protected)/reports/actions";
+import { useNavigationHistory } from "@/lib/providers";
 import { routes } from "@/lib/routes";
 import { Dropdown, MultiSelect, RecurrencePicker, type RecurrenceValue } from "@/ui";
 
@@ -128,7 +128,7 @@ export function CreateReportForm({
   const [period, setPeriod] = useState<RecurrenceValue>(
     initialValues?.period ?? defaultRecurrenceValue,
   );
-  const router = useRouter();
+  const { backToPreviousPathnameOrReplace } = useNavigationHistory();
   const t = useTranslations();
   const titleValue = initialValues?.title ?? "";
   const descriptionValue = initialValues?.description ?? "";
@@ -162,9 +162,13 @@ export function CreateReportForm({
 
   useEffect(() => {
     if (state.success) {
-      router.push(routes.reports);
+      backToPreviousPathnameOrReplace({
+        fallbackHref: routes.reports,
+        pathname: routes.reports,
+        refreshOnArrival: true,
+      });
     }
-  }, [router, state.success]);
+  }, [backToPreviousPathnameOrReplace, state.success]);
 
   return (
     <section className={styles["form-card"]}>
@@ -334,7 +338,12 @@ export function CreateReportForm({
           <button
             className={styles["cancel-button"]}
             disabled={isPending}
-            onClick={() => router.push(routes.reports)}
+            onClick={() =>
+              backToPreviousPathnameOrReplace({
+                fallbackHref: routes.reports,
+                pathname: routes.reports,
+              })
+            }
             type="button"
           >
             {t("reports.form.cancel")}

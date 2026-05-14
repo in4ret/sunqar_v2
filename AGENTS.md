@@ -27,6 +27,15 @@ Example:
 - Use shared breakpoint variables from `src/styles/breakpoints.scss` for responsive `@media` rules.
 - Do not introduce numeric breakpoint literals such as `640px` or `960px` directly in `@media` conditions when the shared breakpoint variables apply.
 
+## Document Lists and Forms
+
+- Document list pages must be the canonical fallback route for their document form routes.
+- When a document form is opened from its matching list page, `Cancel` and successful `Save` must return with browser history using the shared navigation history mechanism.
+- When a document form is opened directly, `Cancel` and successful `Save` must replace the current route with the canonical list route for that document type.
+- Do not use unconditional `router.replace(listHref)` or `router.back()` in document form submit/cancel handlers; use `useNavigationHistory().backToPreviousPathnameOrReplace(...)`.
+- Save flows that return to a list must refresh the list after arrival, not before leaving the form route.
+- Modal or embedded forms that close in place should keep using their local `onCancel`/`onSuccess` behavior and must not trigger document route return navigation.
+
 ## Commands
 
 - Never run `next build` in this repository.
