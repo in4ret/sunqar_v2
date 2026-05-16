@@ -1,10 +1,14 @@
 import { Suspense } from "react";
 
 import { manticoreSql } from "@/lib/manticore";
-import { formatCompactNumber } from "@/lib/utils";
+import { formatCompactNumber, normalizeSearchQueryParam } from "@/lib/utils";
 import { StatsValueSkeleton } from "@/ui";
 
 import { HomePageView } from "./home-page-view/home-page-view";
+
+type HomePageSearchParams = Promise<{
+  q?: string | string[];
+}>;
 
 type CountRow = {
   total: number | string;
@@ -20,6 +24,29 @@ type AverageRow = {
 };
 
 const ALMATY_TIME_ZONE = "Asia/Almaty";
+
+function escapeManticoreMatchValue(value: string) {
+  return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+}
+
+function getMatchCondition(searchQuery: string) {
+  if (!searchQuery) {
+    return null;
+  }
+
+  return `MATCH('${escapeManticoreMatchValue(searchQuery)}')`;
+}
+
+function getWhereClause(searchQuery: string, conditions: string[] = []) {
+  const matchCondition = getMatchCondition(searchQuery);
+  const allConditions = matchCondition ? [matchCondition, ...conditions] : conditions;
+
+  if (allConditions.length === 0) {
+    return "";
+  }
+
+  return ` WHERE ${allConditions.join(" AND ")}`;
+}
 
 function getTimeZoneOffsetMilliseconds(date: Date, timeZone: string) {
   const timeZoneName = new Intl.DateTimeFormat("en-US", {
@@ -58,15 +85,18 @@ function getStartOfDayEpochSeconds(date: Date, timeZone: string) {
   return Math.floor((utcMidnight - offset) / 1000);
 }
 
-async function getNewsStats() {
+async function getNewsStats(searchQuery: string) {
   const startOfToday = getStartOfDayEpochSeconds(new Date(), ALMATY_TIME_ZONE);
   const startOfNextDay = startOfToday + 24 * 60 * 60;
 
   try {
     const [totalRow, todayRow] = await Promise.all([
-      manticoreSql<CountRow>("SELECT COUNT(*) AS total FROM news"),
+      manticoreSql<CountRow>(`SELECT COUNT(*) AS total FROM news${getWhereClause(searchQuery)}`),
       manticoreSql<CountRow>(
-        `SELECT COUNT(*) AS total FROM news WHERE publishedat >= ${startOfToday} AND publishedat < ${startOfNextDay}`
+        `SELECT COUNT(*) AS total FROM news${getWhereClause(searchQuery, [
+          `publishedat >= ${startOfToday}`,
+          `publishedat < ${startOfNextDay}`,
+        ])}`
       ),
     ]);
 
@@ -84,15 +114,20 @@ async function getNewsStats() {
   }
 }
 
-async function getSourcesStats(): Promise<CountStats> {
+async function getSourcesStats(searchQuery: string): Promise<CountStats> {
   const startOfToday = getStartOfDayEpochSeconds(new Date(), ALMATY_TIME_ZONE);
   const startOfNextDay = startOfToday + 24 * 60 * 60;
 
   try {
     const [totalRow, todayRow] = await Promise.all([
-      manticoreSql<CountRow>("SELECT COUNT(DISTINCT source) AS total FROM news"),
       manticoreSql<CountRow>(
-        `SELECT COUNT(DISTINCT source) AS total FROM news WHERE publishedat >= ${startOfToday} AND publishedat < ${startOfNextDay}`
+        `SELECT COUNT(DISTINCT source) AS total FROM news${getWhereClause(searchQuery)}`
+      ),
+      manticoreSql<CountRow>(
+        `SELECT COUNT(DISTINCT source) AS total FROM news${getWhereClause(searchQuery, [
+          `publishedat >= ${startOfToday}`,
+          `publishedat < ${startOfNextDay}`,
+        ])}`
       ),
     ]);
 
@@ -110,15 +145,20 @@ async function getSourcesStats(): Promise<CountStats> {
   }
 }
 
-async function getCommentsStats(): Promise<CountStats> {
+async function getCommentsStats(searchQuery: string): Promise<CountStats> {
   const startOfToday = getStartOfDayEpochSeconds(new Date(), ALMATY_TIME_ZONE);
   const startOfNextDay = startOfToday + 24 * 60 * 60;
 
   try {
     const [totalRow, todayRow] = await Promise.all([
-      manticoreSql<CountRow>("SELECT COUNT(*) AS total FROM comments"),
       manticoreSql<CountRow>(
-        `SELECT COUNT(*) AS total FROM comments WHERE publishedat >= ${startOfToday} AND publishedat < ${startOfNextDay}`
+        `SELECT COUNT(*) AS total FROM comments${getWhereClause(searchQuery)}`
+      ),
+      manticoreSql<CountRow>(
+        `SELECT COUNT(*) AS total FROM comments${getWhereClause(searchQuery, [
+          `publishedat >= ${startOfToday}`,
+          `publishedat < ${startOfNextDay}`,
+        ])}`
       ),
     ]);
 
@@ -136,15 +176,20 @@ async function getCommentsStats(): Promise<CountStats> {
   }
 }
 
-async function getCommentsToneAverageStats(): Promise<CountStats> {
+async function getCommentsToneAverageStats(searchQuery: string): Promise<CountStats> {
   const startOfToday = getStartOfDayEpochSeconds(new Date(), ALMATY_TIME_ZONE);
   const startOfNextDay = startOfToday + 24 * 60 * 60;
 
   try {
     const [totalRow, todayRow] = await Promise.all([
-      manticoreSql<AverageRow>("SELECT AVG(tone) AS average FROM comments"),
       manticoreSql<AverageRow>(
-        `SELECT AVG(tone) AS average FROM comments WHERE publishedat >= ${startOfToday} AND publishedat < ${startOfNextDay}`
+        `SELECT AVG(tone) AS average FROM comments${getWhereClause(searchQuery)}`
+      ),
+      manticoreSql<AverageRow>(
+        `SELECT AVG(tone) AS average FROM comments${getWhereClause(searchQuery, [
+          `publishedat >= ${startOfToday}`,
+          `publishedat < ${startOfNextDay}`,
+        ])}`
       ),
     ]);
 
@@ -170,11 +215,17 @@ function StatsValueFallback() {
   return <StatsValueSkeleton />;
 }
 
-export default async function HomePage() {
-  const newsStatsPromise = getNewsStats();
-  const sourcesStatsPromise = getSourcesStats();
-  const commentsStatsPromise = getCommentsStats();
-  const commentsToneAverageStatsPromise = getCommentsToneAverageStats();
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: HomePageSearchParams;
+}) {
+  const { q } = await searchParams;
+  const searchQuery = normalizeSearchQueryParam(q);
+  const newsStatsPromise = getNewsStats(searchQuery);
+  const sourcesStatsPromise = getSourcesStats(searchQuery);
+  const commentsStatsPromise = getCommentsStats(searchQuery);
+  const commentsToneAverageStatsPromise = getCommentsToneAverageStats(searchQuery);
 
   return (
     <HomePageView
@@ -193,6 +244,7 @@ export default async function HomePage() {
           <StatsValueFromPromise promise={newsStatsPromise} />
         </Suspense>
       }
+      searchQuery={searchQuery}
       sourcesValue={
         <Suspense fallback={<StatsValueFallback />}>
           <StatsValueFromPromise promise={sourcesStatsPromise} />

@@ -2,7 +2,7 @@ import "server-only";
 
 import crypto from "node:crypto";
 
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { reports, users } from "@/lib/db/schema";
@@ -33,7 +33,13 @@ export type ReportEditorItem = {
   title: string;
 };
 
-export async function listReports(): Promise<ReportListItem[]> {
+export async function listReports(userId: string): Promise<ReportListItem[]> {
+  const normalizedUserId = userId.trim();
+
+  if (!normalizedUserId) {
+    return [];
+  }
+
   const rows = db
     .select({
       active: reports.active,
@@ -45,6 +51,7 @@ export async function listReports(): Promise<ReportListItem[]> {
     })
     .from(reports)
     .leftJoin(users, eq(reports.createdBy, users.id))
+    .where(eq(reports.createdBy, normalizedUserId))
     .orderBy(desc(reports.createdAt))
     .all();
 
@@ -58,10 +65,11 @@ export async function listReports(): Promise<ReportListItem[]> {
   }));
 }
 
-export async function getReportById(id: string): Promise<ReportEditorItem | null> {
+export async function getReportById(id: string, userId: string): Promise<ReportEditorItem | null> {
   const normalizedId = id.trim();
+  const normalizedUserId = userId.trim();
 
-  if (!normalizedId) {
+  if (!normalizedId || !normalizedUserId) {
     return null;
   }
 
@@ -74,7 +82,7 @@ export async function getReportById(id: string): Promise<ReportEditorItem | null
       title: reports.title,
     })
     .from(reports)
-    .where(eq(reports.id, normalizedId))
+    .where(and(eq(reports.id, normalizedId), eq(reports.createdBy, normalizedUserId)))
     .get();
 
   if (!row) {
@@ -163,13 +171,15 @@ export async function updateReportByUser(input: {
   id: string;
   period: string;
   title: string;
+  userId: string;
   updatedBy: string;
 }) {
   const normalizedId = input.id.trim();
+  const normalizedUserId = input.userId.trim();
   const normalizedUpdatedBy = input.updatedBy.trim();
   let report: ReturnType<typeof normalizeReportInput>;
 
-  if (!normalizedId || !normalizedUpdatedBy) {
+  if (!normalizedId || !normalizedUserId || !normalizedUpdatedBy) {
     return { error: "report-not-found" as ReportMutationErrorCode };
   }
 
@@ -180,7 +190,7 @@ export async function updateReportByUser(input: {
       id: reports.id,
     })
     .from(reports)
-    .where(eq(reports.id, normalizedId))
+    .where(and(eq(reports.id, normalizedId), eq(reports.createdBy, normalizedUserId)))
     .get();
 
   if (!existingReport) {
@@ -232,12 +242,14 @@ export async function updateReportByUser(input: {
 export async function updateReportActiveByUser(input: {
   active: boolean;
   id: string;
+  userId: string;
   updatedBy: string;
 }) {
   const normalizedId = input.id.trim();
+  const normalizedUserId = input.userId.trim();
   const normalizedUpdatedBy = input.updatedBy.trim();
 
-  if (!normalizedId || !normalizedUpdatedBy) {
+  if (!normalizedId || !normalizedUserId || !normalizedUpdatedBy) {
     return { error: "report-not-found" as ReportMutationErrorCode };
   }
 
@@ -247,7 +259,7 @@ export async function updateReportActiveByUser(input: {
       title: reports.title,
     })
     .from(reports)
-    .where(eq(reports.id, normalizedId))
+    .where(and(eq(reports.id, normalizedId), eq(reports.createdBy, normalizedUserId)))
     .get();
 
   if (!existingReport) {
@@ -271,10 +283,11 @@ export async function updateReportActiveByUser(input: {
   };
 }
 
-export async function deleteReportByUser(id: string) {
+export async function deleteReportByUser(id: string, userId: string) {
   const normalizedId = id.trim();
+  const normalizedUserId = userId.trim();
 
-  if (!normalizedId) {
+  if (!normalizedId || !normalizedUserId) {
     return { error: "report-not-found" as ReportMutationErrorCode };
   }
 
@@ -284,7 +297,7 @@ export async function deleteReportByUser(id: string) {
       title: reports.title,
     })
     .from(reports)
-    .where(eq(reports.id, normalizedId))
+    .where(and(eq(reports.id, normalizedId), eq(reports.createdBy, normalizedUserId)))
     .get();
 
   if (!existingReport) {

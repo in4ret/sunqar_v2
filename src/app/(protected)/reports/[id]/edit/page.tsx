@@ -15,9 +15,13 @@ type EditReportPageProps = {
 };
 
 export default async function EditReportPage({ params }: EditReportPageProps) {
-  await requireRole(["admin", "user"]);
+  const user = await requireRole(["admin", "user"]);
   const { id } = await params;
-  const [report, aiModels, sources] = await Promise.all([getReportById(id), listAiModels(), listSources()]);
+  const [report, aiModels, sources] = await Promise.all([
+    getReportById(id, user.id),
+    listAiModels(),
+    listSources(),
+  ]);
 
   if (!report) {
     notFound();

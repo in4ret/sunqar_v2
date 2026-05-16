@@ -27,6 +27,11 @@ Example:
 - Use shared breakpoint variables from `src/styles/breakpoints.scss` for responsive `@media` rules.
 - Do not introduce numeric breakpoint literals such as `640px` or `960px` directly in `@media` conditions when the shared breakpoint variables apply.
 
+## Forms
+
+- All `input`, `textarea`, `select`, and hidden form fields must use semantic DOM `name` attributes in the format `sunqar-<form-context>-<field>`.
+- All form DOM `name` attributes must use `kebab-case`, including multi-part field segments such as `company-id`.
+
 ## Document Lists and Forms
 
 - Document list pages must be the canonical fallback route for their document form routes.

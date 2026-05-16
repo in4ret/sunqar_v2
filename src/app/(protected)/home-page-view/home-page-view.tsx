@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import type { ReactNode } from "react";
 
-import { Stats } from "@/ui";
+import { HomePageSearchResults } from "./home-page-search-results/home-page-search-results";
 
 import styles from "../page.module.scss";
 
@@ -10,6 +10,7 @@ type HomePageViewProps = {
   commentsValue: ReactNode;
   commentsToneAverageValue: ReactNode;
   newsValue: ReactNode;
+  searchQuery: string;
   sourcesValue: ReactNode;
 };
 
@@ -17,13 +18,15 @@ export async function HomePageView({
   commentsValue,
   commentsToneAverageValue,
   newsValue,
+  searchQuery,
   sourcesValue,
 }: HomePageViewProps) {
   const t = await getTranslations();
 
   return (
     <section className={styles["home-page"]}>
-      <Stats
+      <HomePageSearchResults
+        searchQuery={searchQuery}
         stats={[
           {
             title: t("home.news-title"),

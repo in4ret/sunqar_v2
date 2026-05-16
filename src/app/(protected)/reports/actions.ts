@@ -166,6 +166,7 @@ export async function submitUpdateReport(
     id: reportId,
     period,
     title: String(formData.get("title") ?? ""),
+    userId: user.id,
     updatedBy: user.id,
   });
 
@@ -191,10 +192,10 @@ export async function submitDeleteReport(
   _previousState: ReportDeleteState,
   formData: FormData,
 ): Promise<ReportDeleteState> {
-  await requireRole(["admin", "user"]);
+  const user = await requireRole(["admin", "user"]);
   const t = await getTranslations();
   const reportId = String(formData.get("id") ?? "").trim();
-  const result = await deleteReportByUser(reportId);
+  const result = await deleteReportByUser(reportId, user.id);
 
   if (result.error) {
     return {
@@ -225,6 +226,7 @@ export async function submitToggleReportActive(
   const result = await updateReportActiveByUser({
     active: nextActive,
     id: reportId,
+    userId: user.id,
     updatedBy: user.id,
   });
 
