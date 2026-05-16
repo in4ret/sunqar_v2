@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/routes";
 
@@ -17,16 +18,13 @@ import styles from "./header.module.scss";
 type HeaderProps = {
   brandHref?: string;
   hasSidebar?: boolean;
-  closeSidebarLabel?: string;
-  openSidebarLabel?: string;
 };
 
 export function Header({
   brandHref = routes.home,
   hasSidebar = false,
-  closeSidebarLabel = "",
-  openSidebarLabel = "",
 }: HeaderProps) {
+  const t = useTranslations();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -72,7 +70,9 @@ export function Header({
   }, [hasSidebar]);
 
   const isSidebarExpanded = isMobileViewport ? isSidebarOpen : !isSidebarCollapsed;
-  const sidebarToggleLabel = isSidebarExpanded ? closeSidebarLabel : openSidebarLabel;
+  const sidebarToggleLabel = isSidebarExpanded
+    ? t("header.close-menu")
+    : t("header.open-menu");
   const shouldShowSidebarControls = !hasSidebar || isMobileViewport || !isSidebarExpanded;
 
   return (

@@ -8,6 +8,7 @@ export type {
 export {
   RecurrencePicker,
 } from "./recurrence-picker/recurrence-picker/recurrence-picker";
+export { Stats, type StatsItem } from "./stats/stats";
 export { Toast, type ToastStatus } from "./toast/toast";
 export { ToastProvider, useToast } from "./toast/toast-provider";
 export { ToggleSwitch } from "./toggle-switch/toggle-switch";

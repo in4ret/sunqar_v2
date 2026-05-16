@@ -68,6 +68,16 @@
     "ai-models-admin-description": "Добавляйте, изменяйте и отключайте модели, доступные для AI функций.",
     "ai-models-admin-link": "Открыть управление AI моделями"
   },
+  "home": {
+    "news-title": "Новости",
+    "news-tooltip": "Всего | Сегодня",
+    "sources-title": "Источники",
+    "sources-tooltip": "Всего | Сегодня",
+    "comments-title": "Комментарии",
+    "comments-tooltip": "Всего | Сегодня",
+    "comments-tone-average-title": "Тональность",
+    "comments-tone-average-tooltip": "Все комментарии | Сегодня"
+  },
   "reports": {
     "title": "Отчёты",
     "new-report": "Новый отчет",

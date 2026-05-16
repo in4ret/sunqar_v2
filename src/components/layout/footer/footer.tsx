@@ -1,10 +1,12 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+
+import { useTranslations } from "next-intl";
 
 import styles from "./footer.module.scss";
 
-export async function Footer() {
+export function Footer() {
   const currentYear = new Date().getFullYear();
-  const t = await getTranslations();
+  const t = useTranslations();
 
   return (
     <footer className={styles["site-footer"]}>

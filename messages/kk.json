@@ -68,6 +68,16 @@
     "ai-models-admin-description": "AI функцияларына қолжетімді модельдерді қосыңыз, өзгертіңіз және өшіріңіз.",
     "ai-models-admin-link": "AI модельдерді басқаруды ашу"
   },
+  "home": {
+    "news-title": "Жаңалықтар",
+    "news-tooltip": "Барлығы | Бүгін",
+    "sources-title": "Дереккөздер",
+    "sources-tooltip": "Барлығы | Бүгін",
+    "comments-title": "Пікірлер",
+    "comments-tooltip": "Барлығы | Бүгін",
+    "comments-tone-average-title": "Тональность",
+    "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін"
+  },
   "reports": {
     "title": "Есептер",
     "new-report": "Жаңа есеп",

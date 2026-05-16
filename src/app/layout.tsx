@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 
-import { NavigationHistoryProvider } from "@/lib/providers";
+import type { AppLocale } from "@/lib/i18n/shared";
+import {
+  ClientIntlProvider,
+  NavigationHistoryProvider,
+} from "@/lib/providers";
 import { ToastProvider } from "@/ui/toast/toast-provider";
 
 import "@/styles/globals.scss";
@@ -17,16 +20,17 @@ type RootLayoutProps = Readonly<{
 }>;
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as AppLocale;
+  const messages = await getMessages();
 
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>
+        <ClientIntlProvider initialLocale={locale} initialMessages={messages}>
           <NavigationHistoryProvider>
             <ToastProvider>{children}</ToastProvider>
           </NavigationHistoryProvider>
-        </NextIntlClientProvider>
+        </ClientIntlProvider>
       </body>
     </html>
   );

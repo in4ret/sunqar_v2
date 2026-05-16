@@ -1,0 +1,40 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px 20px;
+  width: 100%;
+}
+
+.loading {
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.item {
+  min-width: 100px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  row-gap: 8px;
+  align-items: stretch;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999999;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { type AppLocale,localeCookieName, locales } from "@/lib/i18n/shared";
+import { type AppLocale, locales } from "@/lib/i18n/shared";
+import { useClientLocale } from "@/lib/providers";
 
 import styles from "./language-switcher.module.scss";
 
@@ -15,15 +15,10 @@ const localeLabels: Record<AppLocale, string> = {
 
 const focusLocaleStorageKey = "sunqar-focus-locale";
 
-function setLocaleCookie(nextLocale: AppLocale) {
-  document.cookie = `${localeCookieName}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-}
-
 export function LanguageSwitcher() {
-  const router = useRouter();
   const locale = useLocale() as AppLocale;
+  const { isSwitchingLocale, setLocale } = useClientLocale();
   const t = useTranslations();
-  const [isPending, startTransition] = useTransition();
   const buttonRefs = useRef<Record<AppLocale, HTMLButtonElement | null>>({
     ru: null,
     kk: null,
@@ -42,7 +37,7 @@ export function LanguageSwitcher() {
   }, [locale]);
 
   function handleLocaleChange(nextLocale: AppLocale) {
-    if (isPending) {
+    if (isSwitchingLocale) {
       return;
     }
 
@@ -51,11 +46,7 @@ export function LanguageSwitcher() {
     }
 
     sessionStorage.setItem(focusLocaleStorageKey, nextLocale);
-    setLocaleCookie(nextLocale);
-
-    startTransition(() => {
-      router.refresh();
-    });
+    void setLocale(nextLocale);
   }
 
   return (
@@ -65,7 +56,7 @@ export function LanguageSwitcher() {
           key={availableLocale}
           aria-label={t(`common.languages.${availableLocale}`)}
           aria-pressed={availableLocale === locale}
-          aria-disabled={isPending}
+          aria-disabled={isSwitchingLocale}
           className={styles["language-option"]}
           data-active={availableLocale === locale ? "true" : undefined}
           ref={(button) => {
