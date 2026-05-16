@@ -14,6 +14,7 @@ import {
 
 import {
   type AppLocale,
+  defaultTimeZone,
   isLocale,
   localeCookieName,
 } from "@/lib/i18n/shared";
@@ -82,7 +83,11 @@ export function ClientIntlProvider({
         setLocale: handleSetLocale,
       }}
     >
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone={defaultTimeZone}
+      >
         {children}
       </NextIntlClientProvider>
     </clientLocaleContext.Provider>

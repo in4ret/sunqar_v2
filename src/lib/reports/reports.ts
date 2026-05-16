@@ -1,5 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import "server-only";
+
 import crypto from "node:crypto";
+
+import { desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { reports, users } from "@/lib/db/schema";

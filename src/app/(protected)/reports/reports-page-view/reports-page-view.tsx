@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
 import { ReportActiveToggle, ReportRowActions } from "@/components/reports";
-import { formatStoredReportPeriod } from "@/lib/reports";
+import { formatStoredReportPeriod } from "@/lib/reports/report-period";
 import { routes } from "@/lib/routes";
 
 import styles from "../page.module.scss";

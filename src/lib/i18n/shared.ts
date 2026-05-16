@@ -1,4 +1,5 @@
 export const localeCookieName = "sunqar-locale";
+export const defaultTimeZone = "Asia/Almaty";
 
 export const locales = ["ru", "kk"] as const;
 

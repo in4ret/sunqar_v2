@@ -1,4 +1,8 @@
+import { Suspense } from "react";
+
 import { manticoreSql } from "@/lib/manticore";
+import { formatCompactNumber } from "@/lib/utils";
+import { StatsValueSkeleton } from "@/ui";
 
 import { HomePageView } from "./home-page-view/home-page-view";
 
@@ -158,20 +162,48 @@ async function getCommentsToneAverageStats(): Promise<CountStats> {
   }
 }
 
+function formatStatsValue(total: number, today: number) {
+  return `${formatCompactNumber(total)} | ${formatCompactNumber(today)}`;
+}
+
+function StatsValueFallback() {
+  return <StatsValueSkeleton />;
+}
+
 export default async function HomePage() {
-  const [newsStats, sourcesStats, commentsStats, commentsToneAverageStats] = await Promise.all([
-    getNewsStats(),
-    getSourcesStats(),
-    getCommentsStats(),
-    getCommentsToneAverageStats(),
-  ]);
+  const newsStatsPromise = getNewsStats();
+  const sourcesStatsPromise = getSourcesStats();
+  const commentsStatsPromise = getCommentsStats();
+  const commentsToneAverageStatsPromise = getCommentsToneAverageStats();
 
   return (
     <HomePageView
-      commentsStats={commentsStats}
-      commentsToneAverageStats={commentsToneAverageStats}
-      newsStats={newsStats}
-      sourcesStats={sourcesStats}
+      commentsToneAverageValue={
+        <Suspense fallback={<StatsValueFallback />}>
+          <StatsValueFromPromise promise={commentsToneAverageStatsPromise} />
+        </Suspense>
+      }
+      commentsValue={
+        <Suspense fallback={<StatsValueFallback />}>
+          <StatsValueFromPromise promise={commentsStatsPromise} />
+        </Suspense>
+      }
+      newsValue={
+        <Suspense fallback={<StatsValueFallback />}>
+          <StatsValueFromPromise promise={newsStatsPromise} />
+        </Suspense>
+      }
+      sourcesValue={
+        <Suspense fallback={<StatsValueFallback />}>
+          <StatsValueFromPromise promise={sourcesStatsPromise} />
+        </Suspense>
+      }
     />
   );
+}
+
+async function StatsValueFromPromise({ promise }: { promise: Promise<CountStats> }) {
+  const stats = await promise;
+
+  return formatStatsValue(stats.total, stats.today);
 }
