@@ -39,3 +39,6 @@ Thumbs.db
 # Local Codex state
 .codex
 .agents
+
+
+next-env.d.ts
