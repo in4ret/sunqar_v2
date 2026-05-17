@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Stats, type StatsItem } from "@/ui";
 
@@ -9,11 +9,13 @@ import { HomePageSearchForm } from "../home-page-search-form/home-page-search-fo
 import styles from "../../page.module.scss";
 
 type HomePageSearchResultsProps = {
+  children?: ReactNode;
   searchQuery: string;
   stats: StatsItem[];
 };
 
 export function HomePageSearchResults({
+  children,
   searchQuery,
   stats,
 }: HomePageSearchResultsProps) {
@@ -30,6 +32,7 @@ export function HomePageSearchResults({
       <HomePageSearchForm onSearchDirtyChange={setIsSearchDirty} searchQuery={searchQuery} />
       <div className={resultsClassName}>
         <Stats stats={stats} />
+        {children}
       </div>
     </>
   );

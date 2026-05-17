@@ -78,6 +78,10 @@
     "sources-tooltip": "Барлығы | Бүгін",
     "comments-title": "Пікірлер",
     "comments-tooltip": "Барлығы | Бүгін",
+    "comments-chart-title": "Күндер бойынша пікірлер",
+    "comments-chart-subtitle": "Соңғы 30 күн",
+    "comments-chart-empty": "Соңғы 30 күнде пікірлер табылған жоқ.",
+    "comments-chart-value-label": "Пікірлер",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін"
   },

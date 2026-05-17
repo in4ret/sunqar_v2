@@ -17,8 +17,14 @@ export type HomePageCountStats = {
   today: number;
 };
 
+export type HomePageCommentsDailyStat = {
+  date: string;
+  total: number;
+};
+
 const ALMATY_TIME_ZONE = "Asia/Almaty";
 const HOME_STATS_TTL = 60 * 60;
+const HOME_COMMENTS_CHART_DAYS = 30;
 
 function escapeManticoreMatchValue(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
@@ -78,6 +84,31 @@ function getStartOfDayEpochSeconds(date: Date, timeZone: string) {
   const offset = getTimeZoneOffsetMilliseconds(new Date(utcMidnight), timeZone);
 
   return Math.floor((utcMidnight - offset) / 1000);
+}
+
+function formatDateForTimeZone(date: Date, timeZone: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function getCommentsChartDays(timeZone: string) {
+  const startOfToday = getStartOfDayEpochSeconds(new Date(), timeZone);
+
+  return Array.from({ length: HOME_COMMENTS_CHART_DAYS }, (_, index) => {
+    const daysFromStart = HOME_COMMENTS_CHART_DAYS - index - 1;
+    const start = startOfToday - daysFromStart * 24 * 60 * 60;
+    const end = start + 24 * 60 * 60;
+
+    return {
+      date: formatDateForTimeZone(new Date(start * 1000), timeZone),
+      start,
+      end,
+    };
+  });
 }
 
 async function getNewsStats(searchQuery: string): Promise<HomePageCountStats> {
@@ -202,6 +233,37 @@ async function getCommentsToneAverageStats(searchQuery: string): Promise<HomePag
   }
 }
 
+async function getCommentsDailyStats(searchQuery: string): Promise<HomePageCommentsDailyStat[]> {
+  const chartDays = getCommentsChartDays(ALMATY_TIME_ZONE);
+
+  try {
+    const rows = await Promise.all(
+      chartDays.map(async ({ date, end, start }) => {
+        const dayRow = await manticoreSql<CountRow>(
+          `SELECT COUNT(*) AS total FROM comments${getWhereClause(searchQuery, [
+            `publishedat >= ${start}`,
+            `publishedat < ${end}`,
+          ])}`
+        );
+
+        return {
+          date,
+          total: Number(dayRow?.[0]?.total ?? 0),
+        };
+      })
+    );
+
+    return rows;
+  } catch (error) {
+    console.error("Failed to load daily comment stats from Manticore.", error);
+
+    return chartDays.map(({ date }) => ({
+      date,
+      total: 0,
+    }));
+  }
+}
+
 const getCachedHomePageNewsStats = unstable_cache(
   async (searchQuery: string) => getNewsStats(searchQuery),
   ["home-page-stats", "news"],
@@ -238,6 +300,15 @@ const getCachedHomePageCommentsToneAverageStats = unstable_cache(
   }
 );
 
+const getCachedHomePageCommentsDailyStats = unstable_cache(
+  async (searchQuery: string) => getCommentsDailyStats(searchQuery),
+  ["home-page-stats", "comments-daily"],
+  {
+    revalidate: HOME_STATS_TTL,
+    tags: ["home-page-stats:comments-daily"],
+  }
+);
+
 export async function getHomePageNewsStats(searchQuery: string): Promise<HomePageCountStats> {
   return getCachedHomePageNewsStats(searchQuery);
 }
@@ -254,4 +325,10 @@ export async function getHomePageCommentsToneAverageStats(
   searchQuery: string
 ): Promise<HomePageCountStats> {
   return getCachedHomePageCommentsToneAverageStats(searchQuery);
+}
+
+export async function getHomePageCommentsDailyStats(
+  searchQuery: string
+): Promise<HomePageCommentsDailyStat[]> {
+  return getCachedHomePageCommentsDailyStats(searchQuery);
 }

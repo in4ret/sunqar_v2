@@ -89,9 +89,27 @@
 }
 
 .home-page-search-results {
+  display: grid;
+  gap: 1.5rem;
   transition:
     filter 0.2s ease,
     opacity 0.2s ease;
+}
+
+.home-page-charts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.home-page-chart-slot {
+  flex: 1 1 22rem;
+  min-width: 0;
+  height: 25rem;
+}
+
+.home-page-chart-slot > * {
+  height: 100%;
 }
 
 .home-page-search-results-blurred {

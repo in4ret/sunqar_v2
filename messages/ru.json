@@ -78,6 +78,10 @@
     "sources-tooltip": "Всего | Сегодня",
     "comments-title": "Комментарии",
     "comments-tooltip": "Всего | Сегодня",
+    "comments-chart-title": "Комментарии по дням",
+    "comments-chart-subtitle": "Последние 30 дней",
+    "comments-chart-empty": "За последние 30 дней комментариев не найдено.",
+    "comments-chart-value-label": "Комментарии",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Все комментарии | Сегодня"
   },

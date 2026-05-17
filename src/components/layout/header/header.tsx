@@ -78,7 +78,7 @@ export function Header({
   return (
     <header className={styles["site-header"]}>
       <div
-        className={`${styles["header-inner"]} ${hasSidebar ? styles["header-inner-with-sidebar"] : ""}`}
+        className={styles["header-inner"]}
       >
         {shouldShowSidebarControls ? (
           <div className={styles["brand-group"]}>

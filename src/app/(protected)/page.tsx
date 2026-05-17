@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import {
+  getHomePageCommentsDailyStats,
   getHomePageCommentsStats,
   getHomePageCommentsToneAverageStats,
   getHomePageNewsStats,
@@ -35,9 +36,11 @@ export default async function HomePage({
   const sourcesStatsPromise = getHomePageSourcesStats(searchQuery);
   const commentsStatsPromise = getHomePageCommentsStats(searchQuery);
   const commentsToneAverageStatsPromise = getHomePageCommentsToneAverageStats(searchQuery);
+  const commentsDailyStatsPromise = getHomePageCommentsDailyStats(searchQuery);
 
   return (
     <HomePageView
+      commentsChartPromise={commentsDailyStatsPromise}
       commentsToneAverageValue={
         <Suspense fallback={<StatsValueFallback />}>
           <StatsValueFromPromise promise={commentsToneAverageStatsPromise} />
