@@ -1,26 +1,33 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useState, useSyncExternalStore } from "react";
 import { useLocale } from "next-intl";
 
 import * as d3 from "d3";
 
 import { useSize } from "@/hooks/use-size";
-import type { HomePageCommentsDailyStat } from "@/lib/home-page-stats";
+import type {
+  CommentsChartRange,
+  HomePageCommentsChartBucket,
+  HomePageCommentsChartStats,
+} from "@/lib/home-page-stats";
+import { Dropdown } from "@/ui";
 
 import styles from "./comments-bar-chart.module.scss";
 
 type CommentsBarChartProps = {
   className?: string;
-  data: HomePageCommentsDailyStat[];
-  emptyLabel: string;
-  subtitle: string;
+  data: HomePageCommentsChartStats;
+  emptyLabels: Record<CommentsChartRange, string>;
+  rangeLabels: Record<CommentsChartRange, string>;
+  rangeSelectorLabel: string;
+  subtitles: Record<CommentsChartRange, string>;
   title: string;
   valueLabel: string;
 };
 
 type TooltipState = {
-  date: string;
+  periodLabel: string;
   total: number;
   x: number;
   y: number;
@@ -30,14 +37,54 @@ const CHART_MARGIN = {
   top: 10,
   right: 10,
   bottom: 30,
-  left: 32,
+  left: 50,
 };
 const Y_TICK_COUNT = 4;
+const DEFAULT_CHART_RANGE: CommentsChartRange = "month-daily";
+const COMMENTS_CHART_RANGE_STORAGE_KEY = "sunqar-home-comments-chart-range";
+const COMMENTS_CHART_RANGE_CHANGE_EVENT = "sunqar-home-comments-chart-range-change";
 
 function parseChartDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
 
   return new Date(Date.UTC(year, month - 1, day, 12));
+}
+
+function isCommentsChartRange(value: string): value is CommentsChartRange {
+  return value === "month-daily" || value === "six-months-weekly" || value === "all-time-monthly";
+}
+
+function getStoredCommentsChartRange() {
+  if (typeof window === "undefined") {
+    return DEFAULT_CHART_RANGE;
+  }
+
+  const storedRange = window.localStorage.getItem(COMMENTS_CHART_RANGE_STORAGE_KEY);
+
+  return storedRange && isCommentsChartRange(storedRange) ? storedRange : DEFAULT_CHART_RANGE;
+}
+
+function subscribeToStoredCommentsChartRange(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(COMMENTS_CHART_RANGE_CHANGE_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(COMMENTS_CHART_RANGE_CHANGE_EVENT, handleChange);
+  };
+}
+
+function setStoredCommentsChartRange(range: CommentsChartRange) {
+  window.localStorage.setItem(COMMENTS_CHART_RANGE_STORAGE_KEY, range);
+  window.dispatchEvent(new Event(COMMENTS_CHART_RANGE_CHANGE_EVENT));
 }
 
 function getBarLabelIndices(length: number) {
@@ -58,32 +105,47 @@ function getBarLabelIndices(length: number) {
 export function CommentsBarChart({
   className,
   data,
-  emptyLabel,
-  subtitle,
+  emptyLabels,
+  rangeLabels,
+  rangeSelectorLabel,
+  subtitles,
   title,
   valueLabel,
 }: CommentsBarChartProps) {
   const locale = useLocale();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
     useSize<HTMLDivElement>(100);
+  const range = useSyncExternalStore(
+    subscribeToStoredCommentsChartRange,
+    getStoredCommentsChartRange,
+    () => DEFAULT_CHART_RANGE
+  );
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-
-  const totalComments = data.reduce((sum, item) => sum + item.total, 0);
+  const chartEntries = data[range];
+  const totalComments = chartEntries.reduce((sum, item) => sum + item.total, 0);
   const chartClassName = [styles["card"], className].filter(Boolean).join(" ");
+  const rangeOptions = useMemo(
+    () => [
+      { label: rangeLabels["month-daily"], value: "month-daily" },
+      { label: rangeLabels["six-months-weekly"], value: "six-months-weekly" },
+      { label: rangeLabels["all-time-monthly"], value: "all-time-monthly" },
+    ],
+    [rangeLabels]
+  );
 
   const chartData = useMemo(() => {
     const width = Math.max(containerWidth, 0);
     const height = Math.max(containerHeight, 0);
     const innerWidth = Math.max(width - CHART_MARGIN.left - CHART_MARGIN.right, 0);
     const innerHeight = Math.max(height - CHART_MARGIN.top - CHART_MARGIN.bottom, 0);
-    const dates = data.map((item) => item.date);
-    const maxValue = Math.max(...data.map((item) => item.total), 0);
-    const labelIndices = getBarLabelIndices(data.length);
+    const bucketStarts = chartEntries.map((item) => item.bucketStart);
+    const maxValue = Math.max(...chartEntries.map((item) => item.total), 0);
+    const labelIndices = getBarLabelIndices(chartEntries.length);
     const maxDomainValue = Math.max(maxValue, 1);
     const xScale =
-      dates.length > 0 && innerWidth > 0
-        ? d3.scaleBand<string>().domain(dates).range([0, innerWidth]).padding(0.16)
+      bucketStarts.length > 0 && innerWidth > 0
+        ? d3.scaleBand<string>().domain(bucketStarts).range([0, innerWidth]).padding(0.16)
         : null;
     const yScale =
       innerHeight > 0
@@ -102,9 +164,9 @@ export function CommentsBarChart({
       xScale,
       yScale,
     };
-  }, [containerHeight, containerWidth, data]);
+  }, [chartEntries, containerHeight, containerWidth]);
 
-  const axisDateFormatter = useMemo(
+  const dayAxisFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
         day: "2-digit",
@@ -113,7 +175,16 @@ export function CommentsBarChart({
       }),
     [locale]
   );
-  const tooltipDateFormatter = useMemo(
+  const shortPeriodFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "short",
+        timeZone: "UTC",
+      }),
+    [locale]
+  );
+  const longDayFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
         day: "numeric",
@@ -123,6 +194,39 @@ export function CommentsBarChart({
       }),
     [locale]
   );
+  const monthFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }),
+    [locale]
+  );
+
+  function formatAxisLabel(item: HomePageCommentsChartBucket) {
+    if (range === "all-time-monthly") {
+      return monthFormatter.format(parseChartDate(item.bucketStart));
+    }
+
+    if (range === "six-months-weekly") {
+      return shortPeriodFormatter.format(parseChartDate(item.bucketStart));
+    }
+
+    return dayAxisFormatter.format(parseChartDate(item.bucketStart));
+  }
+
+  function formatPeriodLabel(item: HomePageCommentsChartBucket) {
+    if (range === "all-time-monthly") {
+      return monthFormatter.format(parseChartDate(item.bucketStart));
+    }
+
+    if (range === "six-months-weekly") {
+      return `${shortPeriodFormatter.format(parseChartDate(item.bucketStart))} - ${shortPeriodFormatter.format(parseChartDate(item.bucketEnd))}`;
+    }
+
+    return longDayFormatter.format(parseChartDate(item.bucketStart));
+  }
 
   function getBarHeight(total: number) {
     if (!chartData.yScale) {
@@ -135,7 +239,7 @@ export function CommentsBarChart({
   function updateTooltip(
     eventTarget: EventTarget & SVGRectElement,
     index: number,
-    item: HomePageCommentsDailyStat
+    item: HomePageCommentsChartBucket
   ) {
     const container = containerRef.current;
 
@@ -147,7 +251,7 @@ export function CommentsBarChart({
     const barRect = eventTarget.getBoundingClientRect();
 
     setTooltip({
-      date: item.date,
+      periodLabel: formatPeriodLabel(item),
       total: item.total,
       x: barRect.left - containerRect.left + barRect.width / 2,
       y: barRect.top - containerRect.top,
@@ -163,7 +267,7 @@ export function CommentsBarChart({
   function handleBarKeyDown(
     event: KeyboardEvent<SVGRectElement>,
     index: number,
-    item: HomePageCommentsDailyStat
+    item: HomePageCommentsChartBucket
   ) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -176,12 +280,29 @@ export function CommentsBarChart({
   return (
     <div className={chartClassName}>
       <div className={styles["header"]}>
-        <h2 className={styles["title"]}>{title}</h2>
-        <div className={styles["subtitle"]}>{subtitle}</div>
+        <div className={styles["header-copy"]}>
+          <h2 className={styles["title"]}>{title}</h2>
+          <div className={styles["subtitle"]}>{subtitles[range]}</div>
+        </div>
+        <div className={styles["header-actions"]}>
+          <Dropdown
+            aria-label={rangeSelectorLabel}
+            options={rangeOptions}
+            value={range}
+            variant="pill"
+            onChange={(nextValue) => {
+              if (isCommentsChartRange(nextValue)) {
+                setActiveIndex(null);
+                setTooltip(null);
+                setStoredCommentsChartRange(nextValue);
+              }
+            }}
+          />
+        </div>
       </div>
       <div className={styles["chart-frame"]} ref={containerRef}>
         {totalComments === 0 ? (
-          <div className={styles["empty-state"]}>{emptyLabel}</div>
+          <div className={styles["empty-state"]}>{emptyLabels[range]}</div>
         ) : chartData.chartWidth > 0 && chartData.chartHeight > 0 && chartData.xScale && chartData.yScale ? (
           <>
             <svg
@@ -233,10 +354,10 @@ export function CommentsBarChart({
                   y2={chartData.innerHeight}
                 />
 
-                {data.map((item, index) => {
+                {chartEntries.map((item, index) => {
                   const height = getBarHeight(item.total);
                   const renderedHeight = Math.max(height, item.total > 0 ? 3 : 0);
-                  const x = chartData.xScale?.(item.date) ?? 0;
+                  const x = chartData.xScale?.(item.bucketStart) ?? 0;
                   const barWidth = chartData.xScale?.bandwidth() ?? 0;
                   const y = chartData.innerHeight - renderedHeight;
                   const isActive = activeIndex === index;
@@ -249,9 +370,9 @@ export function CommentsBarChart({
                     .join(" ");
 
                   return (
-                    <g key={item.date}>
+                    <g key={item.bucketStart}>
                       <rect
-                        aria-label={`${tooltipDateFormatter.format(parseChartDate(item.date))}: ${item.total}`}
+                        aria-label={`${formatPeriodLabel(item)}: ${item.total}`}
                         className={barClassName}
                         height={renderedHeight}
                         onBlur={clearTooltip}
@@ -271,7 +392,7 @@ export function CommentsBarChart({
                         <g transform={`translate(${x + barWidth / 2}, ${chartData.innerHeight})`}>
                           <line className={styles["tick-line"]} y1={0} y2={8} />
                           <text className={styles["x-axis-label"]} textAnchor="middle" y={24}>
-                            {axisDateFormatter.format(parseChartDate(item.date))}
+                            {formatAxisLabel(item)}
                           </text>
                         </g>
                       ) : null}
@@ -283,9 +404,7 @@ export function CommentsBarChart({
 
             {tooltip ? (
               <div className={styles["tooltip"]} style={{ left: tooltip.x, top: tooltip.y }}>
-                <div className={styles["tooltip-date"]}>
-                  {tooltipDateFormatter.format(parseChartDate(tooltip.date))}
-                </div>
+                <div className={styles["tooltip-date"]}>{tooltip.periodLabel}</div>
                 <div className={styles["tooltip-value"]}>
                   {valueLabel}: {tooltip.total}
                 </div>
@@ -305,8 +424,11 @@ export function CommentsBarChartSkeleton({ className }: { className?: string }) 
   return (
     <div aria-hidden="true" className={cardClassName}>
       <div className={styles["skeleton-header"]}>
-        <span className={styles["skeleton-title"]} />
-        <span className={styles["skeleton-subtitle"]} />
+        <div className={styles["header-copy"]}>
+          <span className={styles["skeleton-title"]} />
+          <span className={styles["skeleton-subtitle"]} />
+        </div>
+        <span className={styles["skeleton-range"]} />
       </div>
       <div className={styles["skeleton-body"]}>
         {skeletonHeights.map((height, index) => (

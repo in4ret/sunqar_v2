@@ -1,15 +1,15 @@
-import { type ReactNode,Suspense } from "react";
+import { type ReactNode, Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
 import { CommentsBarChart, CommentsBarChartSkeleton } from "@/components/home";
-import type { HomePageCommentsDailyStat } from "@/lib/home-page-stats";
+import type { CommentsChartRange, HomePageCommentsChartStats } from "@/lib/home-page-stats";
 
 import { HomePageSearchResults } from "./home-page-search-results/home-page-search-results";
 
 import styles from "../page.module.scss";
 
 type HomePageViewProps = {
-  commentsChartPromise: Promise<HomePageCommentsDailyStat[]>;
+  commentsChartPromise: Promise<HomePageCommentsChartStats>;
   commentsValue: ReactNode;
   commentsToneAverageValue: ReactNode;
   newsValue: ReactNode;
@@ -26,6 +26,21 @@ export async function HomePageView({
   sourcesValue,
 }: HomePageViewProps) {
   const t = await getTranslations();
+  const commentsChartRangeLabels: Record<CommentsChartRange, string> = {
+    "all-time-monthly": t("home.comments-chart-ranges.all-time-monthly"),
+    "month-daily": t("home.comments-chart-ranges.month-daily"),
+    "six-months-weekly": t("home.comments-chart-ranges.six-months-weekly"),
+  };
+  const commentsChartSubtitles: Record<CommentsChartRange, string> = {
+    "all-time-monthly": t("home.comments-chart-subtitles.all-time-monthly"),
+    "month-daily": t("home.comments-chart-subtitles.month-daily"),
+    "six-months-weekly": t("home.comments-chart-subtitles.six-months-weekly"),
+  };
+  const commentsChartEmptyLabels: Record<CommentsChartRange, string> = {
+    "all-time-monthly": t("home.comments-chart-empty.all-time-monthly"),
+    "month-daily": t("home.comments-chart-empty.month-daily"),
+    "six-months-weekly": t("home.comments-chart-empty.six-months-weekly"),
+  };
 
   return (
     <section className={styles["home-page"]}>
@@ -58,9 +73,11 @@ export async function HomePageView({
           <div className={styles["home-page-chart-slot"]}>
             <Suspense fallback={<CommentsBarChartSkeleton />}>
               <CommentsChartFromPromise
-                emptyLabel={t("home.comments-chart-empty")}
+                emptyLabels={commentsChartEmptyLabels}
+                rangeLabels={commentsChartRangeLabels}
+                rangeSelectorLabel={t("home.comments-chart-range-selector")}
                 promise={commentsChartPromise}
-                subtitle={t("home.comments-chart-subtitle")}
+                subtitles={commentsChartSubtitles}
                 title={t("home.comments-chart-title")}
                 valueLabel={t("home.comments-chart-value-label")}
               />
@@ -73,15 +90,19 @@ export async function HomePageView({
 }
 
 async function CommentsChartFromPromise({
-  emptyLabel,
+  emptyLabels,
+  rangeLabels,
+  rangeSelectorLabel,
   promise,
-  subtitle,
+  subtitles,
   title,
   valueLabel,
 }: {
-  emptyLabel: string;
-  promise: Promise<HomePageCommentsDailyStat[]>;
-  subtitle: string;
+  emptyLabels: Record<CommentsChartRange, string>;
+  promise: Promise<HomePageCommentsChartStats>;
+  rangeLabels: Record<CommentsChartRange, string>;
+  rangeSelectorLabel: string;
+  subtitles: Record<CommentsChartRange, string>;
   title: string;
   valueLabel: string;
 }) {
@@ -90,8 +111,10 @@ async function CommentsChartFromPromise({
   return (
     <CommentsBarChart
       data={stats}
-      emptyLabel={emptyLabel}
-      subtitle={subtitle}
+      emptyLabels={emptyLabels}
+      rangeLabels={rangeLabels}
+      rangeSelectorLabel={rangeSelectorLabel}
+      subtitles={subtitles}
       title={title}
       valueLabel={valueLabel}
     />

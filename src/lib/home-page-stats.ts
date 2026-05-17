@@ -12,19 +12,34 @@ type AverageRow = {
   average: number | string | null;
 };
 
+type CommentsChartCountRow = {
+  bucket_date: string;
+  total: number | string;
+};
+
 export type HomePageCountStats = {
   total: number;
   today: number;
 };
 
-export type HomePageCommentsDailyStat = {
-  date: string;
+export type CommentsChartRange = "month-daily" | "six-months-weekly" | "all-time-monthly";
+
+export type HomePageCommentsChartBucket = {
+  bucketEnd: string;
+  bucketLabel: string;
+  bucketStart: string;
   total: number;
+};
+
+export type HomePageCommentsChartStats = {
+  [key in CommentsChartRange]: HomePageCommentsChartBucket[];
 };
 
 const ALMATY_TIME_ZONE = "Asia/Almaty";
 const HOME_STATS_TTL = 60 * 60;
 const HOME_COMMENTS_CHART_DAYS = 30;
+const HOME_COMMENTS_CHART_MONTHS = 6;
+const SECONDS_IN_DAY = 24 * 60 * 60;
 
 function escapeManticoreMatchValue(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
@@ -100,8 +115,8 @@ function getCommentsChartDays(timeZone: string) {
 
   return Array.from({ length: HOME_COMMENTS_CHART_DAYS }, (_, index) => {
     const daysFromStart = HOME_COMMENTS_CHART_DAYS - index - 1;
-    const start = startOfToday - daysFromStart * 24 * 60 * 60;
-    const end = start + 24 * 60 * 60;
+    const start = startOfToday - daysFromStart * SECONDS_IN_DAY;
+    const end = start + SECONDS_IN_DAY;
 
     return {
       date: formatDateForTimeZone(new Date(start * 1000), timeZone),
@@ -109,6 +124,143 @@ function getCommentsChartDays(timeZone: string) {
       end,
     };
   });
+}
+
+function parseChartDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Date(Date.UTC(year, month - 1, day, 12));
+}
+
+function formatChartDate(date: Date) {
+  return formatDateForTimeZone(date, "UTC");
+}
+
+function normalizeChartBucketDate(value: string) {
+  const trimmedValue = value.trim();
+  const matchedDate = trimmedValue.match(/^\d{4}-\d{2}-\d{2}/);
+
+  if (matchedDate) {
+    return matchedDate[0];
+  }
+
+  return formatChartDate(new Date(trimmedValue));
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+
+  next.setUTCDate(next.getUTCDate() + days);
+
+  return next;
+}
+
+function addMonths(date: Date, months: number) {
+  const next = new Date(date);
+
+  next.setUTCMonth(next.getUTCMonth() + months, 1);
+
+  return next;
+}
+
+function startOfIsoWeek(date: Date) {
+  const day = date.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+
+  return addDays(date, diff);
+}
+
+function startOfMonth(date: Date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 12));
+}
+
+function endOfMonth(date: Date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 12));
+}
+
+function buildMonthDailyBuckets(
+  dailyTotalsMap: Map<string, number>,
+  timeZone: string
+): HomePageCommentsChartBucket[] {
+  return getCommentsChartDays(timeZone).map(({ date }) => ({
+    bucketEnd: date,
+    bucketLabel: date,
+    bucketStart: date,
+    total: dailyTotalsMap.get(date) ?? 0,
+  }));
+}
+
+function buildSixMonthsWeeklyBuckets(
+  dailyTotalsMap: Map<string, number>,
+  timeZone: string
+): HomePageCommentsChartBucket[] {
+  const today = parseChartDate(formatDateForTimeZone(new Date(), timeZone));
+  const rangeStart = startOfMonth(addMonths(today, -(HOME_COMMENTS_CHART_MONTHS - 1)));
+  const firstWeekStart = startOfIsoWeek(rangeStart);
+  const currentWeekStart = startOfIsoWeek(today);
+  const buckets: HomePageCommentsChartBucket[] = [];
+
+  for (
+    let weekStart = new Date(firstWeekStart);
+    weekStart.getTime() <= currentWeekStart.getTime();
+    weekStart = addDays(weekStart, 7)
+  ) {
+    const weekEnd = addDays(weekStart, 6);
+    let total = 0;
+
+    for (let offset = 0; offset < 7; offset += 1) {
+      total += dailyTotalsMap.get(formatChartDate(addDays(weekStart, offset))) ?? 0;
+    }
+
+    buckets.push({
+      bucketEnd: formatChartDate(weekEnd),
+      bucketLabel: formatChartDate(weekStart),
+      bucketStart: formatChartDate(weekStart),
+      total,
+    });
+  }
+
+  return buckets;
+}
+
+function buildAllTimeMonthlyBuckets(
+  dailyTotalsMap: Map<string, number>
+): HomePageCommentsChartBucket[] {
+  const sortedDates = [...dailyTotalsMap.keys()].sort((left, right) => left.localeCompare(right));
+
+  if (sortedDates.length === 0) {
+    return [];
+  }
+
+  const firstMonthStart = startOfMonth(parseChartDate(sortedDates[0]));
+  const currentMonthStart = startOfMonth(new Date());
+  const buckets: HomePageCommentsChartBucket[] = [];
+
+  for (
+    let monthStart = new Date(firstMonthStart);
+    monthStart.getTime() <= currentMonthStart.getTime();
+    monthStart = addMonths(monthStart, 1)
+  ) {
+    const monthEnd = endOfMonth(monthStart);
+    let total = 0;
+
+    for (
+      let cursor = new Date(monthStart);
+      cursor.getTime() <= monthEnd.getTime();
+      cursor = addDays(cursor, 1)
+    ) {
+      total += dailyTotalsMap.get(formatChartDate(cursor)) ?? 0;
+    }
+
+    buckets.push({
+      bucketEnd: formatChartDate(monthEnd),
+      bucketLabel: formatChartDate(monthStart),
+      bucketStart: formatChartDate(monthStart),
+      total,
+    });
+  }
+
+  return buckets;
 }
 
 async function getNewsStats(searchQuery: string): Promise<HomePageCountStats> {
@@ -233,34 +385,30 @@ async function getCommentsToneAverageStats(searchQuery: string): Promise<HomePag
   }
 }
 
-async function getCommentsDailyStats(searchQuery: string): Promise<HomePageCommentsDailyStat[]> {
-  const chartDays = getCommentsChartDays(ALMATY_TIME_ZONE);
+async function getCommentsChartStats(searchQuery: string): Promise<HomePageCommentsChartStats> {
+  const emptyStats = {
+    "all-time-monthly": [],
+    "month-daily": buildMonthDailyBuckets(new Map(), ALMATY_TIME_ZONE),
+    "six-months-weekly": buildSixMonthsWeeklyBuckets(new Map(), ALMATY_TIME_ZONE),
+  } satisfies HomePageCommentsChartStats;
 
   try {
-    const rows = await Promise.all(
-      chartDays.map(async ({ date, end, start }) => {
-        const dayRow = await manticoreSql<CountRow>(
-          `SELECT COUNT(*) AS total FROM comments${getWhereClause(searchQuery, [
-            `publishedat >= ${start}`,
-            `publishedat < ${end}`,
-          ])}`
-        );
-
-        return {
-          date,
-          total: Number(dayRow?.[0]?.total ?? 0),
-        };
-      })
+    const rows = await manticoreSql<CommentsChartCountRow>(
+      `SELECT DATE(publishedat) AS bucket_date, COUNT(*) AS total FROM comments${getWhereClause(searchQuery)} GROUP BY bucket_date ORDER BY bucket_date ASC LIMIT 10000 OPTION max_matches=1000000`
+    );
+    const dailyTotalsMap = new Map(
+      rows.map((row) => [normalizeChartBucketDate(row.bucket_date), Number(row.total ?? 0)] as const)
     );
 
-    return rows;
+    return {
+      "all-time-monthly": buildAllTimeMonthlyBuckets(dailyTotalsMap),
+      "month-daily": buildMonthDailyBuckets(dailyTotalsMap, ALMATY_TIME_ZONE),
+      "six-months-weekly": buildSixMonthsWeeklyBuckets(dailyTotalsMap, ALMATY_TIME_ZONE),
+    };
   } catch (error) {
-    console.error("Failed to load daily comment stats from Manticore.", error);
+    console.error("Failed to load comment chart stats from Manticore.", error);
 
-    return chartDays.map(({ date }) => ({
-      date,
-      total: 0,
-    }));
+    return emptyStats;
   }
 }
 
@@ -300,12 +448,12 @@ const getCachedHomePageCommentsToneAverageStats = unstable_cache(
   }
 );
 
-const getCachedHomePageCommentsDailyStats = unstable_cache(
-  async (searchQuery: string) => getCommentsDailyStats(searchQuery),
-  ["home-page-stats", "comments-daily"],
+const getCachedHomePageCommentsChartStats = unstable_cache(
+  async (searchQuery: string) => getCommentsChartStats(searchQuery),
+  ["home-page-stats", "comments-chart-v3"],
   {
     revalidate: HOME_STATS_TTL,
-    tags: ["home-page-stats:comments-daily"],
+    tags: ["home-page-stats:comments-chart-v3"],
   }
 );
 
@@ -327,8 +475,8 @@ export async function getHomePageCommentsToneAverageStats(
   return getCachedHomePageCommentsToneAverageStats(searchQuery);
 }
 
-export async function getHomePageCommentsDailyStats(
+export async function getHomePageCommentsChartStats(
   searchQuery: string
-): Promise<HomePageCommentsDailyStat[]> {
-  return getCachedHomePageCommentsDailyStats(searchQuery);
+): Promise<HomePageCommentsChartStats> {
+  return getCachedHomePageCommentsChartStats(searchQuery);
 }

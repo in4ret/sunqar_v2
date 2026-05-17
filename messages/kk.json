@@ -78,9 +78,23 @@
     "sources-tooltip": "Барлығы | Бүгін",
     "comments-title": "Пікірлер",
     "comments-tooltip": "Барлығы | Бүгін",
-    "comments-chart-title": "Күндер бойынша пікірлер",
-    "comments-chart-subtitle": "Соңғы 30 күн",
-    "comments-chart-empty": "Соңғы 30 күнде пікірлер табылған жоқ.",
+    "comments-chart-title": "Пікірлер",
+    "comments-chart-range-selector": "Пікірлер графигінің кезеңі",
+    "comments-chart-ranges": {
+      "month-daily": "Ай күндер бойынша",
+      "six-months-weekly": "6 ай апталар бойынша",
+      "all-time-monthly": "Барлық уақыт айлар бойынша"
+    },
+    "comments-chart-subtitles": {
+      "month-daily": "Соңғы 30 күн",
+      "six-months-weekly": "Соңғы 6 ай",
+      "all-time-monthly": "Барлық уақыт"
+    },
+    "comments-chart-empty": {
+      "month-daily": "Соңғы 30 күнде пікірлер табылған жоқ.",
+      "six-months-weekly": "Соңғы 6 айда пікірлер табылған жоқ.",
+      "all-time-monthly": "Барлық уақытта пікірлер табылған жоқ."
+    },
     "comments-chart-value-label": "Пікірлер",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін"

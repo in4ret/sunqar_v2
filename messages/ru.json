@@ -78,9 +78,23 @@
     "sources-tooltip": "Всего | Сегодня",
     "comments-title": "Комментарии",
     "comments-tooltip": "Всего | Сегодня",
-    "comments-chart-title": "Комментарии по дням",
-    "comments-chart-subtitle": "Последние 30 дней",
-    "comments-chart-empty": "За последние 30 дней комментариев не найдено.",
+    "comments-chart-title": "Комментарии",
+    "comments-chart-range-selector": "Период графика комментариев",
+    "comments-chart-ranges": {
+      "month-daily": "Месяц по дням",
+      "six-months-weekly": "6 месяцев по неделям",
+      "all-time-monthly": "Все время по месяцам"
+    },
+    "comments-chart-subtitles": {
+      "month-daily": "Последние 30 дней",
+      "six-months-weekly": "Последние 6 месяцев",
+      "all-time-monthly": "Все время"
+    },
+    "comments-chart-empty": {
+      "month-daily": "За последние 30 дней комментариев не найдено.",
+      "six-months-weekly": "За последние 6 месяцев комментариев не найдено.",
+      "all-time-monthly": "За все время комментариев не найдено."
+    },
     "comments-chart-value-label": "Комментарии",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Все комментарии | Сегодня"
