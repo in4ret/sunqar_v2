@@ -4,6 +4,7 @@ import {
   getHomePageCommentsChartStats,
   getHomePageCommentsStats,
   getHomePageCommentsToneAverageStats,
+  getHomePageNewsChartStats,
   getHomePageNewsStats,
   getHomePageSourcesStats,
   type HomePageCountStats,
@@ -33,6 +34,7 @@ export default async function HomePage({
   const { q } = await searchParams;
   const searchQuery = normalizeSearchQueryParam(q);
   const newsStatsPromise = getHomePageNewsStats(searchQuery);
+  const newsChartStatsPromise = getHomePageNewsChartStats(searchQuery);
   const sourcesStatsPromise = getHomePageSourcesStats(searchQuery);
   const commentsStatsPromise = getHomePageCommentsStats(searchQuery);
   const commentsToneAverageStatsPromise = getHomePageCommentsToneAverageStats(searchQuery);
@@ -56,6 +58,7 @@ export default async function HomePage({
           <StatsValueFromPromise promise={newsStatsPromise} />
         </Suspense>
       }
+      newsChartPromise={newsChartStatsPromise}
       searchQuery={searchQuery}
       sourcesValue={
         <Suspense fallback={<StatsValueFallback />}>

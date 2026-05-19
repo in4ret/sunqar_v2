@@ -1,0 +1,289 @@
+@use "../../../styles/breakpoints" as *;
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+  min-height: 24rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 253, 0.96) 100%);
+  box-shadow: var(--shadow-soft);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.header-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.header-actions {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.legend-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+}
+
+.chart-frame {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.grid-line {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.axis-line {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.tick-line {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.x-axis-label,
+.y-axis-label {
+  fill: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.bar-group {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  transform-origin: center bottom;
+}
+
+.bar-group-interactive {
+  cursor: pointer;
+}
+
+.bar-group-active,
+.bar-group-interactive:hover,
+.bar-group-interactive:focus-within {
+  opacity: 0.96;
+  transform: translateY(-3px);
+}
+
+.bar-segment {
+  transition:
+    opacity 0.18s ease,
+    stroke 0.18s ease;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1;
+}
+
+.bar-group-active .bar-segment,
+.bar-group-interactive:hover .bar-segment,
+.bar-group-interactive:focus-within .bar-segment {
+  stroke: rgba(4, 26, 43, 0.32);
+}
+
+.bar-hitbox {
+  fill: transparent;
+  outline: none;
+}
+
+.tooltip {
+  position: absolute;
+  min-width: 10rem;
+  max-width: 16rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(16, 24, 32, 0.92);
+  box-shadow: 0 16px 30px rgba(4, 26, 43, 0.22);
+  color: var(--text-inverse);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 0.85rem));
+  z-index: 1;
+}
+
+.tooltip-date {
+  font-size: 0.78rem;
+  color: rgba(248, 251, 253, 0.74);
+}
+
+.tooltip-value {
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.tooltip-divider {
+  margin: 0.55rem 0;
+  border: 0;
+  border-top: 1px solid rgba(248, 251, 253, 0.12);
+}
+
+.tooltip-segments {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tooltip-segment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.tooltip-segment-label {
+  min-width: 0;
+  color: rgba(248, 251, 253, 0.82);
+}
+
+.tooltip-segment-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-state {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 1.25rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1.1rem;
+  background: rgba(8, 55, 89, 0.03);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.skeleton {
+  overflow: hidden;
+}
+
+.skeleton-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.skeleton-title,
+.skeleton-subtitle,
+.skeleton-range,
+.skeleton-legend,
+.skeleton-bar,
+.skeleton-axis-label {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e5e5e5 0%, #f2f2f2 50%, #e5e5e5 100%);
+  background-size: 200% 100%;
+  animation: chart-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: 12rem;
+  height: 1.2rem;
+}
+
+.skeleton-subtitle {
+  width: 8rem;
+  height: 0.95rem;
+}
+
+.skeleton-range {
+  width: 9rem;
+  height: 2.3rem;
+}
+
+.skeleton-legend {
+  width: 100%;
+  height: 1.1rem;
+}
+
+.skeleton-body {
+  display: grid;
+  gap: 1rem;
+  min-height: 16rem;
+}
+
+.skeleton-columns {
+  display: grid;
+  align-items: end;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.7rem;
+  min-height: 100%;
+}
+
+.skeleton-column {
+  display: grid;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.skeleton-bar {
+  width: 100%;
+  min-height: 2.25rem;
+}
+
+.skeleton-axis-label {
+  width: 100%;
+  height: 0.7rem;
+}
+
+@keyframes chart-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .header,
+  .skeleton-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .header-actions {
+    justify-self: start;
+  }
+}

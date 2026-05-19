@@ -1,8 +1,18 @@
 import { type ReactNode, Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
-import { CommentsBarChart, CommentsBarChartSkeleton } from "@/components/home";
-import type { CommentsChartRange, HomePageCommentsChartStats } from "@/lib/home-page-stats";
+import {
+  CommentsBarChart,
+  CommentsBarChartSkeleton,
+  NewsBarChart,
+  NewsBarChartSkeleton,
+} from "@/components/home";
+import type {
+  CommentsChartRange,
+  HomePageCommentsChartStats,
+  HomePageNewsChartStats,
+  NewsChartRange,
+} from "@/lib/home-page-stats";
 
 import { HomePageSearchResults } from "./home-page-search-results/home-page-search-results";
 
@@ -12,6 +22,7 @@ type HomePageViewProps = {
   commentsChartPromise: Promise<HomePageCommentsChartStats>;
   commentsValue: ReactNode;
   commentsToneAverageValue: ReactNode;
+  newsChartPromise: Promise<HomePageNewsChartStats>;
   newsValue: ReactNode;
   searchQuery: string;
   sourcesValue: ReactNode;
@@ -21,6 +32,7 @@ export async function HomePageView({
   commentsChartPromise,
   commentsValue,
   commentsToneAverageValue,
+  newsChartPromise,
   newsValue,
   searchQuery,
   sourcesValue,
@@ -40,6 +52,21 @@ export async function HomePageView({
     "all-time-monthly": t("home.comments-chart-empty.all-time-monthly"),
     "month-daily": t("home.comments-chart-empty.month-daily"),
     "six-months-weekly": t("home.comments-chart-empty.six-months-weekly"),
+  };
+  const newsChartRangeLabels: Record<NewsChartRange, string> = {
+    "all-time-monthly": t("home.news-chart-ranges.all-time-monthly"),
+    "month-daily": t("home.news-chart-ranges.month-daily"),
+    "six-months-weekly": t("home.news-chart-ranges.six-months-weekly"),
+  };
+  const newsChartSubtitles: Record<NewsChartRange, string> = {
+    "all-time-monthly": t("home.news-chart-subtitles.all-time-monthly"),
+    "month-daily": t("home.news-chart-subtitles.month-daily"),
+    "six-months-weekly": t("home.news-chart-subtitles.six-months-weekly"),
+  };
+  const newsChartEmptyLabels: Record<NewsChartRange, string> = {
+    "all-time-monthly": t("home.news-chart-empty.all-time-monthly"),
+    "month-daily": t("home.news-chart-empty.month-daily"),
+    "six-months-weekly": t("home.news-chart-empty.six-months-weekly"),
   };
 
   return (
@@ -71,6 +98,20 @@ export async function HomePageView({
       >
         <div className={styles["home-page-charts"]}>
           <div className={styles["home-page-chart-slot"]}>
+            <Suspense fallback={<NewsBarChartSkeleton />}>
+              <NewsChartFromPromise
+                emptyLabels={newsChartEmptyLabels}
+                promise={newsChartPromise}
+                rangeLabels={newsChartRangeLabels}
+                rangeSelectorLabel={t("home.news-chart-range-selector")}
+                subtitles={newsChartSubtitles}
+                title={t("home.news-chart-title")}
+                totalLabel={t("home.news-chart-total-label")}
+                unknownTypeLabel={t("home.news-chart-unknown-type")}
+              />
+            </Suspense>
+          </div>
+          <div className={styles["home-page-chart-slot"]}>
             <Suspense fallback={<CommentsBarChartSkeleton />}>
               <CommentsChartFromPromise
                 emptyLabels={commentsChartEmptyLabels}
@@ -86,6 +127,41 @@ export async function HomePageView({
         </div>
       </HomePageSearchResults>
     </section>
+  );
+}
+
+async function NewsChartFromPromise({
+  emptyLabels,
+  promise,
+  rangeLabels,
+  rangeSelectorLabel,
+  subtitles,
+  title,
+  totalLabel,
+  unknownTypeLabel,
+}: {
+  emptyLabels: Record<NewsChartRange, string>;
+  promise: Promise<HomePageNewsChartStats>;
+  rangeLabels: Record<NewsChartRange, string>;
+  rangeSelectorLabel: string;
+  subtitles: Record<NewsChartRange, string>;
+  title: string;
+  totalLabel: string;
+  unknownTypeLabel: string;
+}) {
+  const stats = await promise;
+
+  return (
+    <NewsBarChart
+      data={stats}
+      emptyLabels={emptyLabels}
+      rangeLabels={rangeLabels}
+      rangeSelectorLabel={rangeSelectorLabel}
+      subtitles={subtitles}
+      title={title}
+      totalLabel={totalLabel}
+      unknownTypeLabel={unknownTypeLabel}
+    />
   );
 }
 

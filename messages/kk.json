@@ -96,6 +96,26 @@
       "all-time-monthly": "Барлық уақытта пікірлер табылған жоқ."
     },
     "comments-chart-value-label": "Пікірлер",
+    "news-chart-title": "Жаңалықтар",
+    "news-chart-range-selector": "Жаңалықтар графигінің кезеңі",
+    "news-chart-ranges": {
+      "month-daily": "Ай күндер бойынша",
+      "six-months-weekly": "6 ай апталар бойынша",
+      "all-time-monthly": "Барлық уақыт айлар бойынша"
+    },
+    "news-chart-subtitles": {
+      "month-daily": "Соңғы 30 күн",
+      "six-months-weekly": "Соңғы 6 ай",
+      "all-time-monthly": "Барлық уақыт"
+    },
+    "news-chart-empty": {
+      "month-daily": "Соңғы 30 күнде жаңалықтар табылған жоқ.",
+      "six-months-weekly": "Соңғы 6 айда жаңалықтар табылған жоқ.",
+      "all-time-monthly": "Барлық уақытта жаңалықтар табылған жоқ."
+    },
+    "news-chart-total-label": "Жаңалықтар",
+    "news-chart-legend-label": "Түрлері",
+    "news-chart-unknown-type": "Белгісіз",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін"
   },

@@ -96,6 +96,26 @@
       "all-time-monthly": "За все время комментариев не найдено."
     },
     "comments-chart-value-label": "Комментарии",
+    "news-chart-title": "Новости",
+    "news-chart-range-selector": "Период графика новостей",
+    "news-chart-ranges": {
+      "month-daily": "Месяц по дням",
+      "six-months-weekly": "6 месяцев по неделям",
+      "all-time-monthly": "Все время по месяцам"
+    },
+    "news-chart-subtitles": {
+      "month-daily": "Последние 30 дней",
+      "six-months-weekly": "Последние 6 месяцев",
+      "all-time-monthly": "Все время"
+    },
+    "news-chart-empty": {
+      "month-daily": "За последние 30 дней новостей не найдено.",
+      "six-months-weekly": "За последние 6 месяцев новостей не найдено.",
+      "all-time-monthly": "За все время новостей не найдено."
+    },
+    "news-chart-total-label": "Новости",
+    "news-chart-legend-label": "Типы",
+    "news-chart-unknown-type": "Неизвестно",
     "comments-tone-average-title": "Тональность",
     "comments-tone-average-tooltip": "Все комментарии | Сегодня"
   },
