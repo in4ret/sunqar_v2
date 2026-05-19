@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 
 import { requireRole } from "@/lib/auth/auth";
+import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messages";
 import {
   createReport,
   deleteReportByUser,
@@ -17,9 +17,9 @@ import { getReportEditRoute, routes } from "@/lib/routes";
 
 export type ReportMutationState = {
   active?: boolean;
-  error: string | null;
+  error: ActionMessage | null;
   reportId: string | null;
-  success: string | null;
+  success: ActionMessage | null;
 };
 export type ReportDeleteState = ReportMutationState;
 export type ReportActiveState = ReportMutationState;
@@ -76,7 +76,6 @@ export async function submitCreateReport(
   formData: FormData,
 ): Promise<ReportMutationState> {
   const user = await requireRole(["admin", "user"]);
-  const t = await getTranslations();
   let blocks: ReportBlocks;
   let period: string;
 
@@ -84,7 +83,7 @@ export async function submitCreateReport(
     blocks = getReportBlocks(formData);
   } catch {
     return {
-      error: t("errors.report-block-fields-required"),
+      error: createActionMessage("errors.report-block-fields-required"),
       reportId: null,
       success: null,
     };
@@ -96,7 +95,7 @@ export async function submitCreateReport(
     );
   } catch {
     return {
-      error: t("errors.report-period-invalid"),
+      error: createActionMessage("errors.report-period-invalid"),
       reportId: null,
       success: null,
     };
@@ -113,7 +112,7 @@ export async function submitCreateReport(
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       reportId: null,
       success: null,
     };
@@ -124,7 +123,7 @@ export async function submitCreateReport(
   return {
     error: null,
     reportId: null,
-    success: t("messages.report-created", { title: result.reportTitle }),
+    success: createActionMessage("messages.report-created", { title: result.reportTitle }),
   };
 }
 
@@ -133,7 +132,6 @@ export async function submitUpdateReport(
   formData: FormData,
 ): Promise<ReportMutationState> {
   const user = await requireRole(["admin", "user"]);
-  const t = await getTranslations();
   const reportId = String(formData.get("reportId") ?? "").trim();
   let blocks: ReportBlocks;
   let period: string;
@@ -142,7 +140,7 @@ export async function submitUpdateReport(
     blocks = getReportBlocks(formData);
   } catch {
     return {
-      error: t("errors.report-block-fields-required"),
+      error: createActionMessage("errors.report-block-fields-required"),
       reportId,
       success: null,
     };
@@ -154,7 +152,7 @@ export async function submitUpdateReport(
     );
   } catch {
     return {
-      error: t("errors.report-period-invalid"),
+      error: createActionMessage("errors.report-period-invalid"),
       reportId,
       success: null,
     };
@@ -172,7 +170,7 @@ export async function submitUpdateReport(
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       reportId,
       success: null,
     };
@@ -184,7 +182,7 @@ export async function submitUpdateReport(
   return {
     error: null,
     reportId: result.reportId,
-    success: t("messages.report-updated", { title: result.reportTitle }),
+    success: createActionMessage("messages.report-updated", { title: result.reportTitle }),
   };
 }
 
@@ -193,13 +191,12 @@ export async function submitDeleteReport(
   formData: FormData,
 ): Promise<ReportDeleteState> {
   const user = await requireRole(["admin", "user"]);
-  const t = await getTranslations();
   const reportId = String(formData.get("id") ?? "").trim();
   const result = await deleteReportByUser(reportId, user.id);
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       reportId,
       success: null,
     };
@@ -211,7 +208,7 @@ export async function submitDeleteReport(
   return {
     error: null,
     reportId: result.reportId,
-    success: t("messages.report-deleted", { title: result.reportTitle }),
+    success: createActionMessage("messages.report-deleted", { title: result.reportTitle }),
   };
 }
 
@@ -220,7 +217,6 @@ export async function submitToggleReportActive(
   formData: FormData,
 ): Promise<ReportActiveState> {
   const user = await requireRole(["admin", "user"]);
-  const t = await getTranslations();
   const reportId = String(formData.get("id") ?? "").trim();
   const nextActive = String(formData.get("active") ?? "").trim() === "true";
   const result = await updateReportActiveByUser({
@@ -233,7 +229,7 @@ export async function submitToggleReportActive(
   if (result.error) {
     return {
       active: undefined,
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       reportId,
       success: null,
     };
@@ -247,7 +243,7 @@ export async function submitToggleReportActive(
     error: null,
     reportId: result.reportId,
     success: result.active
-      ? t("messages.report-activated", { title: result.reportTitle })
-      : t("messages.report-deactivated", { title: result.reportTitle }),
+      ? createActionMessage("messages.report-activated", { title: result.reportTitle })
+      : createActionMessage("messages.report-deactivated", { title: result.reportTitle }),
   };
 }

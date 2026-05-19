@@ -4,6 +4,7 @@ import { type FocusEvent, useActionState } from "react";
 import { useTranslations } from "next-intl";
 
 import { type LoginFormState,submitLogin } from "@/app/(auth)/login/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 
 import styles from "./login-form.module.scss";
 
@@ -18,6 +19,7 @@ function unlockField(event: FocusEvent<HTMLInputElement>) {
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(submitLogin, initialState);
   const t = useTranslations();
+  const errorMessage = translateActionMessage(t, state.error);
 
   return (
     <form autoComplete="off" className={styles["login-form"]} action={formAction}>
@@ -48,7 +50,7 @@ export function LoginForm() {
           type="password"
         />
       </label>
-      {state.error ? <p className={styles["form-error"]}>{state.error}</p> : null}
+      {errorMessage ? <p className={styles["form-error"]}>{errorMessage}</p> : null}
       <button className={styles["submit-button"]} disabled={isPending} type="submit">
         {isPending ? t("login.submitting") : t("login.submit")}
       </button>

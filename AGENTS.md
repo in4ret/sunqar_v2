@@ -32,6 +32,13 @@ Example:
 - All `input`, `textarea`, `select`, and hidden form fields must use semantic DOM `name` attributes in the format `sunqar-<form-context>-<field>`.
 - All form DOM `name` attributes must use `kebab-case`, including multi-part field segments such as `company-id`.
 
+## Internationalization
+
+- Resolve translations for visible application UI on the client.
+- Use client-side translations for page content, headings, labels, controls, chart copy, and other interactive or user-visible text.
+- Reserve server-side translations for metadata only, such as page titles, descriptions, and other head metadata fields.
+- Do not use server-side translation lookups such as `getTranslations()` for server-rendered page or component content unless the text is metadata.
+
 ## Document Lists and Forms
 
 - Document list pages must be the canonical fallback route for their document form routes.

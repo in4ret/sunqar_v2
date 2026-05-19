@@ -8,6 +8,7 @@ import {
   submitCreateReport,
   submitUpdateReport,
 } from "@/app/(protected)/reports/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useNavigationHistory } from "@/lib/providers";
 import { routes } from "@/lib/routes";
 import { Dropdown, MultiSelect, RecurrencePicker, type RecurrenceValue } from "@/ui";
@@ -130,6 +131,7 @@ export function CreateReportForm({
   );
   const { backToPreviousPathnameOrReplace } = useNavigationHistory();
   const t = useTranslations();
+  const errorMessage = translateActionMessage(t, state.error);
   const titleValue = initialValues?.title ?? "";
   const descriptionValue = initialValues?.description ?? "";
   const hasAiModels = aiModels.length > 0;
@@ -320,7 +322,7 @@ export function CreateReportForm({
             {t("reports.form.add-block")}
           </button>
         </div>
-        {state.error ? <p className={styles["form-error"]}>{state.error}</p> : null}
+        {errorMessage ? <p className={styles["form-error"]}>{errorMessage}</p> : null}
         <div className={styles["actions"]}>
           <button
             className={styles["submit-button"]}

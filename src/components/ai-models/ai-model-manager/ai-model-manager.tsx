@@ -11,6 +11,7 @@ import {
   submitDeleteAiModel,
   submitUpdateAiModel,
 } from "@/app/(protected)/ai_models/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useToast } from "@/ui";
 
 import styles from "./ai-model-manager.module.scss";
@@ -109,13 +110,16 @@ function AiModelCreateForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const { showToast } = useToast();
   const t = useTranslations();
+  const errorMessage = translateActionMessage(t, state.error);
 
   useEffect(() => {
-    if (state.success) {
+    const successMessage = translateActionMessage(t, state.success);
+
+    if (successMessage) {
       formRef.current?.reset();
-      showToast({ message: state.success, status: "success" });
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [showToast, state]);
+  }, [showToast, state.success, t]);
 
   return (
     <section className={styles["form-card"]}>
@@ -171,7 +175,7 @@ function AiModelCreateForm() {
           />
           <span>{t("ai-models.form.active")}</span>
         </label>
-        {state.error ? <p className={styles["form-error"]}>{state.error}</p> : null}
+        {errorMessage ? <p className={styles["form-error"]}>{errorMessage}</p> : null}
         <button className={styles["submit-button"]} disabled={isPending} type="submit">
           {isPending ? t("ai-models.form.submitting") : t("ai-models.form.submit")}
         </button>
@@ -200,14 +204,19 @@ function AiModelRow({
   const { showToast } = useToast();
   const t = useTranslations();
   const deleteError =
-    deleteState.aiModelId === aiModel.id ? deleteState.error : null;
+    deleteState.aiModelId === aiModel.id
+      ? translateActionMessage(t, deleteState.error)
+      : null;
   const updateFormId = `ai-model-update-${aiModel.id}`;
+  const updateError = translateActionMessage(t, updateState.error);
 
   useEffect(() => {
-    if (updateState.success) {
-      showToast({ message: updateState.success, status: "success" });
+    const successMessage = translateActionMessage(t, updateState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [showToast, updateState]);
+  }, [showToast, t, updateState.success]);
 
   function handleDeleteSubmit(event: FormEvent<HTMLFormElement>) {
     if (
@@ -236,8 +245,8 @@ function AiModelRow({
             required
             type="text"
           />
-          {updateState.error ? (
-            <p className={styles["row-error"]}>{updateState.error}</p>
+          {updateError ? (
+            <p className={styles["row-error"]}>{updateError}</p>
           ) : null}
         </form>
       </td>
@@ -331,10 +340,12 @@ export function AiModelManager({ aiModels }: AiModelManagerProps) {
   const t = useTranslations();
 
   useEffect(() => {
-    if (deleteState.success) {
-      showToast({ message: deleteState.success, status: "success" });
+    const successMessage = translateActionMessage(t, deleteState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [deleteState, showToast]);
+  }, [deleteState.success, showToast, t]);
 
   return (
     <div className={styles["content-grid"]}>

@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 
 import { createUserByAdmin, requireRole } from "@/lib/auth/auth";
+import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messages";
 import { routes } from "@/lib/routes";
 
 export type CreateUserFormState = {
-  error: string | null;
-  success: string | null;
+  error: ActionMessage | null;
+  success: ActionMessage | null;
 };
 
 export async function submitCreateUser(
@@ -16,7 +16,6 @@ export async function submitCreateUser(
   formData: FormData,
 ): Promise<CreateUserFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
 
   const displayName = String(formData.get("display-name") ?? "");
   const login = String(formData.get("login") ?? "");
@@ -25,7 +24,7 @@ export async function submitCreateUser(
 
   if (role !== "user" && role !== "admin") {
     return {
-      error: t("errors.invalid-role"),
+      error: createActionMessage("errors.invalid-role"),
       success: null,
     };
   }
@@ -39,7 +38,7 @@ export async function submitCreateUser(
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       success: null,
     };
   }
@@ -48,6 +47,6 @@ export async function submitCreateUser(
 
   return {
     error: null,
-    success: t("messages.user-created"),
+    success: createActionMessage("messages.user-created"),
   };
 }

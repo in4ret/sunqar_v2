@@ -1,7 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, useMemo, useState, useSyncExternalStore } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
 
@@ -19,13 +19,6 @@ import styles from "./news-bar-chart.module.scss";
 type NewsBarChartProps = {
   className?: string;
   data: HomePageNewsChartStats;
-  emptyLabels: Record<NewsChartRange, string>;
-  rangeLabels: Record<NewsChartRange, string>;
-  rangeSelectorLabel: string;
-  subtitles: Record<NewsChartRange, string>;
-  title: string;
-  totalLabel: string;
-  unknownTypeLabel: string;
 };
 
 type TooltipState = {
@@ -150,15 +143,9 @@ function getTypeColor(type: string) {
 export function NewsBarChart({
   className,
   data,
-  emptyLabels,
-  rangeLabels,
-  rangeSelectorLabel,
-  subtitles,
-  title,
-  totalLabel,
-  unknownTypeLabel,
 }: NewsBarChartProps) {
   const locale = useLocale();
+  const t = useTranslations();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
     useSize<HTMLDivElement>(100);
   const range = useSyncExternalStore(
@@ -171,6 +158,34 @@ export function NewsBarChart({
   const chartEntries = data.ranges[range];
   const totalNews = chartEntries.reduce((sum, item) => sum + item.total, 0);
   const chartClassName = [styles["card"], className].filter(Boolean).join(" ");
+  const title = t("home.news-chart-title");
+  const rangeSelectorLabel = t("home.news-chart-range-selector");
+  const totalLabel = t("home.news-chart-total-label");
+  const unknownTypeLabel = t("home.news-chart-unknown-type");
+  const rangeLabels = useMemo(
+    () => ({
+      "all-time-monthly": t("home.news-chart-ranges.all-time-monthly"),
+      "month-daily": t("home.news-chart-ranges.month-daily"),
+      "six-months-weekly": t("home.news-chart-ranges.six-months-weekly"),
+    }),
+    [t]
+  );
+  const subtitles = useMemo(
+    () => ({
+      "all-time-monthly": t("home.news-chart-subtitles.all-time-monthly"),
+      "month-daily": t("home.news-chart-subtitles.month-daily"),
+      "six-months-weekly": t("home.news-chart-subtitles.six-months-weekly"),
+    }),
+    [t]
+  );
+  const emptyLabels = useMemo(
+    () => ({
+      "all-time-monthly": t("home.news-chart-empty.all-time-monthly"),
+      "month-daily": t("home.news-chart-empty.month-daily"),
+      "six-months-weekly": t("home.news-chart-empty.six-months-weekly"),
+    }),
+    [t]
+  );
   const rangeOptions = useMemo(
     () => [
       { label: rangeLabels["month-daily"], value: "month-daily" },

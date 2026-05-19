@@ -11,6 +11,7 @@ import {
   submitDeleteSource,
   submitUpdateSource,
 } from "@/app/(protected)/sources/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useToast } from "@/ui";
 
 import styles from "./source-manager.module.scss";
@@ -106,13 +107,16 @@ function SourceCreateForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const { showToast } = useToast();
   const t = useTranslations();
+  const errorMessage = translateActionMessage(t, state.error);
 
   useEffect(() => {
-    if (state.success) {
+    const successMessage = translateActionMessage(t, state.success);
+
+    if (successMessage) {
       formRef.current?.reset();
-      showToast({ message: state.success, status: "success" });
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [showToast, state]);
+  }, [showToast, state.success, t]);
 
   return (
     <section className={styles["form-card"]}>
@@ -131,7 +135,7 @@ function SourceCreateForm() {
             type="text"
           />
         </label>
-        {state.error ? <p className={styles["form-error"]}>{state.error}</p> : null}
+        {errorMessage ? <p className={styles["form-error"]}>{errorMessage}</p> : null}
         <button className={styles["submit-button"]} disabled={isPending} type="submit">
           {isPending ? t("sources.form.submitting") : t("sources.form.submit")}
         </button>
@@ -159,14 +163,20 @@ function SourceRow({
   );
   const { showToast } = useToast();
   const t = useTranslations();
-  const deleteError = deleteState.sourceId === source.id ? deleteState.error : null;
+  const deleteError =
+    deleteState.sourceId === source.id
+      ? translateActionMessage(t, deleteState.error)
+      : null;
   const updateFormId = `source-update-${source.id}`;
+  const updateError = translateActionMessage(t, updateState.error);
 
   useEffect(() => {
-    if (updateState.success) {
-      showToast({ message: updateState.success, status: "success" });
+    const successMessage = translateActionMessage(t, updateState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [showToast, updateState]);
+  }, [showToast, t, updateState.success]);
 
   function handleDeleteSubmit(event: FormEvent<HTMLFormElement>) {
     if (!window.confirm(t("sources.delete-confirmation", { name: source.name }))) {
@@ -191,8 +201,8 @@ function SourceRow({
             required
             type="text"
           />
-          {updateState.error ? (
-            <p className={styles["row-error"]}>{updateState.error}</p>
+          {updateError ? (
+            <p className={styles["row-error"]}>{updateError}</p>
           ) : null}
         </form>
       </td>
@@ -248,10 +258,12 @@ export function SourceManager({ sources }: SourceManagerProps) {
   const t = useTranslations();
 
   useEffect(() => {
-    if (deleteState.success) {
-      showToast({ message: deleteState.success, status: "success" });
+    const successMessage = translateActionMessage(t, deleteState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [deleteState, showToast]);
+  }, [deleteState.success, showToast, t]);
 
   return (
     <div className={styles["content-grid"]}>

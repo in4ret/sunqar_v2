@@ -1,26 +1,25 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 
 import { getCurrentUser, login } from "@/lib/auth/auth";
+import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messages";
 import { routes } from "@/lib/routes";
 
 export type LoginFormState = {
-  error: string | null;
+  error: ActionMessage | null;
 };
 
 export async function submitLogin(
   _previousState: LoginFormState,
   formData: FormData,
 ): Promise<LoginFormState> {
-  const t = await getTranslations();
   const loginValue = String(formData.get("auth-id") ?? "");
   const password = String(formData.get("auth-secret") ?? "");
 
   if (!loginValue || !password) {
     return {
-      error: t("errors.login-required"),
+      error: createActionMessage("errors.login-required"),
     };
   }
 
@@ -28,7 +27,7 @@ export async function submitLogin(
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
     };
   }
 

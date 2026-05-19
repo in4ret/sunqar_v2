@@ -1,7 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, useMemo, useState, useSyncExternalStore } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
 
@@ -18,12 +18,6 @@ import styles from "./comments-bar-chart.module.scss";
 type CommentsBarChartProps = {
   className?: string;
   data: HomePageCommentsChartStats;
-  emptyLabels: Record<CommentsChartRange, string>;
-  rangeLabels: Record<CommentsChartRange, string>;
-  rangeSelectorLabel: string;
-  subtitles: Record<CommentsChartRange, string>;
-  title: string;
-  valueLabel: string;
 };
 
 type TooltipState = {
@@ -105,14 +99,9 @@ function getBarLabelIndices(length: number) {
 export function CommentsBarChart({
   className,
   data,
-  emptyLabels,
-  rangeLabels,
-  rangeSelectorLabel,
-  subtitles,
-  title,
-  valueLabel,
 }: CommentsBarChartProps) {
   const locale = useLocale();
+  const t = useTranslations();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
     useSize<HTMLDivElement>(100);
   const range = useSyncExternalStore(
@@ -125,6 +114,33 @@ export function CommentsBarChart({
   const chartEntries = data[range];
   const totalComments = chartEntries.reduce((sum, item) => sum + item.total, 0);
   const chartClassName = [styles["card"], className].filter(Boolean).join(" ");
+  const title = t("home.comments-chart-title");
+  const rangeSelectorLabel = t("home.comments-chart-range-selector");
+  const valueLabel = t("home.comments-chart-value-label");
+  const rangeLabels = useMemo(
+    () => ({
+      "all-time-monthly": t("home.comments-chart-ranges.all-time-monthly"),
+      "month-daily": t("home.comments-chart-ranges.month-daily"),
+      "six-months-weekly": t("home.comments-chart-ranges.six-months-weekly"),
+    }),
+    [t]
+  );
+  const subtitles = useMemo(
+    () => ({
+      "all-time-monthly": t("home.comments-chart-subtitles.all-time-monthly"),
+      "month-daily": t("home.comments-chart-subtitles.month-daily"),
+      "six-months-weekly": t("home.comments-chart-subtitles.six-months-weekly"),
+    }),
+    [t]
+  );
+  const emptyLabels = useMemo(
+    () => ({
+      "all-time-monthly": t("home.comments-chart-empty.all-time-monthly"),
+      "month-daily": t("home.comments-chart-empty.month-daily"),
+      "six-months-weekly": t("home.comments-chart-empty.six-months-weekly"),
+    }),
+    [t]
+  );
   const rangeOptions = useMemo(
     () => [
       { label: rangeLabels["month-daily"], value: "month-daily" },

@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 
 import {
   createAiModelByAdmin,
@@ -9,12 +8,13 @@ import {
   updateAiModelByAdmin,
 } from "@/lib/ai-models/ai-models";
 import { requireRole } from "@/lib/auth/auth";
+import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messages";
 import { routes } from "@/lib/routes";
 
 export type AiModelFormState = {
   aiModelId: string | null;
-  error: string | null;
-  success: string | null;
+  error: ActionMessage | null;
+  success: ActionMessage | null;
 };
 
 const aiModelsPath = routes.aiModels;
@@ -28,7 +28,6 @@ export async function submitCreateAiModel(
   formData: FormData,
 ): Promise<AiModelFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const result = await createAiModelByAdmin({
     displayName: String(formData.get("displayName") ?? ""),
     isActive: getIsActive(formData),
@@ -39,7 +38,7 @@ export async function submitCreateAiModel(
   if (result.error) {
     return {
       aiModelId: null,
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       success: null,
     };
   }
@@ -49,7 +48,7 @@ export async function submitCreateAiModel(
   return {
     aiModelId: null,
     error: null,
-    success: t("messages.ai-model-created", { name: result.aiModelName }),
+    success: createActionMessage("messages.ai-model-created", { name: result.aiModelName }),
   };
 }
 
@@ -58,7 +57,6 @@ export async function submitUpdateAiModel(
   formData: FormData,
 ): Promise<AiModelFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const id = String(formData.get("id") ?? "");
   const result = await updateAiModelByAdmin({
     displayName: String(formData.get("displayName") ?? ""),
@@ -71,7 +69,7 @@ export async function submitUpdateAiModel(
   if (result.error) {
     return {
       aiModelId: id,
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       success: null,
     };
   }
@@ -81,7 +79,7 @@ export async function submitUpdateAiModel(
   return {
     aiModelId: id,
     error: null,
-    success: t("messages.ai-model-updated", { name: result.aiModelName }),
+    success: createActionMessage("messages.ai-model-updated", { name: result.aiModelName }),
   };
 }
 
@@ -90,14 +88,13 @@ export async function submitDeleteAiModel(
   formData: FormData,
 ): Promise<AiModelFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const id = String(formData.get("id") ?? "");
   const result = await deleteAiModelByAdmin(id);
 
   if (result.error) {
     return {
       aiModelId: id,
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       success: null,
     };
   }
@@ -107,6 +104,6 @@ export async function submitDeleteAiModel(
   return {
     aiModelId: id,
     error: null,
-    success: t("messages.ai-model-deleted", { name: result.aiModelName }),
+    success: createActionMessage("messages.ai-model-deleted", { name: result.aiModelName }),
   };
 }

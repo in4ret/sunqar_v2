@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 
 import { requireRole } from "@/lib/auth/auth";
+import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messages";
 import { routes } from "@/lib/routes";
 import {
   createSourcesByAdmin,
@@ -12,9 +12,9 @@ import {
 } from "@/lib/sources/sources";
 
 export type SourceFormState = {
-  error: string | null;
+  error: ActionMessage | null;
   sourceId: string | null;
-  success: string | null;
+  success: ActionMessage | null;
 };
 
 export async function submitCreateSource(
@@ -22,13 +22,12 @@ export async function submitCreateSource(
   formData: FormData,
 ): Promise<SourceFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const names = String(formData.get("name") ?? "");
   const result = await createSourcesByAdmin({ names });
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       sourceId: null,
       success: null,
     };
@@ -41,8 +40,8 @@ export async function submitCreateSource(
     sourceId: null,
     success:
       result.sourceNames.length === 1
-        ? t("messages.source-created", { name: result.sourceNames[0] })
-        : t("messages.sources-created", { count: result.sourceNames.length }),
+        ? createActionMessage("messages.source-created", { name: result.sourceNames[0] })
+        : createActionMessage("messages.sources-created", { count: result.sourceNames.length }),
   };
 }
 
@@ -51,14 +50,13 @@ export async function submitUpdateSource(
   formData: FormData,
 ): Promise<SourceFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "");
   const result = await updateSourceByAdmin({ id, name });
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       sourceId: id,
       success: null,
     };
@@ -69,7 +67,7 @@ export async function submitUpdateSource(
   return {
     error: null,
     sourceId: id,
-    success: t("messages.source-updated", { name: result.sourceName }),
+    success: createActionMessage("messages.source-updated", { name: result.sourceName }),
   };
 }
 
@@ -78,13 +76,12 @@ export async function submitDeleteSource(
   formData: FormData,
 ): Promise<SourceFormState> {
   await requireRole("admin");
-  const t = await getTranslations();
   const id = String(formData.get("id") ?? "");
   const result = await deleteSourceByAdmin(id);
 
   if (result.error) {
     return {
-      error: t(`errors.${result.error}`),
+      error: createActionMessage(`errors.${result.error}`),
       sourceId: id,
       success: null,
     };
@@ -95,6 +92,6 @@ export async function submitDeleteSource(
   return {
     error: null,
     sourceId: id,
-    success: t("messages.source-deleted", { name: result.sourceName }),
+    success: createActionMessage("messages.source-deleted", { name: result.sourceName }),
   };
 }

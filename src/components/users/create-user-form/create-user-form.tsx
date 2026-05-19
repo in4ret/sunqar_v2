@@ -7,6 +7,7 @@ import {
   type CreateUserFormState,
   submitCreateUser,
 } from "@/app/(protected)/users/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { Dropdown, useToast } from "@/ui";
 
 import styles from "./create-user-form.module.scss";
@@ -24,16 +25,19 @@ export function CreateUserForm() {
   const [state, formAction, isPending] = useActionState(submitCreateUser, initialState);
   const { showToast } = useToast();
   const t = useTranslations();
+  const errorMessage = translateActionMessage(t, state.error);
   const roleOptions = [
     { value: "user", label: t("common.roles.user") },
     { value: "admin", label: t("common.roles.admin") },
   ];
 
   useEffect(() => {
-    if (state.success) {
-      showToast({ message: state.success, status: "success" });
+    const successMessage = translateActionMessage(t, state.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
     }
-  }, [showToast, state]);
+  }, [showToast, state.success, t]);
 
   return (
     <section className={styles["form-card"]}>
@@ -85,7 +89,7 @@ export function CreateUserForm() {
           <span className={styles["field-label"]}>{t("users.form.role")}</span>
           <Dropdown defaultValue="user" name="role" options={roleOptions} />
         </label>
-        {state.error ? <p className={styles["form-error"]}>{state.error}</p> : null}
+        {errorMessage ? <p className={styles["form-error"]}>{errorMessage}</p> : null}
         <button className={styles["submit-button"]} disabled={isPending} type="submit">
           {isPending ? t("users.form.submitting") : t("users.form.submit")}
         </button>

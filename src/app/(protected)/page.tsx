@@ -1,13 +1,21 @@
 import { Suspense } from "react";
 
 import {
+  CommentsBarChart,
+  CommentsBarChartSkeleton,
+  NewsBarChart,
+  NewsBarChartSkeleton,
+} from "@/components/home";
+import {
   getHomePageCommentsChartStats,
   getHomePageCommentsStats,
   getHomePageCommentsToneAverageStats,
   getHomePageNewsChartStats,
   getHomePageNewsStats,
   getHomePageSourcesStats,
+  type HomePageCommentsChartStats,
   type HomePageCountStats,
+  type HomePageNewsChartStats,
 } from "@/lib/home-page-stats";
 import { formatCompactNumber, normalizeSearchQueryParam } from "@/lib/utils";
 import { StatsValueSkeleton } from "@/ui";
@@ -42,7 +50,11 @@ export default async function HomePage({
 
   return (
     <HomePageView
-      commentsChartPromise={commentsChartStatsPromise}
+      commentsChart={
+        <Suspense fallback={<CommentsBarChartSkeleton />}>
+          <CommentsChartFromPromise promise={commentsChartStatsPromise} />
+        </Suspense>
+      }
       commentsToneAverageValue={
         <Suspense fallback={<StatsValueFallback />}>
           <StatsValueFromPromise promise={commentsToneAverageStatsPromise} />
@@ -58,7 +70,11 @@ export default async function HomePage({
           <StatsValueFromPromise promise={newsStatsPromise} />
         </Suspense>
       }
-      newsChartPromise={newsChartStatsPromise}
+      newsChart={
+        <Suspense fallback={<NewsBarChartSkeleton />}>
+          <NewsChartFromPromise promise={newsChartStatsPromise} />
+        </Suspense>
+      }
       searchQuery={searchQuery}
       sourcesValue={
         <Suspense fallback={<StatsValueFallback />}>
@@ -73,4 +89,24 @@ async function StatsValueFromPromise({ promise }: { promise: Promise<HomePageCou
   const stats = await promise;
 
   return formatStatsValue(stats.total, stats.today);
+}
+
+async function CommentsChartFromPromise({
+  promise,
+}: {
+  promise: Promise<HomePageCommentsChartStats>;
+}) {
+  const stats = await promise;
+
+  return <CommentsBarChart data={stats} />;
+}
+
+async function NewsChartFromPromise({
+  promise,
+}: {
+  promise: Promise<HomePageNewsChartStats>;
+}) {
+  const stats = await promise;
+
+  return <NewsBarChart data={stats} />;
 }

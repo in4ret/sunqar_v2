@@ -9,6 +9,7 @@ import {
   type ReportDeleteState,
   submitDeleteReport,
 } from "@/app/(protected)/reports/actions";
+import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { getReportEditRoute } from "@/lib/routes";
 import { useToast } from "@/ui";
 
@@ -106,17 +107,21 @@ export function ReportRowActions({
   const t = useTranslations();
 
   useEffect(() => {
-    if (deleteState.success) {
-      showToast({ message: deleteState.success, status: "success" });
+    const successMessage = translateActionMessage(t, deleteState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
       router.refresh();
     }
-  }, [deleteState.success, router, showToast]);
+  }, [deleteState.success, router, showToast, t]);
 
   useEffect(() => {
-    if (deleteState.error) {
-      showToast({ message: deleteState.error, status: "error" });
+    const errorMessage = translateActionMessage(t, deleteState.error);
+
+    if (errorMessage) {
+      showToast({ message: errorMessage, status: "error" });
     }
-  }, [deleteState.error, showToast]);
+  }, [deleteState.error, showToast, t]);
 
   function handleDeleteSubmit(event: FormEvent<HTMLFormElement>) {
     if (!window.confirm(t("reports.delete-confirmation", { title: reportTitle }))) {
