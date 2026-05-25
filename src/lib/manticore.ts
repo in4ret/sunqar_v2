@@ -19,9 +19,25 @@ type ManticoreSqlResponse = {
   };
 };
 
+let manticoreQueue: Promise<unknown> = Promise.resolve();
+
 export async function manticoreSql<T = unknown>(
   query: string
 ): Promise<T[]> {
+  const task = manticoreQueue.then(() => executeManticoreSql<T>(query));
+
+  manticoreQueue = task.catch(() => undefined);
+
+  return task;
+}
+
+async function executeManticoreSql<T = unknown>(
+  query: string
+): Promise<T[]> {
+  if (!MANTICORE_URL) {
+    throw new Error('MANTICORE_URL is not set');
+  }
+
   const res = await fetch(`${MANTICORE_URL}/sql`, {
     method: 'POST',
     headers: {

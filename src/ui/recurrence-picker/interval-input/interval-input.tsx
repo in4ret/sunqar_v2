@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { normalizeInterval } from "../recurrence-picker.utils";
@@ -20,10 +20,6 @@ export function IntervalInput({
 }: IntervalInputProps) {
   const [inputValue, setInputValue] = useState(String(normalizeInterval(value)));
   const t = useTranslations("recurrence-picker");
-
-  useEffect(() => {
-    setInputValue(String(normalizeInterval(value)));
-  }, [value]);
 
   return (
     <label className={styles["field"]}>

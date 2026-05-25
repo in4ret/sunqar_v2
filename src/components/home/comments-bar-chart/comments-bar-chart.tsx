@@ -1,17 +1,22 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState, useSyncExternalStore } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
 
 import { useSize } from "@/hooks/use-size";
 import type {
-  CommentsChartRange,
   HomePageCommentsChartBucket,
   HomePageCommentsChartStats,
 } from "@/lib/home-page-stats";
-import { Dropdown } from "@/ui";
+
+import { HomePageChartRangeSelector } from "../home-page-chart-range/home-page-chart-range";
+import {
+  isHomePageChartRange,
+  setStoredHomePageChartRange,
+  useStoredHomePageChartRange,
+} from "../home-page-chart-range/home-page-chart-range-storage";
 
 import styles from "./comments-bar-chart.module.scss";
 
@@ -34,51 +39,17 @@ const CHART_MARGIN = {
   left: 50,
 };
 const Y_TICK_COUNT = 4;
-const DEFAULT_CHART_RANGE: CommentsChartRange = "month-daily";
 const COMMENTS_CHART_RANGE_STORAGE_KEY = "sunqar-home-comments-chart-range";
 const COMMENTS_CHART_RANGE_CHANGE_EVENT = "sunqar-home-comments-chart-range-change";
+const COMMENTS_CHART_RANGE_STORAGE = {
+  changeEventName: COMMENTS_CHART_RANGE_CHANGE_EVENT,
+  storageKey: COMMENTS_CHART_RANGE_STORAGE_KEY,
+} as const;
 
 function parseChartDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
 
   return new Date(Date.UTC(year, month - 1, day, 12));
-}
-
-function isCommentsChartRange(value: string): value is CommentsChartRange {
-  return value === "month-daily" || value === "six-months-weekly" || value === "all-time-monthly";
-}
-
-function getStoredCommentsChartRange() {
-  if (typeof window === "undefined") {
-    return DEFAULT_CHART_RANGE;
-  }
-
-  const storedRange = window.localStorage.getItem(COMMENTS_CHART_RANGE_STORAGE_KEY);
-
-  return storedRange && isCommentsChartRange(storedRange) ? storedRange : DEFAULT_CHART_RANGE;
-}
-
-function subscribeToStoredCommentsChartRange(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleChange = () => {
-    onStoreChange();
-  };
-
-  window.addEventListener("storage", handleChange);
-  window.addEventListener(COMMENTS_CHART_RANGE_CHANGE_EVENT, handleChange);
-
-  return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener(COMMENTS_CHART_RANGE_CHANGE_EVENT, handleChange);
-  };
-}
-
-function setStoredCommentsChartRange(range: CommentsChartRange) {
-  window.localStorage.setItem(COMMENTS_CHART_RANGE_STORAGE_KEY, range);
-  window.dispatchEvent(new Event(COMMENTS_CHART_RANGE_CHANGE_EVENT));
 }
 
 function getBarLabelIndices(length: number) {
@@ -104,11 +75,7 @@ export function CommentsBarChart({
   const t = useTranslations();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
     useSize<HTMLDivElement>(100);
-  const range = useSyncExternalStore(
-    subscribeToStoredCommentsChartRange,
-    getStoredCommentsChartRange,
-    () => DEFAULT_CHART_RANGE
-  );
+  const range = useStoredHomePageChartRange(COMMENTS_CHART_RANGE_STORAGE);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const chartEntries = data[range];
@@ -117,14 +84,6 @@ export function CommentsBarChart({
   const title = t("home.comments-chart-title");
   const rangeSelectorLabel = t("home.comments-chart-range-selector");
   const valueLabel = t("home.comments-chart-value-label");
-  const rangeLabels = useMemo(
-    () => ({
-      "all-time-monthly": t("home.comments-chart-ranges.all-time-monthly"),
-      "month-daily": t("home.comments-chart-ranges.month-daily"),
-      "six-months-weekly": t("home.comments-chart-ranges.six-months-weekly"),
-    }),
-    [t]
-  );
   const subtitles = useMemo(
     () => ({
       "all-time-monthly": t("home.comments-chart-subtitles.all-time-monthly"),
@@ -141,15 +100,6 @@ export function CommentsBarChart({
     }),
     [t]
   );
-  const rangeOptions = useMemo(
-    () => [
-      { label: rangeLabels["month-daily"], value: "month-daily" },
-      { label: rangeLabels["six-months-weekly"], value: "six-months-weekly" },
-      { label: rangeLabels["all-time-monthly"], value: "all-time-monthly" },
-    ],
-    [rangeLabels]
-  );
-
   const chartData = useMemo(() => {
     const width = Math.max(containerWidth, 0);
     const height = Math.max(containerHeight, 0);
@@ -301,16 +251,14 @@ export function CommentsBarChart({
           <div className={styles["subtitle"]}>{subtitles[range]}</div>
         </div>
         <div className={styles["header-actions"]}>
-          <Dropdown
+          <HomePageChartRangeSelector
             aria-label={rangeSelectorLabel}
-            options={rangeOptions}
             value={range}
-            variant="pill"
             onChange={(nextValue) => {
-              if (isCommentsChartRange(nextValue)) {
+              if (isHomePageChartRange(nextValue)) {
                 setActiveIndex(null);
                 setTooltip(null);
-                setStoredCommentsChartRange(nextValue);
+                setStoredHomePageChartRange(COMMENTS_CHART_RANGE_STORAGE, nextValue);
               }
             }}
           />

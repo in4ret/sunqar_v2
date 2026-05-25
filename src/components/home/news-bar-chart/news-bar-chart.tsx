@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState, useSyncExternalStore } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
@@ -10,9 +10,14 @@ import type {
   HomePageNewsChartBucket,
   HomePageNewsChartSegment,
   HomePageNewsChartStats,
-  NewsChartRange,
 } from "@/lib/home-page-stats";
-import { Dropdown } from "@/ui";
+
+import { HomePageChartRangeSelector } from "../home-page-chart-range/home-page-chart-range";
+import {
+  isHomePageChartRange,
+  setStoredHomePageChartRange,
+  useStoredHomePageChartRange,
+} from "../home-page-chart-range/home-page-chart-range-storage";
 
 import styles from "./news-bar-chart.module.scss";
 
@@ -36,9 +41,12 @@ const CHART_MARGIN = {
   left: 50,
 };
 const Y_TICK_COUNT = 4;
-const DEFAULT_CHART_RANGE: NewsChartRange = "month-daily";
 const NEWS_CHART_RANGE_STORAGE_KEY = "sunqar-home-news-chart-range";
 const NEWS_CHART_RANGE_CHANGE_EVENT = "sunqar-home-news-chart-range-change";
+const NEWS_CHART_RANGE_STORAGE = {
+  changeEventName: NEWS_CHART_RANGE_CHANGE_EVENT,
+  storageKey: NEWS_CHART_RANGE_STORAGE_KEY,
+} as const;
 const UNKNOWN_NEWS_TYPE = "__unknown__";
 const CHART_COLORS = [
   "#2f6f9f",
@@ -65,43 +73,6 @@ function parseChartDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
 
   return new Date(Date.UTC(year, month - 1, day, 12));
-}
-
-function isNewsChartRange(value: string): value is NewsChartRange {
-  return value === "month-daily" || value === "six-months-weekly" || value === "all-time-monthly";
-}
-
-function getStoredNewsChartRange() {
-  if (typeof window === "undefined") {
-    return DEFAULT_CHART_RANGE;
-  }
-
-  const storedRange = window.localStorage.getItem(NEWS_CHART_RANGE_STORAGE_KEY);
-
-  return storedRange && isNewsChartRange(storedRange) ? storedRange : DEFAULT_CHART_RANGE;
-}
-
-function subscribeToStoredNewsChartRange(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleChange = () => {
-    onStoreChange();
-  };
-
-  window.addEventListener("storage", handleChange);
-  window.addEventListener(NEWS_CHART_RANGE_CHANGE_EVENT, handleChange);
-
-  return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener(NEWS_CHART_RANGE_CHANGE_EVENT, handleChange);
-  };
-}
-
-function setStoredNewsChartRange(range: NewsChartRange) {
-  window.localStorage.setItem(NEWS_CHART_RANGE_STORAGE_KEY, range);
-  window.dispatchEvent(new Event(NEWS_CHART_RANGE_CHANGE_EVENT));
 }
 
 function getBarLabelIndices(length: number) {
@@ -148,11 +119,7 @@ export function NewsBarChart({
   const t = useTranslations();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
     useSize<HTMLDivElement>(100);
-  const range = useSyncExternalStore(
-    subscribeToStoredNewsChartRange,
-    getStoredNewsChartRange,
-    () => DEFAULT_CHART_RANGE
-  );
+  const range = useStoredHomePageChartRange(NEWS_CHART_RANGE_STORAGE);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const chartEntries = data.ranges[range];
@@ -162,14 +129,6 @@ export function NewsBarChart({
   const rangeSelectorLabel = t("home.news-chart-range-selector");
   const totalLabel = t("home.news-chart-total-label");
   const unknownTypeLabel = t("home.news-chart-unknown-type");
-  const rangeLabels = useMemo(
-    () => ({
-      "all-time-monthly": t("home.news-chart-ranges.all-time-monthly"),
-      "month-daily": t("home.news-chart-ranges.month-daily"),
-      "six-months-weekly": t("home.news-chart-ranges.six-months-weekly"),
-    }),
-    [t]
-  );
   const subtitles = useMemo(
     () => ({
       "all-time-monthly": t("home.news-chart-subtitles.all-time-monthly"),
@@ -186,15 +145,6 @@ export function NewsBarChart({
     }),
     [t]
   );
-  const rangeOptions = useMemo(
-    () => [
-      { label: rangeLabels["month-daily"], value: "month-daily" },
-      { label: rangeLabels["six-months-weekly"], value: "six-months-weekly" },
-      { label: rangeLabels["all-time-monthly"], value: "all-time-monthly" },
-    ],
-    [rangeLabels]
-  );
-
   const chartData = useMemo(() => {
     const width = Math.max(containerWidth, 0);
     const height = Math.max(containerHeight, 0);
@@ -346,16 +296,14 @@ export function NewsBarChart({
           <div className={styles["subtitle"]}>{subtitles[range]}</div>
         </div>
         <div className={styles["header-actions"]}>
-          <Dropdown
+          <HomePageChartRangeSelector
             aria-label={rangeSelectorLabel}
-            options={rangeOptions}
             value={range}
-            variant="pill"
             onChange={(nextValue) => {
-              if (isNewsChartRange(nextValue)) {
+              if (isHomePageChartRange(nextValue)) {
                 setActiveIndex(null);
                 setTooltip(null);
-                setStoredNewsChartRange(nextValue);
+                setStoredHomePageChartRange(NEWS_CHART_RANGE_STORAGE, nextValue);
               }
             }}
           />

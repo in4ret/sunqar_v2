@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { normalizeTimes } from "../recurrence-picker.utils";
@@ -25,10 +25,6 @@ export function TimesInput({
   const [draftTimes, setDraftTimes] = useState<string[]>(() => getDraftTimes(value));
   const t = useTranslations("recurrence-picker");
   const hasEmptyTime = draftTimes.some((time) => time.trim() === "");
-
-  useEffect(() => {
-    setDraftTimes(getDraftTimes(value));
-  }, [value]);
 
   function emitTimes(nextDraftTimes: string[]) {
     onChange(normalizeTimes(nextDraftTimes));

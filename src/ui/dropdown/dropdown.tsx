@@ -61,7 +61,9 @@ export function Dropdown({
     options.findIndex((option) => option.value === selectedValue),
   );
   const selectedOption = options[selectedIndex];
-  const rootClassNames = [styles["dropdown-root"], styles[`dropdown-root-${variant}`]].join(" ");
+  const rootClassNames = [styles["dropdown-root"], styles[`dropdown-root-${variant}`], className]
+    .filter(Boolean)
+    .join(" ");
   const classNames = [styles["dropdown"], styles[`dropdown-${variant}`], className]
     .filter(Boolean)
     .join(" ");

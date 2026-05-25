@@ -19,6 +19,9 @@ export type ReportMutationErrorCode =
 export type ReportListItem = {
   active: boolean;
   authorName: string;
+  blocks: ReportBlocks;
+  blockKeywords: string[];
+  blockSources: string[][];
   description: string;
   id: string;
   period: string;
@@ -43,6 +46,7 @@ export async function listReports(userId: string): Promise<ReportListItem[]> {
   const rows = db
     .select({
       active: reports.active,
+      blocks: reports.blocks,
       authorName: users.displayName,
       description: reports.description,
       id: reports.id,
@@ -58,6 +62,11 @@ export async function listReports(userId: string): Promise<ReportListItem[]> {
   return rows.map((row) => ({
     active: row.active,
     authorName: row.authorName ?? "—",
+    blocks: row.blocks,
+    blockKeywords: row.blocks.map((block) =>
+      block.keywords.map((keyword) => keyword.trim()).filter(Boolean).join(", "),
+    ),
+    blockSources: row.blocks.map((block) => block.sources.map((source) => source.trim()).filter(Boolean)),
     description: row.description,
     id: row.id,
     period: row.period,

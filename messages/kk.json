@@ -72,6 +72,11 @@
     "search-placeholder": "Іздеу сұрауын енгізіңіз",
     "search-clear": "Іздеуді тазарту",
     "search-submit": "Іздеу",
+    "chart-ranges": {
+      "month-daily": "Ай",
+      "six-months-weekly": "Жарты жыл",
+      "all-time-monthly": "Барлық уақыт"
+    },
     "news-title": "Жаңалықтар",
     "news-tooltip": "Барлығы | Бүгін",
     "sources-title": "Дереккөздер",
@@ -116,8 +121,32 @@
     "news-chart-total-label": "Жаңалықтар",
     "news-chart-legend-label": "Түрлері",
     "news-chart-unknown-type": "Белгісіз",
+    "news-country-chart-title": "Елдер бойынша жаңалықтар",
+    "news-country-chart-total-label": "Жаңалықтар",
+    "news-country-chart-percentage-label": "Үлес",
+    "news-country-chart-legend-label": "Елдер",
+    "news-country-chart-empty": "Елдер бойынша жаңалықтар табылған жоқ.",
+    "news-country-chart-other": "Басқалары",
+    "news-country-chart-unknown-country": "Көрсетілмеген",
     "comments-tone-average-title": "Тональность",
-    "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін"
+    "comments-tone-average-tooltip": "Барлық пікірлер | Бүгін",
+    "reports-table-heading": "Есеп",
+    "reports-table-keywords-heading": "Кілт сөздер",
+    "reports-table-sources-heading": "Дереккөздер",
+    "reports-table-trend-heading": "Динамика",
+    "reports-table-trend-range-selector": "Есеп динамикасын топтау",
+    "reports-table-trend-mobile-range": "Динамика топтауы",
+    "reports-table-trend-empty": {
+      "month-daily": "Соңғы 30 күнде деректер жоқ.",
+      "six-months-weekly": "Соңғы 6 айда деректер жоқ.",
+      "all-time-monthly": "Барлық уақытта деректер жоқ."
+    },
+    "reports-table-trend-chart-label": "«{title}» есебінің блоктар динамикасы",
+    "reports-table-trend-tooltip-period-label": "Кезеңі",
+    "reports-table-trend-tooltip-total-label": "Жаңалықтар",
+    "reports-table-sources-show-all": "Барлық {count} дереккөзді көрсету",
+    "reports-table-sources-modal-title": "Дереккөздер",
+    "reports-table-sources-modal-close": "Жабу"
   },
   "reports": {
     "title": "Есептер",

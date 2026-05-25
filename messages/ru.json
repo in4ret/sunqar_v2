@@ -72,6 +72,11 @@
     "search-placeholder": "Введите поисковый запрос",
     "search-clear": "Очистить поиск",
     "search-submit": "Поиск",
+    "chart-ranges": {
+      "month-daily": "Месяц",
+      "six-months-weekly": "Полгода",
+      "all-time-monthly": "Все время"
+    },
     "news-title": "Новости",
     "news-tooltip": "Всего | Сегодня",
     "sources-title": "Источники",
@@ -116,8 +121,32 @@
     "news-chart-total-label": "Новости",
     "news-chart-legend-label": "Типы",
     "news-chart-unknown-type": "Неизвестно",
+    "news-country-chart-title": "Новости по странам",
+    "news-country-chart-total-label": "Новости",
+    "news-country-chart-percentage-label": "Доля",
+    "news-country-chart-legend-label": "Страны",
+    "news-country-chart-empty": "Новостей по странам не найдено.",
+    "news-country-chart-other": "Другое",
+    "news-country-chart-unknown-country": "Не указано",
     "comments-tone-average-title": "Тональность",
-    "comments-tone-average-tooltip": "Все комментарии | Сегодня"
+    "comments-tone-average-tooltip": "Все комментарии | Сегодня",
+    "reports-table-heading": "Отчет",
+    "reports-table-keywords-heading": "Ключевые слова",
+    "reports-table-sources-heading": "Источники",
+    "reports-table-trend-heading": "Динамика",
+    "reports-table-trend-range-selector": "Группировка динамики отчетов",
+    "reports-table-trend-mobile-range": "Группировка динамики",
+    "reports-table-trend-empty": {
+      "month-daily": "За последние 30 дней данных нет.",
+      "six-months-weekly": "За последние 6 месяцев данных нет.",
+      "all-time-monthly": "За все время данных нет."
+    },
+    "reports-table-trend-chart-label": "Динамика по блокам отчета «{title}»",
+    "reports-table-trend-tooltip-period-label": "Период",
+    "reports-table-trend-tooltip-total-label": "Новости",
+    "reports-table-sources-show-all": "Показать все {count} источников",
+    "reports-table-sources-modal-title": "Источники",
+    "reports-table-sources-modal-close": "Закрыть"
   },
   "reports": {
     "title": "Отчёты",

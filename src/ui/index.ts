@@ -1,4 +1,5 @@
 export { Dropdown } from "./dropdown/dropdown";
+export { Modal } from "./modal/modal";
 export { MultiSelect } from "./multi-select/multi-select";
 export type {
   RecurrencePickerProps,

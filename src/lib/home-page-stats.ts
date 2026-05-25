@@ -2,7 +2,15 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import crypto from "node:crypto";
+
+import {
+  type HomePageNewsCountryChartSlice,
+  type HomePageNewsCountryChartStats,
+  UNKNOWN_NEWS_COUNTRY,
+} from "@/lib/home-page-stats-shared";
 import { manticoreSql } from "@/lib/manticore";
+import type { ReportBlocks } from "@/lib/reports";
 
 type CountRow = {
   total: number | string;
@@ -21,6 +29,16 @@ type NewsChartCountRow = {
   bucket_date: string;
   total: number | string;
   type: string | null;
+};
+
+type NewsCountryChartCountRow = {
+  country: string | null;
+  total: number | string;
+};
+
+type ReportTrendCountRow = {
+  bucket_date: string;
+  total: number | string;
 };
 
 type ChartBucketSpec = {
@@ -71,8 +89,42 @@ export type HomePageNewsChartStats = {
   types: string[];
 };
 
+export type HomePageReportTrendBucket = {
+  bucketEnd: string;
+  bucketLabel: string;
+  bucketStart: string;
+};
+
+export type HomePageReportTrendPoint = {
+  bucketStart: string;
+  total: number;
+};
+
+export type HomePageReportTrendSeries = {
+  blockTitle: string;
+  colorIndex: number;
+  points: HomePageReportTrendPoint[];
+};
+
+export type HomePageReportTrendRangeStats = {
+  buckets: HomePageReportTrendBucket[];
+  series: HomePageReportTrendSeries[];
+};
+
+export type HomePageReportTrendStats = {
+  reportId: string;
+  ranges: {
+    [key in HomePageChartRange]: HomePageReportTrendRangeStats;
+  };
+};
+
+type HomePageReportTrendInput = {
+  blocks: ReportBlocks;
+  reportId: string;
+};
+
 const ALMATY_TIME_ZONE = "Asia/Almaty";
-const HOME_STATS_TTL = 60 * 60;
+const HOME_STATS_TTL = 1 * 24 * 60 * 60;
 const HOME_CHART_DAYS = 30;
 const HOME_CHART_MONTHS = 6;
 const MIN_CHART_DATE = "1970-01-01";
@@ -81,6 +133,14 @@ const UNKNOWN_NEWS_TYPE = "__unknown__";
 
 function escapeManticoreMatchValue(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+}
+
+function escapeSqlStringValue(value: string) {
+  return value.replaceAll("'", "\\'");
+}
+
+function escapeManticoreKeywordValue(value: string) {
+  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("'", "\\'");
 }
 
 function getMatchCondition(searchQuery: string) {
@@ -195,6 +255,12 @@ function normalizeNewsType(value: string | null | undefined) {
   const trimmedValue = value?.trim();
 
   return trimmedValue ? trimmedValue : UNKNOWN_NEWS_TYPE;
+}
+
+function normalizeNewsCountry(value: string | null | undefined) {
+  const trimmedValue = value?.trim();
+
+  return trimmedValue ? trimmedValue : UNKNOWN_NEWS_COUNTRY;
 }
 
 function addDays(date: Date, days: number) {
@@ -401,6 +467,200 @@ function getEmptyNewsChartStats(): HomePageNewsChartStats {
   };
 }
 
+function getEmptyNewsCountryChartStats(): HomePageNewsCountryChartStats {
+  return {
+    slices: [],
+  };
+}
+
+function getEmptyReportTrendStats(reportId: string): HomePageReportTrendStats {
+  return {
+    reportId,
+    ranges: {
+      "all-time-monthly": {
+        buckets: [],
+        series: [],
+      },
+      "month-daily": {
+        buckets: buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE).map(
+          ({ bucketEnd, bucketLabel, bucketStart }) => ({
+            bucketEnd,
+            bucketLabel,
+            bucketStart,
+          })
+        ),
+        series: [],
+      },
+      "six-months-weekly": {
+        buckets: buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE).map(
+          ({ bucketEnd, bucketLabel, bucketStart }) => ({
+            bucketEnd,
+            bucketLabel,
+            bucketStart,
+          })
+        ),
+        series: [],
+      },
+    },
+  };
+}
+
+function buildReportTrendQueryKeywords(blockKeywords: string[]) {
+  const normalizedKeywords = blockKeywords.map((keyword) => keyword.trim()).filter(Boolean);
+
+  if (normalizedKeywords.length === 0) {
+    return null;
+  }
+
+  return normalizedKeywords.map((keyword) => `"${escapeManticoreKeywordValue(keyword)}"`).join(" | ");
+}
+
+function buildReportTrendSourceCondition(blockSources: string[]) {
+  const normalizedSources = blockSources.map((source) => source.trim()).filter(Boolean);
+
+  if (normalizedSources.length === 0) {
+    return null;
+  }
+
+  const sourceValues = normalizedSources.map((source) => `'${escapeSqlStringValue(source)}'`);
+
+  return `source IN (${sourceValues.join(", ")})`;
+}
+
+function createReportTrendSeries(
+  blockTitle: string,
+  colorIndex: number,
+  bucketSpecs: ChartBucketSpec[],
+  dailyTotalsMap: Map<string, number>
+) {
+  return {
+    blockTitle,
+    colorIndex,
+    points: bucketSpecs.map(({ bucketStart, dates }) => ({
+      bucketStart,
+      total: dates.reduce((sum, date) => sum + (dailyTotalsMap.get(date) ?? 0), 0),
+    })),
+  };
+}
+
+function createReportTrendRangeStats(
+  bucketSpecs: ChartBucketSpec[],
+  blockSeriesEntries: Array<{
+    colorIndex: number;
+    dailyTotalsMap: Map<string, number>;
+    title: string;
+  }>
+): HomePageReportTrendRangeStats {
+  return {
+    buckets: bucketSpecs.map(({ bucketEnd, bucketLabel, bucketStart }) => ({
+      bucketEnd,
+      bucketLabel,
+      bucketStart,
+    })),
+    series: blockSeriesEntries.map((entry) =>
+      createReportTrendSeries(entry.title, entry.colorIndex, bucketSpecs, entry.dailyTotalsMap)
+    ),
+  };
+}
+
+function getReportTrendCacheSignature(reportItems: HomePageReportTrendInput[]) {
+  return crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify(
+        reportItems.map((report) => ({
+          blocks: report.blocks.map((block) => ({
+            keywords: block.keywords,
+            sources: block.sources,
+            title: block.title,
+          })),
+          reportId: report.reportId,
+        }))
+      )
+    )
+    .digest("hex");
+}
+
+async function getReportTrendStats(
+  reportItems: HomePageReportTrendInput[]
+): Promise<HomePageReportTrendStats[]> {
+  const reportSeriesEntries = await Promise.all(
+    reportItems.map(async (report) => {
+      const blockSeriesEntries = await Promise.all(
+        report.blocks.map(async (block, index) => {
+          const matchExpression = buildReportTrendQueryKeywords(block.keywords);
+          const sourceCondition = buildReportTrendSourceCondition(block.sources);
+
+          if (!matchExpression || !sourceCondition) {
+            return {
+              colorIndex: index % 3,
+              dailyTotalsMap: new Map<string, number>(),
+              title: block.title,
+            };
+          }
+
+          const rows = await manticoreSql<ReportTrendCountRow>(
+            `SELECT DATE(publishedat) AS bucket_date, COUNT(*) AS total FROM news${getWhereClause(
+              matchExpression,
+              [sourceCondition]
+            )} GROUP BY bucket_date ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=1000000`
+          );
+          const dailyTotalsMap = new Map<string, number>();
+
+          for (const row of rows) {
+            const bucketDate = normalizeChartBucketDate(row.bucket_date);
+
+            if (!isChartDateWithinRange(bucketDate, ALMATY_TIME_ZONE)) {
+              continue;
+            }
+
+            dailyTotalsMap.set(bucketDate, Number(row.total ?? 0));
+          }
+
+          return {
+            colorIndex: index % 3,
+            dailyTotalsMap,
+            title: block.title,
+          };
+        })
+      );
+
+      const fullTrendDates = new Set<string>();
+
+      for (const entry of blockSeriesEntries) {
+        for (const date of entry.dailyTotalsMap.keys()) {
+          fullTrendDates.add(date);
+        }
+      }
+
+      const sortedTrendDates = [...fullTrendDates].sort((left, right) => left.localeCompare(right));
+      const allTimeBucketSpecs =
+        sortedTrendDates.length > 0 ? buildAllTimeMonthlyBucketSpecs(sortedTrendDates) : [];
+
+      return {
+        allTimeBucketSpecs,
+        blockSeriesEntries,
+        reportId: report.reportId,
+      };
+    })
+  );
+
+  return reportSeriesEntries.map(({ allTimeBucketSpecs, blockSeriesEntries, reportId }) => ({
+    reportId,
+    ranges: {
+      "all-time-monthly": createReportTrendRangeStats(allTimeBucketSpecs, blockSeriesEntries),
+      "month-daily": createReportTrendRangeStats(
+        buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE),
+        blockSeriesEntries
+      ),
+      "six-months-weekly": createReportTrendRangeStats(
+        buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE),
+        blockSeriesEntries
+      ),
+    },
+  }));
+}
+
 async function getNewsStats(searchQuery: string): Promise<HomePageCountStats> {
   const startOfToday = getStartOfDayEpochSeconds(new Date(), ALMATY_TIME_ZONE);
   const startOfNextDay = startOfToday + 24 * 60 * 60;
@@ -556,6 +816,58 @@ async function getNewsChartStats(searchQuery: string): Promise<HomePageNewsChart
   };
 }
 
+async function getNewsCountryChartStats(searchQuery: string): Promise<HomePageNewsCountryChartStats> {
+  const rows = await manticoreSql<NewsCountryChartCountRow>(
+    `SELECT country, COUNT(*) AS total FROM news${getWhereClause(searchQuery)} GROUP BY country ORDER BY total DESC LIMIT 100000 OPTION max_matches=1000000`
+  );
+  const countryTotals = new Map<string, number>();
+
+  for (const row of rows) {
+    const country = normalizeNewsCountry(row.country);
+    const total = Number(row.total ?? 0);
+
+    if (total <= 0) {
+      continue;
+    }
+
+    countryTotals.set(country, (countryTotals.get(country) ?? 0) + total);
+  }
+
+  const sortedCountries = [...countryTotals.entries()].sort((left, right) => {
+    if (right[1] !== left[1]) {
+      return right[1] - left[1];
+    }
+
+    if (left[0] === UNKNOWN_NEWS_COUNTRY) {
+      return 1;
+    }
+
+    if (right[0] === UNKNOWN_NEWS_COUNTRY) {
+      return -1;
+    }
+
+    return left[0].localeCompare(right[0], "en", { sensitivity: "base" });
+  });
+  const unknownTotal = countryTotals.get(UNKNOWN_NEWS_COUNTRY) ?? 0;
+  const slices: HomePageNewsCountryChartSlice[] = sortedCountries
+    .filter(([country]) => country !== UNKNOWN_NEWS_COUNTRY)
+    .map(([country, total]) => ({
+      country,
+      total,
+    }));
+
+  if (unknownTotal > 0) {
+    slices.push({
+      country: UNKNOWN_NEWS_COUNTRY,
+      total: unknownTotal,
+    });
+  }
+
+  return {
+    slices,
+  };
+}
+
 const getCachedHomePageNewsStats = unstable_cache(
   async (searchQuery: string) => getNewsStats(searchQuery),
   ["home-page-stats", "news"],
@@ -607,6 +919,33 @@ const getCachedHomePageNewsChartStats = unstable_cache(
   {
     revalidate: HOME_STATS_TTL,
     tags: ["home-page-stats:news-chart-v1"],
+  }
+);
+
+const getCachedHomePageNewsCountryChartStats = unstable_cache(
+  async (searchQuery: string) => getNewsCountryChartStats(searchQuery),
+  ["home-page-stats", "news-country-chart-v1"],
+  {
+    revalidate: HOME_STATS_TTL,
+    tags: ["home-page-stats:news-country-chart-v1"],
+  }
+);
+
+const getCachedHomePageReportTrendStats = unstable_cache(
+  async (
+    userId: string,
+    reportItems: HomePageReportTrendInput[],
+    reportItemsSignature: string
+  ) => {
+    void userId;
+    void reportItemsSignature;
+
+    return getReportTrendStats(reportItems);
+  },
+  ["home-page-stats", "report-trend-v2"],
+  {
+    revalidate: HOME_STATS_TTL,
+    tags: ["home-page-stats:report-trend-v2"],
   }
 );
 
@@ -688,4 +1027,38 @@ export async function getHomePageNewsChartStats(
   }
 }
 
-export { UNKNOWN_NEWS_TYPE };
+export async function getHomePageNewsCountryChartStats(
+  searchQuery: string
+): Promise<HomePageNewsCountryChartStats> {
+  try {
+    return await getCachedHomePageNewsCountryChartStats(searchQuery);
+  } catch (error) {
+    console.error("Failed to load news country chart stats from Manticore.", error);
+
+    return getEmptyNewsCountryChartStats();
+  }
+}
+
+export async function getHomePageReportTrendStats(
+  userId: string,
+  reportItems: HomePageReportTrendInput[]
+): Promise<HomePageReportTrendStats[]> {
+  if (!userId.trim() || reportItems.length === 0) {
+    return reportItems.map((report) => getEmptyReportTrendStats(report.reportId));
+  }
+
+  try {
+    return await getCachedHomePageReportTrendStats(
+      userId,
+      reportItems,
+      getReportTrendCacheSignature(reportItems)
+    );
+  } catch (error) {
+    console.error("Failed to load report trend stats from Manticore.", error);
+
+    return reportItems.map((report) => getEmptyReportTrendStats(report.reportId));
+  }
+}
+
+export type { HomePageNewsCountryChartSlice, HomePageNewsCountryChartStats };
+export { UNKNOWN_NEWS_COUNTRY, UNKNOWN_NEWS_TYPE };

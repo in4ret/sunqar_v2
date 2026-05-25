@@ -1,0 +1,120 @@
+@use "@/styles/breakpoints.scss" as breakpoints;
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(15 23 42 / 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(100%, 44rem);
+  max-height: min(90vh, 48rem);
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  padding-inline: 1.5rem;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+.modal-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.modal-close-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus-visible {
+  border-color: var(--border-default);
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 1.5rem;
+}
+
+.modal-footer {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+@media (max-width: breakpoints.$breakpoint-mobile) {
+  .modal-overlay {
+    align-items: end;
+    padding: 0.75rem;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: min(92vh, 100%);
+    border-radius: 1.25rem;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-inline: 1rem;
+  }
+
+  .modal-header {
+    padding-top: 1rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .modal-body {
+    padding-bottom: 1rem;
+  }
+
+  .modal-footer {
+    padding-top: 0.75rem;
+    padding-bottom: 1rem;
+  }
+}

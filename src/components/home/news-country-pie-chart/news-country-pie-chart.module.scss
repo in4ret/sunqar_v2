@@ -1,0 +1,277 @@
+@use "../../../styles/breakpoints" as *;
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+  min-height: 24rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 253, 0.96) 100%);
+  box-shadow: var(--shadow-soft);
+}
+
+.header {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+.header-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.chart-frame {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.chart-area {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.slice {
+  cursor: pointer;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    filter 0.18s ease;
+  outline: none;
+}
+
+.slice:hover,
+.slice:focus-visible {
+  opacity: 0.95;
+  filter: saturate(1.08) brightness(1.02);
+}
+
+.slice-label {
+  fill: rgba(255, 255, 255, 0.96);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.center-hole {
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+.center-value {
+  fill: var(--text-primary);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.center-label {
+  fill: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.legend {
+  min-height: 0;
+}
+
+.legend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: visible;
+}
+
+.legend-item {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.legend-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.legend-name {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.tooltip {
+  position: absolute;
+  min-width: 13rem;
+  max-width: 18rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(16, 24, 32, 0.92);
+  box-shadow: 0 16px 30px rgba(4, 26, 43, 0.22);
+  color: var(--text-inverse);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 0.85rem));
+  z-index: 1;
+}
+
+.tooltip-country {
+  font-size: 0.82rem;
+  color: rgba(248, 251, 253, 0.74);
+}
+
+.tooltip-value {
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 1.25rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1.1rem;
+  background: rgba(8, 55, 89, 0.03);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.skeleton {
+  overflow: hidden;
+}
+
+.skeleton-header {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.skeleton-title,
+.skeleton-subtitle,
+.skeleton-ring,
+.skeleton-swatch,
+.skeleton-line {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e5e5e5 0%, #f2f2f2 50%, #e5e5e5 100%);
+  background-size: 200% 100%;
+  animation: chart-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: 12rem;
+  height: 1.2rem;
+}
+
+.skeleton-subtitle {
+  width: 8rem;
+  height: 0.95rem;
+}
+
+.skeleton-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8rem;
+  gap: 1rem;
+  align-items: center;
+  min-height: 16rem;
+}
+
+.skeleton-ring {
+  justify-self: center;
+  width: min(100%, 16rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0) 32%, #f2f2f2 33%, #e5e5e5 52%, rgba(255, 255, 255, 0) 53%),
+    linear-gradient(90deg, #e5e5e5 0%, #f2f2f2 50%, #e5e5e5 100%);
+  background-size:
+    100% 100%,
+    200% 100%;
+  animation: chart-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-legend {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.skeleton-legend-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.skeleton-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.skeleton-line {
+  width: 100%;
+  height: 0.8rem;
+}
+
+@keyframes chart-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .skeleton-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .skeleton-ring {
+    width: min(100%, 14rem);
+  }
+}

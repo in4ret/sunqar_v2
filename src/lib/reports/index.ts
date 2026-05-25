@@ -1,5 +1,6 @@
 import "server-only";
 
+export { type ReportBlock, type ReportBlocks } from "./report-blocks";
 export {
   formatStoredReportPeriod,
   parseStoredReportPeriod,

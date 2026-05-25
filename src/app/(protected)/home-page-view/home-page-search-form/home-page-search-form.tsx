@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -26,13 +26,10 @@ export function HomePageSearchForm({
   const router = useRouter();
   const [value, setValue] = useState(searchQuery);
 
-  useEffect(() => {
-    setValue(searchQuery);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    onSearchDirtyChange?.(value !== searchQuery);
-  }, [onSearchDirtyChange, searchQuery, value]);
+  function handleChange(nextValue: string) {
+    setValue(nextValue);
+    onSearchDirtyChange?.(nextValue !== searchQuery);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +56,7 @@ export function HomePageSearchForm({
       <HomePageSearchInput
         clearLabel={t("home.search-clear")}
         name={HOME_PAGE_SEARCH_INPUT_NAME}
-        onChange={setValue}
+        onChange={handleChange}
         placeholder={t("home.search-placeholder")}
         value={value}
       />
