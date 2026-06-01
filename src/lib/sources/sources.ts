@@ -14,6 +14,12 @@ export async function listSources() {
   return db.select().from(sources).orderBy(asc(sources.name)).all();
 }
 
+function normalizeOptionalSourceField(value: string) {
+  const normalizedValue = value.trim();
+
+  return normalizedValue ? normalizedValue : null;
+}
+
 function getSourceNames(value: string) {
   return value
     .split(",")
@@ -25,8 +31,14 @@ function hasDuplicateSourceName(names: string[]) {
   return new Set(names).size !== names.length;
 }
 
-export async function createSourcesByAdmin(input: { names: string }) {
+export async function createSourcesByAdmin(input: {
+  names: string;
+  type: string;
+  country: string;
+}) {
   const names = getSourceNames(input.names);
+  const type = normalizeOptionalSourceField(input.type);
+  const country = normalizeOptionalSourceField(input.country);
 
   if (names.length === 0) {
     return { error: "source-fields-required" as SourceMutationErrorCode };
@@ -51,9 +63,11 @@ export async function createSourcesByAdmin(input: { names: string }) {
   db.insert(sources)
     .values(
       names.map((name) => ({
+        country,
         createdAt: now,
         id: crypto.randomUUID(),
         name,
+        type,
         updatedAt: now,
       })),
     )
@@ -62,8 +76,16 @@ export async function createSourcesByAdmin(input: { names: string }) {
   return { error: null, sourceNames: names };
 }
 
-export async function createSourceByAdmin(input: { name: string }) {
-  const result = await createSourcesByAdmin({ names: input.name });
+export async function createSourceByAdmin(input: {
+  name: string;
+  type: string;
+  country: string;
+}) {
+  const result = await createSourcesByAdmin({
+    country: input.country,
+    names: input.name,
+    type: input.type,
+  });
 
   if (result.error) {
     return result;
@@ -72,9 +94,16 @@ export async function createSourceByAdmin(input: { name: string }) {
   return { error: null, sourceName: result.sourceNames[0] };
 }
 
-export async function updateSourceByAdmin(input: { id: string; name: string }) {
+export async function updateSourceByAdmin(input: {
+  id: string;
+  name: string;
+  type: string;
+  country: string;
+}) {
   const id = input.id.trim();
   const name = input.name.trim();
+  const type = normalizeOptionalSourceField(input.type);
+  const country = normalizeOptionalSourceField(input.country);
 
   if (!id || !name) {
     return { error: "source-fields-required" as SourceMutationErrorCode };
@@ -98,7 +127,9 @@ export async function updateSourceByAdmin(input: { id: string; name: string }) {
 
   db.update(sources)
     .set({
+      country,
       name,
+      type,
       updatedAt: new Date(),
     })
     .where(eq(sources.id, id))

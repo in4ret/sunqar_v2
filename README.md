@@ -82,6 +82,24 @@ npm run dev
 - для существующих моделей обновляются `display_name`, `is_active` и `updated_at`
 - перед запуском таблицы уже должны быть созданы через `npm run db:migrate`
 
+### `npm run db:seed-sources -- <csv-file>`
+
+Создает или обновляет справочник источников из CSV-файла.
+
+CSV должен содержать заголовок:
+
+```csv
+name,country,type
+```
+
+Особенности:
+- скрипт можно запускать повторно
+- существующие источники ищутся по `name`
+- для существующих источников обновляются `country`, `type` и `updated_at`
+- `name` обязателен в каждой строке
+- пустые `country` и `type` сохраняются как `null`
+- перед запуском таблицы уже должны быть созданы через `npm run db:migrate`
+
 ### `npm run db:generate`
 
 Генерирует новую миграцию из изменений в [src/lib/db/schema.ts](/home/rushad/work/sunqar/src/lib/db/schema.ts).

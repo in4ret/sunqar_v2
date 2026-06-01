@@ -1,19 +1,5 @@
 @use "../../../styles/breakpoints" as *;
 
-.content-grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.source-list-card,
-.form-card {
-  padding: 2rem;
-  border: 1px solid var(--border-default);
-  border-radius: 1.5rem;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-soft);
-}
-
 .section-head {
   display: grid;
   gap: 0.25rem;
@@ -32,82 +18,87 @@
   line-height: 1.7;
 }
 
-.create-form,
-.field,
-.row-form {
-  display: grid;
-}
-
-.create-form {
-  gap: 1rem;
-}
-
-.field {
-  gap: 0.5rem;
-}
-
-.field-label {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.field-input,
-.row-input {
-  width: 100%;
-  border: 1px solid var(--border-strong);
-  background: #ffffff;
-  color: var(--text-primary);
-  font: inherit;
-}
-
-.field-input {
-  padding: 0.9rem 1rem;
-  border-radius: 0.9rem;
-}
-
-.row-input {
-  min-width: 0;
-  height: 100%;
-  min-height: var(--source-row-height);
-  padding: 0.2rem 0.45rem;
-  border: 0;
-  border-radius: 0;
-}
-
-.row-input:focus {
-  outline: 0;
-  box-shadow: inset 0 0 0 2px var(--color-info-500);
-}
-
-.row-input:focus-visible {
-  outline: 2px solid var(--color-info-500);
-  outline-offset: -2px;
-}
-
-.form-error,
 .row-error {
   margin: 0;
   border-radius: 0.9rem;
   font-size: 0.925rem;
 }
 
-.form-error {
-  padding: 0.75rem 0.9rem;
-}
-
 .row-error {
   padding: 0.55rem 0.7rem;
 }
 
-.form-error,
 .row-error {
   background: var(--color-error-100);
   color: var(--color-error-500);
 }
 
-.submit-button,
-.save-button,
+.form-error {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  font-size: 0.925rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field-label {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.field-input:focus,
+.field-input:focus-visible {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
+}
+
+.submit-button {
+  min-width: 9rem;
+  padding: 0.8rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.submit-button:hover,
+.submit-button:focus-visible {
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  background: var(--button-primary-bg-disabled);
+  color: var(--button-primary-text-disabled);
+  cursor: wait;
+  transform: none;
+}
+
 .delete-button {
   display: inline-flex;
   width: fit-content;
@@ -120,22 +111,11 @@
   cursor: pointer;
 }
 
-.submit-button {
-  padding: 0.95rem 1.1rem;
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
-}
-
-.save-button,
 .delete-button {
   width: 1.9rem;
   height: 1.9rem;
   padding: 0;
   background: transparent;
-}
-
-.save-button {
-  color: var(--color-neutral-500);
 }
 
 .delete-button {
@@ -148,13 +128,6 @@
   flex: 0 0 auto;
 }
 
-.submit-button:disabled {
-  background: var(--button-primary-bg-disabled);
-  color: var(--button-primary-text-disabled);
-  cursor: wait;
-}
-
-.save-button:disabled,
 .delete-button:disabled {
   cursor: wait;
   opacity: 0.7;
@@ -164,9 +137,8 @@
   --source-header-height: 2.45rem;
   --source-row-height: 2.2rem;
 
-  max-height: calc(var(--source-header-height) + (var(--source-row-height) * 8));
   border: 1px solid var(--border-strong);
-  overflow: auto;
+  overflow-x: auto;
 }
 
 .source-table {
@@ -197,9 +169,6 @@
 }
 
 .source-table th {
-  position: sticky;
-  z-index: 1;
-  top: 0;
   height: var(--source-header-height);
   background: var(--color-neutral-100);
   color: var(--text-secondary);
@@ -210,8 +179,18 @@
   height: var(--source-row-height);
 }
 
-.source-table td:first-child {
-  padding: 0;
+.source-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.source-row:hover td,
+.source-row:focus-visible td {
+  background: var(--bg-soft);
+}
+
+.source-row:focus-visible {
+  outline: none;
 }
 
 .source-table th:last-child,
@@ -219,11 +198,21 @@
   width: 100px;
 }
 
-.row-form {
+.source-table th:first-child,
+.source-table td:first-child,
+.source-table th:nth-child(2),
+.source-table td:nth-child(2),
+.source-table th:nth-child(3),
+.source-table td:nth-child(3) {
+  width: 30%;
+}
+
+.cell-text {
   display: flex;
+  align-items: center;
   min-height: var(--source-row-height);
-  height: 100%;
-  flex-direction: column;
+  padding: 0.2rem 0;
+  color: var(--text-primary);
 }
 
 .row-error {
@@ -246,25 +235,26 @@
   display: inline-flex;
 }
 
+.modal-content,
+.edit-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: $breakpoint-mobile) {
-  .content-grid,
-  .source-list-card,
-  .form-card,
   .table-shell {
     min-width: 0;
-  }
-
-  .source-list-card,
-  .form-card {
-    padding: 1.25rem;
-    border-radius: 1rem;
   }
 
   .table-shell {
     --source-row-height: 2.2rem;
 
-    max-height: calc(var(--source-header-height) + (var(--source-row-height) * 8));
-    overflow: auto;
+    overflow-x: auto;
   }
 
   .source-table {
@@ -292,10 +282,6 @@
     overflow-wrap: anywhere;
   }
 
-  .source-table td:first-child {
-    padding: 0;
-  }
-
   .source-table td:last-child {
     width: 100px;
   }
@@ -306,5 +292,10 @@
 
   .row-form {
     height: 100%;
+  }
+
+  .modal-footer-actions,
+  .submit-button {
+    width: 100%;
   }
 }
