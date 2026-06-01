@@ -1,6 +1,6 @@
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 
-import { db } from "../src/lib/db/client";
+import { db } from "../src/lib/db/database";
 
 async function main() {
   migrate(db, { migrationsFolder: "./drizzle" });

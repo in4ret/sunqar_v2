@@ -43,6 +43,8 @@ export const sources = sqliteTable(
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
+    type: text("type"),
+    country: text("country"),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { db } from "../src/lib/db/client";
+import { db } from "../src/lib/db/database";
 import { aiModels, type NewAiModel } from "../src/lib/db/schema";
 
 const seedAiModels = [

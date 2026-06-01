@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
 
 import { hashPassword } from "../src/lib/auth/password";
-import { db } from "../src/lib/db/client";
+import { db } from "../src/lib/db/database";
 import { users } from "../src/lib/db/schema";
 
 function readArgument(index: number, envName: string) {
