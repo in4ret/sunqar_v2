@@ -51,6 +51,11 @@
   flex: 1 1 auto;
 }
 
+.multi-select-selected {
+  display: grid;
+  gap: 0.45rem;
+}
+
 .multi-select-placeholder {
   display: inline-flex;
   color: var(--text-secondary);
@@ -117,6 +122,31 @@
   opacity: 0.7;
 }
 
+.multi-select-show-all-button {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-info-600);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.multi-select-show-all-button:hover,
+.multi-select-show-all-button:focus-visible {
+  color: var(--color-info-700);
+  text-decoration: underline;
+}
+
+.multi-select-show-all-button:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
 .multi-select-chevron {
   width: 0.75rem;
   height: 0.5rem;
@@ -150,6 +180,16 @@
   bottom: calc(100% + 0.35rem);
 }
 
+.multi-select-tree-node {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.multi-select-tree-group {
+  display: grid;
+  gap: 0.25rem;
+}
+
 .multi-select-option,
 .multi-select-empty {
   width: 100%;
@@ -161,19 +201,100 @@
 }
 
 .multi-select-option {
-  cursor: pointer;
+  padding-left: calc(0.75rem + var(--multi-select-option-level, 0) * 1rem);
   transition:
     background-color 140ms ease,
     color 140ms ease;
 }
 
 .multi-select-option:hover,
-.multi-select-option[data-active="true"] {
+.multi-select-option:focus-within {
   background-color: var(--color-primary-50);
   color: var(--color-primary-700);
+}
+
+.multi-select-option-main {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.multi-select-branch-toggle {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.multi-select-branch-toggle:hover,
+.multi-select-branch-toggle:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-100) 72%, transparent);
+}
+
+.multi-select-branch-toggle:focus-visible,
+.multi-select-checkbox:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.multi-select-branch-toggle:disabled,
+.multi-select-checkbox:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.multi-select-branch-toggle-icon {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.multi-select-branch-toggle-icon[data-expanded="true"] {
+  transform: rotate(45deg);
+}
+
+.multi-select-branch-toggle-spacer {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+}
+
+.multi-select-checkbox-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+}
+
+.multi-select-checkbox-label span {
+  min-width: 0;
+}
+
+.multi-select-checkbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--color-info-500);
+  flex: 0 0 auto;
 }
 
 .multi-select-empty {
   color: var(--text-secondary);
   cursor: default;
+}
+
+.multi-select-modal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

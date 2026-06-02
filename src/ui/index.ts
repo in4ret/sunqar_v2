@@ -1,7 +1,7 @@
 export { Combobox } from "./combobox/combobox";
 export { Dropdown } from "./dropdown/dropdown";
 export { Modal } from "./modal/modal";
-export { MultiSelect } from "./multi-select/multi-select";
+export { MultiSelect, type MultiSelectOption } from "./multi-select/multi-select";
 export type {
   RecurrencePickerProps,
   RecurrenceValue,

@@ -38,18 +38,11 @@ export default async function EditReportPage({ params }: EditReportPageProps) {
   const missingSourceNames = report.blocks.flatMap((block) =>
     block.sources.filter((sourceName) => !knownSourceNames.has(sourceName)),
   );
-  const sourceOptions = [...sources.map((source) => source.name), ...missingSourceNames]
-    .filter((sourceName, index, allSourceNames) => allSourceNames.indexOf(sourceName) === index)
-    .map((sourceName) => ({
-      label: sourceName,
-      value: sourceName,
-    }));
 
   return (
     <section className={styles["edit-report-page"]}>
       <CreateReportForm
         aiModels={activeAiModels}
-        sourceOptions={sourceOptions}
         initialValues={{
           blocks: report.blocks.map((block) => ({
             aiModel: block.aiModel,
@@ -63,7 +56,13 @@ export default async function EditReportPage({ params }: EditReportPageProps) {
           period: parseStoredReportPeriod(report.period),
           title: report.title,
         }}
+        missingSourceNames={missingSourceNames}
         mode="edit"
+        sources={sources.map(({ country, name, type }) => ({
+          country,
+          name,
+          type,
+        }))}
       />
     </section>
   );

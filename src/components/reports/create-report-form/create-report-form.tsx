@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -11,7 +11,13 @@ import {
 import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useNavigationHistory } from "@/lib/providers";
 import { routes } from "@/lib/routes";
-import { Dropdown, MultiSelect, RecurrencePicker, type RecurrenceValue } from "@/ui";
+import {
+  Dropdown,
+  MultiSelect,
+  type MultiSelectOption,
+  RecurrencePicker,
+  type RecurrenceValue,
+} from "@/ui";
 
 import styles from "./create-report-form.module.scss";
 
@@ -26,9 +32,10 @@ type CreateReportFormAiModel = {
   value: string;
 };
 
-type CreateReportFormSourceOption = {
-  label: string;
-  value: string;
+type CreateReportFormSource = {
+  country: string | null;
+  name: string;
+  type: string | null;
 };
 
 type ReportBlockFormValue = {
@@ -45,7 +52,8 @@ type ReportBlockDraft = ReportBlockFormValue & {
 
 type CreateReportFormProps = {
   aiModels: CreateReportFormAiModel[];
-  sourceOptions: CreateReportFormSourceOption[];
+  missingSourceNames?: string[];
+  sources: CreateReportFormSource[];
   initialValues?: {
     blocks: ReportBlockFormValue[];
     description: string;
@@ -115,9 +123,81 @@ function createBlockDraft(block?: Partial<ReportBlockFormValue>): ReportBlockDra
   };
 }
 
+function normalizeSourceGroupValue(value: string | null) {
+  const trimmedValue = value?.trim();
+
+  return trimmedValue ? trimmedValue : null;
+}
+
+function compareByLabel(left: { label: string }, right: { label: string }) {
+  return left.label.localeCompare(right.label);
+}
+
+function buildSourceOptions({
+  missingSourceNames,
+  sources,
+  unavailableLabel,
+  withoutCountryLabel,
+  withoutTypeLabel,
+}: {
+  missingSourceNames: string[];
+  sources: CreateReportFormSource[];
+  unavailableLabel: string;
+  withoutCountryLabel: string;
+  withoutTypeLabel: string;
+}) {
+  const countries = new Map<string, Map<string, MultiSelectOption[]>>();
+
+  for (const source of sources) {
+    const countryLabel = normalizeSourceGroupValue(source.country) ?? withoutCountryLabel;
+    const typeLabel = normalizeSourceGroupValue(source.type) ?? withoutTypeLabel;
+    const countryGroup = countries.get(countryLabel) ?? new Map<string, MultiSelectOption[]>();
+    const typeGroup = countryGroup.get(typeLabel) ?? [];
+
+    typeGroup.push({
+      label: source.name,
+      value: source.name,
+    });
+    countryGroup.set(typeLabel, typeGroup);
+    countries.set(countryLabel, countryGroup);
+  }
+
+  const groupedOptions = [...countries.entries()]
+    .map<MultiSelectOption>(([countryLabel, typeGroups]) => ({
+      children: [...typeGroups.entries()]
+        .map<MultiSelectOption>(([typeLabel, sourceOptions]) => ({
+          children: [...sourceOptions].sort(compareByLabel),
+          label: typeLabel,
+          value: `country:${countryLabel}/type:${typeLabel}`,
+        }))
+        .sort(compareByLabel),
+      label: countryLabel,
+      value: `country:${countryLabel}`,
+    }))
+    .sort(compareByLabel);
+
+  const uniqueMissingSourceNames = [...new Set(
+    missingSourceNames.map((sourceName) => sourceName.trim()).filter(Boolean),
+  )].sort((left, right) => left.localeCompare(right));
+
+  if (uniqueMissingSourceNames.length > 0) {
+    groupedOptions.push({
+      children: uniqueMissingSourceNames.map((sourceName) => ({
+        label: sourceName,
+        value: sourceName,
+      })),
+      label: unavailableLabel,
+      value: "unavailable-sources",
+    });
+  }
+
+  return groupedOptions;
+}
+
 export function CreateReportForm({
   aiModels,
-  sourceOptions,
+  missingSourceNames = [],
+  sources,
   initialValues,
   mode = "create",
 }: CreateReportFormProps) {
@@ -141,6 +221,17 @@ export function CreateReportForm({
         ...aiModels,
       ]
     : [{ label: t("reports.form.no-ai-models"), value: "" }];
+  const sourceOptions = useMemo(
+    () =>
+      buildSourceOptions({
+        missingSourceNames,
+        sources,
+        unavailableLabel: t("reports.form.sources-unavailable"),
+        withoutCountryLabel: t("reports.form.sources-without-country"),
+        withoutTypeLabel: t("reports.form.sources-without-type"),
+      }),
+    [missingSourceNames, sources, t],
+  );
 
   function updateBlock(
     index: number,
@@ -281,7 +372,17 @@ export function CreateReportForm({
                         removeButtonLabel={(label) =>
                           t("reports.form.remove-selected-source", { source: label })
                         }
+                        selectedItemsModalCloseLabel={t(
+                          "reports.form.selected-sources-modal-close",
+                        )}
+                        selectedItemsModalTitle={t(
+                          "reports.form.selected-sources-modal-title",
+                        )}
+                        showAllSelectedLabel={(count) =>
+                          t("reports.form.show-all-selected-sources", { count })
+                        }
                         value={block.sources}
+                        visibleSelectedOptionsCount={5}
                       />
                     </div>
                     <label className={styles["field"]}>

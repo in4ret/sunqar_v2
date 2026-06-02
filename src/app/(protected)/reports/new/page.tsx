@@ -14,14 +14,17 @@ export default async function NewReportPage() {
       label: aiModel.displayName,
       value: aiModel.id,
     }));
-  const sourceOptions = sources.map((source) => ({
-    label: source.name,
-    value: source.name,
-  }));
 
   return (
     <section className={styles["new-report-page"]}>
-      <CreateReportForm aiModels={activeAiModels} sourceOptions={sourceOptions} />
+      <CreateReportForm
+        aiModels={activeAiModels}
+        sources={sources.map(({ country, name, type }) => ({
+          country,
+          name,
+          type,
+        }))}
+      />
     </section>
   );
 }
