@@ -1,0 +1,192 @@
+@use "../../../styles/breakpoints" as *;
+
+.row-error {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.9rem;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  font-size: 0.925rem;
+}
+
+.delete-button {
+  display: inline-flex;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-error-500);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+}
+
+.delete-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.table-shell {
+  --source-header-height: 2.45rem;
+  --source-row-height: 2.2rem;
+
+  border: 1px solid var(--border-strong);
+  overflow-x: auto;
+}
+
+.source-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.source-table th,
+.source-table td {
+  padding: 0.2rem 0.45rem;
+  border: 0;
+  border-right: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  text-align: left;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.source-table th:last-child,
+.source-table td:last-child {
+  border-right: 0;
+}
+
+.source-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.source-table th {
+  height: var(--source-header-height);
+  background: var(--color-neutral-100);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.source-table tbody tr {
+  height: var(--source-row-height);
+}
+
+.source-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.source-row:hover td,
+.source-row:focus-visible td {
+  background: var(--bg-soft);
+}
+
+.source-row:focus-visible {
+  outline: none;
+}
+
+.source-table th:last-child,
+.source-table td:last-child {
+  width: 100px;
+}
+
+.source-table th:first-child,
+.source-table td:first-child,
+.source-table th:nth-child(2),
+.source-table td:nth-child(2),
+.source-table th:nth-child(3),
+.source-table td:nth-child(3) {
+  width: 30%;
+}
+
+.cell-text {
+  display: flex;
+  align-items: center;
+  min-height: var(--source-row-height);
+  padding: 0.2rem 0;
+  color: var(--text-primary);
+}
+
+.row-error {
+  grid-column: 1 / -1;
+}
+
+.source-table .actions-cell {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.actions-list {
+  display: flex;
+  gap: 0.2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-form {
+  display: inline-flex;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .table-shell {
+    min-width: 0;
+    --source-row-height: 2.2rem;
+    overflow-x: auto;
+  }
+
+  .source-table {
+    min-width: 28rem;
+  }
+
+  .source-table thead {
+    display: table-header-group;
+  }
+
+  .source-table tbody {
+    display: table-row-group;
+  }
+
+  .source-table tr {
+    display: table-row;
+    height: auto;
+    min-height: var(--source-row-height);
+  }
+
+  .source-table td {
+    display: table-cell;
+    min-width: 0;
+    padding: 0.2rem 0.45rem;
+    overflow-wrap: anywhere;
+  }
+
+  .source-table td:last-child {
+    width: 100px;
+  }
+
+  .source-table td::before {
+    content: none;
+  }
+}

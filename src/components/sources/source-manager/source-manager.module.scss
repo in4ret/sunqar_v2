@@ -1,9 +1,16 @@
-@use "../../../styles/breakpoints" as *;
+@use "@/styles/breakpoints" as *;
 
 .section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-copy-block {
   display: grid;
   gap: 0.25rem;
-  margin-bottom: 1rem;
 }
 
 .section-title,
@@ -18,60 +25,11 @@
   line-height: 1.7;
 }
 
-.row-error {
-  margin: 0;
-  border-radius: 0.9rem;
-  font-size: 0.925rem;
-}
-
-.row-error {
-  padding: 0.55rem 0.7rem;
-}
-
-.row-error {
-  background: var(--color-error-100);
-  color: var(--color-error-500);
-}
-
-.form-error {
-  margin: 0;
-  padding: 0.8rem 0.95rem;
-  border-radius: 0.9rem;
-  background: var(--color-error-100);
-  color: var(--color-error-500);
-  font-size: 0.925rem;
-}
-
-.field {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.field-label {
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.field-input {
-  width: 100%;
-  padding: 0.8rem 0.95rem;
-  border: 1px solid var(--border-default);
-  border-radius: 1rem;
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font: inherit;
-}
-
-.field-input:focus,
-.field-input:focus-visible {
-  outline: none;
-  border-color: var(--border-strong);
-  box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
-}
-
-.submit-button {
-  min-width: 9rem;
+.create-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
   padding: 0.8rem 1.1rem;
   border: 0;
   border-radius: 999px;
@@ -86,216 +44,18 @@
     box-shadow 0.2s ease;
 }
 
-.submit-button:hover,
-.submit-button:focus-visible {
+.create-button:hover,
+.create-button:focus-visible {
   box-shadow: var(--shadow-soft);
   transform: translateY(-1px);
 }
 
-.submit-button:disabled {
-  background: var(--button-primary-bg-disabled);
-  color: var(--button-primary-text-disabled);
-  cursor: wait;
-  transform: none;
-}
-
-.delete-button {
-  display: inline-flex;
-  width: fit-content;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 999px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.delete-button {
-  width: 1.9rem;
-  height: 1.9rem;
-  padding: 0;
-  background: transparent;
-}
-
-.delete-button {
-  color: var(--color-error-500);
-}
-
-.button-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: 0 0 auto;
-}
-
-.delete-button:disabled {
-  cursor: wait;
-  opacity: 0.7;
-}
-
-.table-shell {
-  --source-header-height: 2.45rem;
-  --source-row-height: 2.2rem;
-
-  border: 1px solid var(--border-strong);
-  overflow-x: auto;
-}
-
-.source-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: fixed;
-}
-
-.source-table th,
-.source-table td {
-  padding: 0.2rem 0.45rem;
-  border: 0;
-  border-right: 1px solid var(--border-strong);
-  border-bottom: 1px solid var(--border-strong);
-  text-align: left;
-  vertical-align: middle;
-  overflow-wrap: anywhere;
-}
-
-.source-table th:last-child,
-.source-table td:last-child {
-  border-right: 0;
-}
-
-.source-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.source-table th {
-  height: var(--source-header-height);
-  background: var(--color-neutral-100);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.source-table tbody tr {
-  height: var(--source-row-height);
-}
-
-.source-row {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.source-row:hover td,
-.source-row:focus-visible td {
-  background: var(--bg-soft);
-}
-
-.source-row:focus-visible {
-  outline: none;
-}
-
-.source-table th:last-child,
-.source-table td:last-child {
-  width: 100px;
-}
-
-.source-table th:first-child,
-.source-table td:first-child,
-.source-table th:nth-child(2),
-.source-table td:nth-child(2),
-.source-table th:nth-child(3),
-.source-table td:nth-child(3) {
-  width: 30%;
-}
-
-.cell-text {
-  display: flex;
-  align-items: center;
-  min-height: var(--source-row-height);
-  padding: 0.2rem 0;
-  color: var(--text-primary);
-}
-
-.row-error {
-  grid-column: 1 / -1;
-}
-
-.source-table .actions-cell {
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.actions-list {
-  display: flex;
-  gap: 0.2rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.delete-form {
-  display: inline-flex;
-}
-
-.modal-content,
-.edit-form {
-  display: grid;
-  gap: 1rem;
-}
-
-.modal-footer-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 @media (max-width: $breakpoint-mobile) {
-  .table-shell {
-    min-width: 0;
+  .section-head {
+    flex-direction: column;
   }
 
-  .table-shell {
-    --source-row-height: 2.2rem;
-
-    overflow-x: auto;
-  }
-
-  .source-table {
-    min-width: 28rem;
-  }
-
-  .source-table thead {
-    display: table-header-group;
-  }
-
-  .source-table tbody {
-    display: table-row-group;
-  }
-
-  .source-table tr {
-    display: table-row;
-    height: auto;
-    min-height: var(--source-row-height);
-  }
-
-  .source-table td {
-    display: table-cell;
-    min-width: 0;
-    padding: 0.2rem 0.45rem;
-    overflow-wrap: anywhere;
-  }
-
-  .source-table td:last-child {
-    width: 100px;
-  }
-
-  .source-table td::before {
-    content: none;
-  }
-
-  .row-form {
-    height: 100%;
-  }
-
-  .modal-footer-actions,
-  .submit-button {
+  .create-button {
     width: 100%;
   }
 }

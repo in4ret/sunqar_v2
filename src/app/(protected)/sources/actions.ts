@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/auth/auth";
 import { type ActionMessage, createActionMessage } from "@/lib/i18n/action-messages";
 import { routes } from "@/lib/routes";
 import {
-  createSourcesByAdmin,
+  createSourceByAdmin,
   deleteSourceByAdmin,
   updateSourceByAdmin,
 } from "@/lib/sources/sources";
@@ -22,10 +22,10 @@ export async function submitCreateSource(
   formData: FormData,
 ): Promise<SourceFormState> {
   await requireRole("admin");
-  const names = String(formData.get("sunqar-source-name") ?? "");
+  const name = String(formData.get("sunqar-source-name") ?? "");
   const type = String(formData.get("sunqar-source-type") ?? "");
   const country = String(formData.get("sunqar-source-country") ?? "");
-  const result = await createSourcesByAdmin({ country, names, type });
+  const result = await createSourceByAdmin({ country, name, type });
 
   if (result.error) {
     return {
@@ -40,10 +40,7 @@ export async function submitCreateSource(
   return {
     error: null,
     sourceId: null,
-    success:
-      result.sourceNames.length === 1
-        ? createActionMessage("messages.source-created", { name: result.sourceNames[0] })
-        : createActionMessage("messages.sources-created", { count: result.sourceNames.length }),
+    success: createActionMessage("messages.source-created", { name: result.sourceName }),
   };
 }
 

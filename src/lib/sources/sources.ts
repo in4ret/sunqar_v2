@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { asc, eq, inArray } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { sources } from "@/lib/db/schema";
@@ -20,78 +20,41 @@ function normalizeOptionalSourceField(value: string) {
   return normalizedValue ? normalizedValue : null;
 }
 
-function getSourceNames(value: string) {
-  return value
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
-}
-
-function hasDuplicateSourceName(names: string[]) {
-  return new Set(names).size !== names.length;
-}
-
-export async function createSourcesByAdmin(input: {
-  names: string;
+export async function createSourceByAdmin(input: {
+  name: string;
   type: string;
   country: string;
 }) {
-  const names = getSourceNames(input.names);
+  const name = input.name.trim();
   const type = normalizeOptionalSourceField(input.type);
   const country = normalizeOptionalSourceField(input.country);
 
-  if (names.length === 0) {
+  if (!name) {
     return { error: "source-fields-required" as SourceMutationErrorCode };
-  }
-
-  if (hasDuplicateSourceName(names)) {
-    return { error: "source-name-exists" as SourceMutationErrorCode };
   }
 
   const existingSource = db
     .select()
     .from(sources)
-    .where(inArray(sources.name, names))
+    .where(eq(sources.name, name))
     .get();
 
   if (existingSource) {
     return { error: "source-name-exists" as SourceMutationErrorCode };
   }
 
-  const now = new Date();
-
   db.insert(sources)
-    .values(
-      names.map((name) => ({
-        country,
-        createdAt: now,
-        id: crypto.randomUUID(),
-        name,
-        type,
-        updatedAt: now,
-      })),
-    )
+    .values({
+      country,
+      createdAt: new Date(),
+      id: crypto.randomUUID(),
+      name,
+      type,
+      updatedAt: new Date(),
+    })
     .run();
 
-  return { error: null, sourceNames: names };
-}
-
-export async function createSourceByAdmin(input: {
-  name: string;
-  type: string;
-  country: string;
-}) {
-  const result = await createSourcesByAdmin({
-    country: input.country,
-    names: input.name,
-    type: input.type,
-  });
-
-  if (result.error) {
-    return result;
-  }
-
-  return { error: null, sourceName: result.sourceNames[0] };
+  return { error: null, sourceName: name };
 }
 
 export async function updateSourceByAdmin(input: {

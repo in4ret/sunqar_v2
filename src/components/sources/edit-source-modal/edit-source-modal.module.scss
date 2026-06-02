@@ -1,0 +1,86 @@
+@use "@/styles/breakpoints" as *;
+
+.form-error {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  font-size: 0.925rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field-label {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.field-input:focus,
+.field-input:focus-visible {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
+}
+
+.submit-button {
+  min-width: 9rem;
+  padding: 0.8rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.submit-button:hover,
+.submit-button:focus-visible {
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  background: var(--button-primary-bg-disabled);
+  color: var(--button-primary-text-disabled);
+  cursor: wait;
+  transform: none;
+}
+
+.modal-content,
+.edit-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .modal-footer-actions,
+  .submit-button {
+    width: 100%;
+  }
+}
+

@@ -115,12 +115,15 @@ export function Combobox({
     }
   }
 
-  function openList() {
+  function openList({ resetSearch = true }: { resetSearch?: boolean } = {}) {
     if (disabled) {
       return;
     }
 
-    setSearchQuery("");
+    if (resetSearch) {
+      setSearchQuery("");
+    }
+
     setIsOpen(true);
   }
 
@@ -214,7 +217,7 @@ export function Combobox({
 
             updateValue(nextValue);
             setSearchQuery(nextValue);
-            openList();
+            openList({ resetSearch: false });
             setActiveIndex(0);
           }}
           onClick={() => {

@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -32,13 +33,23 @@ type ClientLocaleContextValue = {
 };
 
 const clientLocaleContext = createContext<ClientLocaleContextValue | null>(null);
+const localeMessagesCache = new Map<AppLocale, Promise<AbstractIntlMessages>>();
 
 async function loadLocaleMessages(locale: AppLocale): Promise<AbstractIntlMessages> {
-  if (locale === "kk") {
-    return (await import("../../../../messages/kk.json")).default;
+  const cachedMessages = localeMessagesCache.get(locale);
+
+  if (cachedMessages) {
+    return cachedMessages;
   }
 
-  return (await import("../../../../messages/ru.json")).default;
+  const messagesPromise =
+    locale === "kk"
+      ? import("../../../../messages/kk.json").then((module) => module.default)
+      : import("../../../../messages/ru.json").then((module) => module.default);
+
+  localeMessagesCache.set(locale, messagesPromise);
+
+  return messagesPromise;
 }
 
 function setLocaleCookie(locale: AppLocale) {
@@ -54,6 +65,14 @@ export function ClientIntlProvider({
   const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
   const [isSwitchingLocale, startTransition] = useTransition();
   const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    localeMessagesCache.set(locale, Promise.resolve(messages));
+
+    const nextLocale: AppLocale = locale === "ru" ? "kk" : "ru";
+
+    void loadLocaleMessages(nextLocale);
+  }, [locale, messages]);
 
   async function handleSetLocale(nextLocale: AppLocale) {
     if (!isLocale(nextLocale) || nextLocale === locale) {
