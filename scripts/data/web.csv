@@ -1,5 +1,8 @@
 name,country,type
+Vlast,kz,Другие
 RT,ru,Федеральные каналы РФ
+Zakon,kz,Другие
+Tengri,kz,Другие
 Ритм Евразии,ru,Окологосударственные и пропагандистские СМИ РФ
 Fondsk,ru,Окологосударственные и пропагандистские СМИ РФ
 RussianKZ,ru,Окологосударственные и пропагандистские СМИ РФ
@@ -14,23 +17,156 @@ EADaily,ru,Окологосударственные и пропагандист�
 Евразия Эксперт,ru,Окологосударственные и пропагандистские СМИ РФ
 Евразия Сегодня,ru,Окологосударственные и пропагандистские СМИ РФ
 Стержень Азии,ru,Окологосударственные и пропагандистские СМИ РФ
+mediapart,az,Другие
+ВестиKG,kg,Другие
+Кактус Медиа,kg,Другие
+Kun UZ,uz,Другие
+24KG,kg,Другие
+КенешKG,kg,Другие
+ХабарKG,kg,Другие
+ХоварTJ,tj,Другие
+АзияПлюс,tj,Другие
+Телеграф,uk,Другие
+Новая Газета Казахстан,kz,Другие
 Мировое Политическое Шоу,ru,Окологосударственные и пропагандистские СМИ РФ
+Skeptik,kg,Другие
 Военно-политическая аналитика,ru,Окологосударственные и пропагандистские СМИ РФ
+Газета.uz,uz,Другие
+DaryoUz,uz,Другие
 EssentPress,ru,Окологосударственные и пропагандистские СМИ РФ
+СоциализмКЗ,kz,Другие
+АЗЕРТАДЖ,az,Другие
 Русская Народная Линия,ru,Окологосударственные и пропагандистские СМИ РФ
+QazaqstanPress,kz,Другие
+Centrasia Institute,kg,Другие
 Asia Today,ru,Окологосударственные и пропагандистские СМИ РФ
 Атомная энергия 2.0,ru,Окологосударственные и пропагандистские СМИ РФ
 Собкор «Новости»,ru,Окологосударственные и пропагандистские СМИ РФ
 RussiaPost,ru,Окологосударственные и пропагандистские СМИ РФ
+Georgia Today,ge,Другие
+Civil Georgia,ge,Другие
+Tehran Times,ir,Другие
+Press TV,ir,Другие
+Mediapart,fr,Другие
+BFTM,fr,Другие
+UZ Daily,uz,Другие
+Handelsblatt,de,Другие
 NewsRu,ru,Окологосударственные и пропагандистские СМИ РФ
 Новая Газета EU,ru,Оппозиционные СМИ РФ
+Welt,de,Другие
+TagesSchau,de,Другие
+BBC,uk,Другие
+France24,fr,Другие
+AlJazeera,sa,Другие
+Sabah,tr,Другие
+ABC News,us,Другие
+Anadolu,tr,Другие
+CNN,us,Другие
+Fox News,us,Другие
+Bloomberg,us,Другие
+Bild,de,Другие
+Guardian,uk,Другие
+CGTN,cn,Другие
+RTHK,cn,Другие
+South China MP,cn,Другие
+Жэньминь Жибао,cn,Другие
+TurkmenistanRu,tm,Другие
+TurkmenistanGov,tm,Другие
+Business Turkmenistan,tm,Другие
+Economist,uk,Другие
+hurriyet,tr,Другие
+hurriyet,tr,Другие
+CNN Turk,tr,Другие
+Haberturk,tr,Другие
+NY Times,us,Другие
+CNBC,us,Другие
 Известия,ru,Федеральные каналы РФ
 Ведомости,ru,Федеральные каналы РФ
 Лента,ru,Федеральные каналы РФ
 РБК,ru,Федеральные каналы РФ
+Капитал,kz,Другие
+КазИнформ,kz,Другие
+Вечерний Бишкек,kg,Другие
+AKIpress,kg,Другие
+DayAz,az,Другие
+LeMonde,fr,Другие
+Politico,fr,Другие
+DW,de,Другие
+ZDF,de,Другие
+Frankfurter Allgemeine Zeitung,de,Другие
+Iran Focus,ir,Другие
+Islamic Republic News Agency,ir,Другие
+ТуркменПортал,tm,Другие
+Ориент,tm,Другие
+Авеста,tj,Другие
+PressaTJ,tj,Другие
+Saudi Gazette,sa,Другие
+The Independent,uk,Другие
+The Mirror,uk,Другие
+Financial Times,uk,Другие
+Business Грузия,ge,Другие
+Новости Узбекистана,uz,Другие
+K-News,kg,Другие
+TrendAZ,az,Другие
+Haqqin,az,Другие
+Azerbaijan News,az,Другие
+Euronews TR,tr,Другие
+РБК Украина,ua,Другие
+Новости Беларуси,by,Другие
+Газета BY,by,Другие
+БелТА,by,Другие
+Украинская Правда,ua,Другие
+Головне в Україні,ua,Другие
+UNN,ua,Другие
+SpikKZ,kz,Другие
+Chinanews,cn,Другие
+Asia Times,sa,Другие
+Arab News,sa,Другие
+XinHua,cn,Другие
+China Military,cn,Другие
+Время КЗ,kz,Другие
+Новости Туркменистана,tm,Другие
+Туркменистан Live,tm,Другие
+Tajikistan News,tj,Другие
+Azattyq,kz,Другие
 Российская Газета,ru,Федеральные каналы РФ
 Медуза,ru,Оппозиционные СМИ РФ
+Зеркало,az,Другие
+Iran Times,ir,Другие
+FinChannel,ge,Другие
+Beijing Bulletin,cn,Другие
+DigiTimes,cn,Другие
+Zeit,de,Другие
+Turkmen News,tm,Другие
+Hurriyet Daily News,tr,Другие
+Daily Sabah,tr,Другие
+Vesti,az,Другие
+Солидарность,by,Другие
+Телеграф,ua,Другие
+Sky News,uk,Другие
+RFI,fr,Другие
+French Daily News,fr,Другие
+Lequipe,fr,Другие
+Charlie Hebdo,fr,Другие
+Al Riyadh,sa,Другие
+Gulf 365,sa,Другие
+CNN Arabic,sa,Другие
+Farda News,ir,Другие
+News Georgia,ge,Другие
+Alalam,ir,Другие
+Okaz,sa,Другие
+Aljazeera,sa,Другие
+Washington Post,us,Другие
+WSJ,us,Другие
+Times of Israel,il,Другие
+Mignews,il,Другие
+Cursor Info,il,Другие
+Reuters,uk,Другие
 Gazeta Ru,ru,Федеральные каналы РФ
+Onliner,by,Другие
+Jerusalem Post,il,Другие
+Israel National News,il,Другие
+AP,us,Другие
 Инказан,ru,Региональные СМИ РФ
 Медиакорсеть,ru,Региональные СМИ РФ
 Байкал-Daily,ru,Региональные СМИ РФ
@@ -39,10 +175,51 @@ UfacityNews,ru,Региональные СМИ РФ
 SakhaDay,ru,Региональные СМИ РФ
 AltaPress,ru,Региональные СМИ РФ
 KazanFirst,ru,Региональные СМИ РФ
+Беларусь Сегодня,by,Другие
+HRW,us,Другие
+IntelliNews,de,Другие
+Amnesty International,us,Другие
+RSF,us,Другие
+CEPA,us,Другие
+EurasiaNet,us,Другие
+EmergingEurope,us,Другие
+OCCRP,us,Другие
+News Israel,il,Другие
+InformKz,kz,Другие
+Uza,uz,Другие
+Ukrinform,ua,Другие
+Euromaidan Press,ua,Другие
 The Moscow Times,ru,Другие
+Kyiv Independent,ua,Другие
+NATO,us,Другие
+Militarnyi,ua,Другие
 ЦентрАзия,ru,Другие
+Foreign affairs,uk,Другие
 МИД,ru,Другие
+Diplomatie,fr,Другие
 Кремль,ru,Другие
+PM_ViktorOrban,hu,Twitter
+EmmanuelMacron,fr,Twitter
+ZelenskyyUa,ua,Twitter
+eucopresident,us,Twitter
+WhiteHouse,us,Twitter
+Keir_Starmer,uk,Twitter
+SecRubio,us,Twitter
+vonderleyen,us,Twitter
+SecWar,us,Twitter
+trpresidency,tr,Twitter
+КазТаг,kz,Другие
+China Foreign Affairs,cn,Другие
+Friedrich Merz,de,Twitter
+NATO,us,Twitter
+SecGenNATO,us,Twitter
+Pedro Sanchez,es,Twitter
+Курсив,kz,Другие
+Understanding War,us,Другие
+Acleddata Ukraine,us,Другие
+acleddata,us,Другие
+All Sides,us,Другие
+Iran International,ir,Другие
 Senat Kazakhstan,kz,Другие
 Kloop,kg,Другие
 Turmush,kg,Другие
