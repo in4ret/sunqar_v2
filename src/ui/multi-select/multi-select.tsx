@@ -3,6 +3,7 @@
 import {
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent,
   useEffect,
   useId,
   useLayoutEffect,
@@ -38,6 +39,7 @@ type MultiSelectProps = {
   onChange?: (value: string[]) => void;
   options: MultiSelectOption[];
   placeholder?: string;
+  searchPlaceholder?: string;
   removeButtonLabel?: (label: string) => string;
   selectedItemsModalCloseLabel?: string;
   selectedItemsModalTitle?: string;
@@ -96,6 +98,28 @@ function mergeSelectedValues(currentValue: string[], nextValues: string[]) {
   return nextSelectedValues;
 }
 
+function filterMultiSelectTree(nodes: MultiSelectNode[], normalizedQuery: string): MultiSelectNode[] {
+  if (normalizedQuery.length === 0) {
+    return nodes;
+  }
+
+  return nodes.flatMap((node) => {
+    const filteredChildren = filterMultiSelectTree(node.children, normalizedQuery);
+    const isMatch = node.label.toLocaleLowerCase().includes(normalizedQuery);
+
+    if (!isMatch && filteredChildren.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        ...node,
+        children: filteredChildren,
+      },
+    ];
+  });
+}
+
 function TriStateCheckbox({
   checked,
   disabled,
@@ -134,7 +158,6 @@ export function MultiSelect({
   name,
   onChange,
   options,
-  placeholder,
   removeButtonLabel,
   selectedItemsModalCloseLabel,
   selectedItemsModalTitle,
@@ -145,12 +168,15 @@ export function MultiSelect({
   const listboxId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const shouldIgnoreNextInputFocusRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isSelectedItemsModalOpen, setIsSelectedItemsModalOpen] = useState(false);
   const [placement, setPlacement] = useState<MultiSelectPlacement>("bottom");
   const [listMaxHeight, setListMaxHeight] = useState(MAX_LIST_HEIGHT);
   const [expandedValues, setExpandedValues] = useState<Set<string>>(() => new Set());
+  const [searchValue, setSearchValue] = useState("");
   const { leafOptionsByValue, tree } = useMemo(() => {
     const nextLeafOptionsByValue = new Map<string, MultiSelectOption>();
     const nextTree = buildMultiSelectTree(options, 0, nextLeafOptionsByValue);
@@ -160,6 +186,12 @@ export function MultiSelect({
       tree: nextTree,
     };
   }, [options]);
+  const normalizedSearchValue = searchValue.trim().toLocaleLowerCase();
+  const filteredTree = useMemo(
+    () => filterMultiSelectTree(tree, normalizedSearchValue),
+    [normalizedSearchValue, tree],
+  );
+  const hasActiveSearch = normalizedSearchValue.length > 0;
   const selectedLeafValues = value.filter((selectedValue) => leafOptionsByValue.has(selectedValue));
   const selectedOptions = selectedLeafValues
     .map((selectedValue) => leafOptionsByValue.get(selectedValue))
@@ -198,14 +230,30 @@ export function MultiSelect({
   }
 
   function updateSelectedValues(nextValue: string[]) {
+    const nextSelectedLeafValues = nextValue.filter((selectedValue) =>
+      leafOptionsByValue.has(selectedValue),
+    );
+    const nextHasHiddenSelectedOptions =
+      visibleSelectedOptionsCount !== undefined &&
+      nextSelectedLeafValues.length > visibleSelectedOptionsCount &&
+      showAllSelectedLabel !== undefined &&
+      selectedItemsModalTitle !== undefined &&
+      selectedItemsModalCloseLabel !== undefined;
+
+    if (!nextHasHiddenSelectedOptions) {
+      setIsSelectedItemsModalOpen(false);
+    }
+
     onChange?.(nextValue);
   }
 
   function closeDropdown({ restoreFocus }: { restoreFocus: boolean }) {
     setIsOpen(false);
+    setSearchValue("");
 
     if (restoreFocus) {
-      buttonRef.current?.focus();
+      shouldIgnoreNextInputFocusRef.current = true;
+      inputRef.current?.focus();
     }
   }
 
@@ -273,6 +321,27 @@ export function MultiSelect({
     }
   }
 
+  function openDropdown() {
+    if (disabled) {
+      return;
+    }
+
+    setIsOpen(true);
+  }
+
+  function toggleDropdown() {
+    if (disabled) {
+      return;
+    }
+
+    if (isOpen) {
+      closeDropdown({ restoreFocus: true });
+      return;
+    }
+
+    setIsOpen(true);
+  }
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -316,7 +385,8 @@ export function MultiSelect({
 
   function renderNode(node: MultiSelectNode) {
     const selectionState = getSelectionState(node);
-    const isExpanded = expandedValues.has(node.value);
+    const hasVisibleChildren = node.children.length > 0;
+    const isExpanded = hasActiveSearch ? hasVisibleChildren : expandedValues.has(node.value);
     const hasChildren = node.children.length > 0;
     const isChecked = selectionState === "checked";
     const isIndeterminate = selectionState === "indeterminate";
@@ -343,6 +413,11 @@ export function MultiSelect({
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
+
+                  if (hasActiveSearch) {
+                    return;
+                  }
+
                   toggleExpanded(node.value);
                 }}
               >
@@ -385,26 +460,22 @@ export function MultiSelect({
         aria-controls={listboxId}
         aria-expanded={isOpen}
         aria-haspopup="tree"
-        aria-label={ariaLabel}
         aria-disabled={disabled}
         className={styles["multi-select"]}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
         onClick={() => {
-          if (disabled) {
-            return;
-          }
-
-          setIsOpen((currentIsOpen) => !currentIsOpen);
+          openDropdown();
         }}
         onKeyDown={(event) => {
           if (disabled) {
             return;
           }
 
-          if (event.key === "Enter" || event.key === " ") {
+          if (
+            (event.target as HTMLElement).tagName !== "INPUT" &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
             event.preventDefault();
-            setIsOpen((currentIsOpen) => !currentIsOpen);
+            toggleDropdown();
           }
 
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -418,48 +489,84 @@ export function MultiSelect({
         }}
       >
         <div className={styles["multi-select-content"]}>
-          {selectedOptions.length > 0 ? (
-            <div className={styles["multi-select-selected"]}>
-              <div className={styles["multi-select-chips"]}>
-                {visibleSelectedOptions.map((option) => (
-                  <span key={option.value} className={styles["multi-select-chip"]}>
-                    <span className={styles["multi-select-chip-label"]}>{option.label}</span>
-                    <button
-                      aria-label={removeButtonLabel?.(option.label) ?? option.label}
-                      className={styles["multi-select-chip-remove"]}
-                      disabled={disabled}
-                      type="button"
-                      onKeyDown={(event) => {
-                        event.stopPropagation();
-                      }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        removeValue(option.value);
-                      }}
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </span>
-                ))}
-              </div>
-              {hasHiddenSelectedOptions ? (
-                <button
-                  className={styles["multi-select-show-all-button"]}
-                  type="button"
-                  onClick={(event) => {
+          <div className={styles["multi-select-selected"]}>
+            <div className={styles["multi-select-selected-flow"]}>
+              {selectedOptions.length > 0
+                ? visibleSelectedOptions.map((option) => (
+                    <span key={option.value} className={styles["multi-select-chip"]}>
+                      <span className={styles["multi-select-chip-label"]}>{option.label}</span>
+                      <button
+                        aria-label={removeButtonLabel?.(option.label) ?? option.label}
+                        className={styles["multi-select-chip-remove"]}
+                        disabled={disabled}
+                        type="button"
+                        onKeyDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          removeValue(option.value);
+                        }}
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </span>
+                  ))
+                : null}
+              <input
+                aria-label={ariaLabel}
+                className={styles["multi-select-input"]}
+                disabled={disabled}
+                ref={inputRef}
+                type="text"
+                value={searchValue}
+                onChange={(event) => {
+                  setSearchValue(event.target.value);
+                  setIsOpen(true);
+                }}
+                onFocus={() => {
+                  if (shouldIgnoreNextInputFocusRef.current) {
+                    shouldIgnoreNextInputFocusRef.current = false;
+                    return;
+                  }
+
+                  openDropdown();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
                     event.stopPropagation();
-                    setIsSelectedItemsModalOpen(true);
-                  }}
-                >
-                  {showAllSelectedLabel(selectedOptions.length)}
-                </button>
-              ) : null}
+                    closeDropdown({ restoreFocus: true });
+                  }
+                }}
+              />
             </div>
-          ) : (
-            <span className={styles["multi-select-placeholder"]}>{placeholder}</span>
-          )}
+            {hasHiddenSelectedOptions ? (
+              <button
+                className={styles["multi-select-show-all-button"]}
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsSelectedItemsModalOpen(true);
+                }}
+              >
+                {showAllSelectedLabel(selectedOptions.length)}
+              </button>
+            ) : null}
+          </div>
         </div>
-        <span className={styles["multi-select-chevron"]} aria-hidden="true" />
+        <button
+          aria-label={isOpen ? "Close options" : "Open options"}
+          className={styles["multi-select-chevron-button"]}
+          disabled={disabled}
+          type="button"
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            toggleDropdown();
+          }}
+        >
+          <span className={styles["multi-select-chevron"]} aria-hidden="true" />
+        </button>
       </div>
       {isOpen ? (
         <div
@@ -470,7 +577,7 @@ export function MultiSelect({
           style={{ "--multi-select-list-max-height": `${listMaxHeight}px` } as CSSProperties}
           onKeyDown={handleTreeKeyDown}
         >
-          {tree.length > 0 ? tree.map((node) => renderNode(node)) : (
+          {filteredTree.length > 0 ? filteredTree.map((node) => renderNode(node)) : (
             <div className={styles["multi-select-empty"]}>{emptyLabel}</div>
           )}
         </div>

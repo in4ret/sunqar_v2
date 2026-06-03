@@ -7,7 +7,7 @@
   display: inline-flex;
   width: 100%;
   min-height: 3.5rem;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.65rem 1rem;
@@ -37,6 +37,15 @@
   outline-offset: 2px;
 }
 
+.multi-select:focus-within {
+  border-color: var(--color-primary-500);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-info-500) 18%, transparent),
+    0 10px 24px rgba(4, 26, 43, 0.08);
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
 .multi-select[aria-disabled="true"] {
   cursor: wait;
   opacity: 0.7;
@@ -56,16 +65,36 @@
   gap: 0.45rem;
 }
 
+.multi-select-selected-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.multi-select-input {
+  width: auto;
+  min-width: 2.5rem;
+  flex: 1 0 2.5rem;
+  align-self: center;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.45rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  line-height: 1.5;
+  outline: none;
+}
+
+.multi-select-input:disabled {
+  cursor: wait;
+}
+
 .multi-select-placeholder {
   display: inline-flex;
   color: var(--text-secondary);
   line-height: 1.5;
-}
-
-.multi-select-chips {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 .multi-select-chip {
@@ -122,8 +151,32 @@
   opacity: 0.7;
 }
 
+.multi-select-chevron-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.multi-select-chevron-button:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.multi-select-chevron-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .multi-select-show-all-button {
   justify-self: start;
+  align-self: start;
   padding: 0;
   border: 0;
   background: transparent;
