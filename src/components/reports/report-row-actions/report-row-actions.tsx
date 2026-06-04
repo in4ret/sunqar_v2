@@ -7,7 +7,9 @@ import { useTranslations } from "next-intl";
 
 import {
   type ReportDeleteState,
+  type ReportRunState,
   submitDeleteReport,
+  submitRunReport,
 } from "@/app/(protected)/reports/actions";
 import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { getReportEditRoute } from "@/lib/routes";
@@ -16,6 +18,12 @@ import { useToast } from "@/ui";
 import styles from "./report-row-actions.module.scss";
 
 const initialState: ReportDeleteState = {
+  error: null,
+  reportId: null,
+  success: null,
+};
+
+const initialRunState: ReportRunState = {
   error: null,
   reportId: null,
   success: null,
@@ -51,6 +59,25 @@ function EditIcon() {
         d="m14 4 4 4"
         stroke="currentColor"
         strokeLinecap="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function RunIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles["button-icon"]}
+      fill="none"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M8 6v12l10-6-10-6Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
         strokeWidth="2"
       />
     </svg>
@@ -98,6 +125,10 @@ export function ReportRowActions({
   reportId,
   reportTitle,
 }: ReportRowActionsProps) {
+  const [runState, runAction, isRunPending] = useActionState(
+    submitRunReport,
+    initialRunState,
+  );
   const [deleteState, deleteAction, isDeletePending] = useActionState(
     submitDeleteReport,
     initialState,
@@ -105,6 +136,22 @@ export function ReportRowActions({
   const router = useRouter();
   const { showToast } = useToast();
   const t = useTranslations();
+
+  useEffect(() => {
+    const successMessage = translateActionMessage(t, runState.success);
+
+    if (successMessage) {
+      showToast({ message: successMessage, status: "success" });
+    }
+  }, [runState.success, showToast, t]);
+
+  useEffect(() => {
+    const errorMessage = translateActionMessage(t, runState.error);
+
+    if (errorMessage) {
+      showToast({ message: errorMessage, status: "error" });
+    }
+  }, [runState.error, showToast, t]);
 
   useEffect(() => {
     const successMessage = translateActionMessage(t, deleteState.success);
@@ -131,6 +178,21 @@ export function ReportRowActions({
 
   return (
     <div className={styles["actions-list"]}>
+      <form className={styles["run-form"]} action={runAction}>
+        <input name="id" type="hidden" value={reportId} />
+        <button
+          aria-label={
+            isRunPending
+              ? t("reports.table.running")
+              : t("reports.table.run")
+          }
+          className={styles["run-button"]}
+          disabled={isRunPending}
+          type="submit"
+        >
+          <RunIcon />
+        </button>
+      </form>
       <Link
         aria-label={t("reports.table.edit")}
         className={styles["edit-link"]}

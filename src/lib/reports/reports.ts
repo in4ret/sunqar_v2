@@ -2,10 +2,10 @@ import "server-only";
 
 import crypto from "node:crypto";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
-import { reports, users } from "@/lib/db/schema";
+import { aiModels, reports, users } from "@/lib/db/schema";
 
 import { parseReportBlocks, type ReportBlocks } from "./report-blocks";
 import { parseStoredReportPeriod, serializeStoredReportPeriod } from "./report-period";
@@ -33,6 +33,14 @@ export type ReportEditorItem = {
   description: string;
   id: string;
   period: string;
+  title: string;
+};
+
+export type ReportRunItem = {
+  authorName: string;
+  blocks: ReportBlocks;
+  description: string;
+  id: string;
   title: string;
 };
 
@@ -104,6 +112,61 @@ export async function getReportById(id: string, userId: string): Promise<ReportE
     id: row.id,
     period: row.period,
     title: row.title,
+  };
+}
+
+export async function getReportRunItem(id: string, userId: string): Promise<ReportRunItem | null> {
+  const normalizedId = id.trim();
+  const normalizedUserId = userId.trim();
+
+  if (!normalizedId || !normalizedUserId) {
+    return null;
+  }
+
+  const row = db
+    .select({
+      authorName: users.displayName,
+      blocks: reports.blocks,
+      description: reports.description,
+      id: reports.id,
+      title: reports.title,
+    })
+    .from(reports)
+    .leftJoin(users, eq(reports.createdBy, users.id))
+    .where(and(eq(reports.id, normalizedId), eq(reports.createdBy, normalizedUserId)))
+    .get();
+
+  if (!row) {
+    return null;
+  }
+
+  const aiModelIds = Array.from(
+    new Set(row.blocks.map((block) => block.aiModel.trim()).filter(Boolean)),
+  );
+  const aiModelRows = aiModelIds.length
+    ? db
+        .select({
+          id: aiModels.id,
+          modelId: aiModels.modelId,
+        })
+        .from(aiModels)
+        .where(inArray(aiModels.id, aiModelIds))
+        .all()
+    : [];
+  const aiModelIdById = new Map(
+    aiModelRows.map((aiModel) => [aiModel.id, aiModel.modelId]),
+  );
+
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    authorName: row.authorName ?? "—",
+    blocks: row.blocks.map((block) => ({
+      ...block,
+      aiModel: aiModelIdById.get(block.aiModel) ?? block.aiModel,
+    })) as ReportBlocks,
+
   };
 }
 

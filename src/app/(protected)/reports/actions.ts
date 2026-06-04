@@ -7,6 +7,7 @@ import { type ActionMessage,createActionMessage } from "@/lib/i18n/action-messag
 import {
   createReport,
   deleteReportByUser,
+  getReportRunItem,
   parseStoredReportPeriod,
   serializeStoredReportPeriod,
   updateReportActiveByUser,
@@ -23,6 +24,7 @@ export type ReportMutationState = {
 };
 export type ReportDeleteState = ReportMutationState;
 export type ReportActiveState = ReportMutationState;
+export type ReportRunState = ReportMutationState;
 
 const reportsPath = routes.reports;
 
@@ -209,6 +211,83 @@ export async function submitDeleteReport(
     error: null,
     reportId: result.reportId,
     success: createActionMessage("messages.report-deleted", { title: result.reportTitle }),
+  };
+}
+
+export async function submitRunReport(
+  _previousState: ReportRunState,
+  formData: FormData,
+): Promise<ReportRunState> {
+  const user = await requireRole(["admin", "user"]);
+  const reportId = String(formData.get("id") ?? "").trim();
+  const report = await getReportRunItem(reportId, user.id);
+  const generateReportUrl = process.env.GENERATE_REPORT_URL?.trim();
+
+  if (!report) {
+    return {
+      error: createActionMessage("errors.report-not-found"),
+      reportId,
+      success: null,
+    };
+  }
+
+  if (!generateReportUrl) {
+    return {
+      error: createActionMessage("errors.report-run-url-missing"),
+      reportId: report.id,
+      success: null,
+    };
+  }
+
+  try {
+    const response = await fetch(generateReportUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: report.id,
+        title: report.title,
+        description: report.description,
+        author: report.authorName,
+        blocks: report.blocks.map((block) => ({
+          title: block.title,
+          model: block.aiModel,
+          prompt: block.prompt,
+          sources: block.sources,
+          key_words: block.keywords,
+        })),
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+
+      console.error(
+        `Generate report request failed with status ${response.status}: ${responseText}`,
+      );
+
+      return {
+        error: createActionMessage("errors.report-run-request-failed"),
+        reportId: report.id,
+        success: null,
+      };
+    }
+  } catch (error) {
+    console.error("Generate report request failed.", error);
+
+    return {
+      error: createActionMessage("errors.report-run-request-failed"),
+      reportId: report.id,
+      success: null,
+    };
+  }
+
+  return {
+    error: null,
+    reportId: report.id,
+    success: createActionMessage("messages.report-run", { title: report.title }),
   };
 }
 

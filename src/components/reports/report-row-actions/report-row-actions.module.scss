@@ -1,10 +1,11 @@
 .actions-list {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 0.35rem;
 }
 
+.run-button,
 .edit-link,
 .delete-button {
   display: inline-flex;
@@ -19,13 +20,22 @@
     opacity 0.2s ease;
 }
 
+.run-form,
+.delete-form {
+  display: inline-flex;
+}
+
+.run-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-success-600);
+  cursor: pointer;
+  font: inherit;
+}
+
 .edit-link {
   color: var(--text-secondary);
   text-decoration: none;
-}
-
-.delete-form {
-  display: inline-flex;
 }
 
 .delete-button {
@@ -34,6 +44,16 @@
   color: var(--color-error-500);
   cursor: pointer;
   font: inherit;
+}
+
+.run-button:hover,
+.run-button:focus-visible {
+  background: var(--color-success-100);
+}
+
+.run-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .edit-link:hover,
