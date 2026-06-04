@@ -57,6 +57,13 @@
       "when": 1780322182216,
       "tag": "0007_sources_type_country",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1780591715857,
+      "tag": "0008_slippery_blink",
+      "breakpoints": true
     }
   ]
 }

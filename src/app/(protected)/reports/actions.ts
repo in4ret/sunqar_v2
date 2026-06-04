@@ -10,6 +10,7 @@ import {
   getReportRunItem,
   parseStoredReportPeriod,
   serializeStoredReportPeriod,
+  triggerReportGeneration,
   updateReportActiveByUser,
   updateReportByUser,
 } from "@/lib/reports";
@@ -221,7 +222,6 @@ export async function submitRunReport(
   const user = await requireRole(["admin", "user"]);
   const reportId = String(formData.get("id") ?? "").trim();
   const report = await getReportRunItem(reportId, user.id);
-  const generateReportUrl = process.env.GENERATE_REPORT_URL?.trim();
 
   if (!report) {
     return {
@@ -231,54 +231,11 @@ export async function submitRunReport(
     };
   }
 
-  if (!generateReportUrl) {
+  const result = await triggerReportGeneration(report);
+
+  if (result.error) {
     return {
-      error: createActionMessage("errors.report-run-url-missing"),
-      reportId: report.id,
-      success: null,
-    };
-  }
-
-  try {
-    const response = await fetch(generateReportUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: report.id,
-        title: report.title,
-        description: report.description,
-        author: report.authorName,
-        blocks: report.blocks.map((block) => ({
-          title: block.title,
-          model: block.aiModel,
-          prompt: block.prompt,
-          sources: block.sources,
-          key_words: block.keywords,
-        })),
-      }),
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      const responseText = await response.text();
-
-      console.error(
-        `Generate report request failed with status ${response.status}: ${responseText}`,
-      );
-
-      return {
-        error: createActionMessage("errors.report-run-request-failed"),
-        reportId: report.id,
-        success: null,
-      };
-    }
-  } catch (error) {
-    console.error("Generate report request failed.", error);
-
-    return {
-      error: createActionMessage("errors.report-run-request-failed"),
+      error: createActionMessage(`errors.${result.error}`),
       reportId: report.id,
       success: null,
     };

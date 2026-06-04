@@ -11,6 +11,7 @@
     "db:seed-admin": "tsx scripts/seed-admin.ts",
     "db:seed-ai-models": "tsx scripts/seed-ai-models.ts",
     "db:seed-sources": "tsx scripts/seed-sources.ts",
+    "start:scheduler": "tsx scripts/scheduler.ts",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit"

@@ -1,0 +1,1 @@
+ALTER TABLE `reports` ADD `next_run_at` integer;
