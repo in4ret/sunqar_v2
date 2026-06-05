@@ -1,12 +1,25 @@
-import {
-  calcNextRunAt,
-  getReportRunItemById,
-  listSchedulerReports,
-  triggerReportGeneration,
-  updateReportNextRunAt,
-} from "../src/lib/reports/reports-scheduler";
+import * as nextEnv from "@next/env";
 
 const POLL_INTERVAL_MS = 30_000;
+
+const loadEnvConfig =
+  "loadEnvConfig" in nextEnv && typeof nextEnv.loadEnvConfig === "function"
+    ? nextEnv.loadEnvConfig
+    : "default" in nextEnv &&
+        nextEnv.default &&
+        typeof nextEnv.default === "object" &&
+        "loadEnvConfig" in nextEnv.default &&
+        typeof nextEnv.default.loadEnvConfig === "function"
+      ? nextEnv.default.loadEnvConfig
+      : null;
+
+if (loadEnvConfig === null) {
+  throw new TypeError("Failed to resolve loadEnvConfig from @next/env.");
+}
+
+loadEnvConfig(process.cwd());
+
+type SchedulerModule = typeof import("../src/lib/reports/reports-scheduler");
 
 function sleep(milliseconds: number) {
   return new Promise<void>((resolve) => {
@@ -14,14 +27,17 @@ function sleep(milliseconds: number) {
   });
 }
 
-async function processReport(report: {
-  active: boolean;
-  id: string;
-  nextRunAt: Date | null;
-}) {
+async function processReport(
+  scheduler: SchedulerModule,
+  report: {
+    active: boolean;
+    id: string;
+    nextRunAt: Date | null;
+  },
+) {
   if (report.nextRunAt === null) {
-    const nextRunAt = await calcNextRunAt(report.id);
-    const result = await updateReportNextRunAt({
+    const nextRunAt = await scheduler.calcNextRunAt(report.id);
+    const result = await scheduler.updateReportNextRunAt({
       id: report.id,
       nextRunAt,
     });
@@ -41,8 +57,8 @@ async function processReport(report: {
     return;
   }
 
-  const nextRunAt = await calcNextRunAt(report.id);
-  const updateResult = await updateReportNextRunAt({
+  const nextRunAt = await scheduler.calcNextRunAt(report.id);
+  const updateResult = await scheduler.updateReportNextRunAt({
     id: report.id,
     nextRunAt,
   });
@@ -52,14 +68,14 @@ async function processReport(report: {
     return;
   }
 
-  const runItem = await getReportRunItemById(report.id);
+  const runItem = await scheduler.getReportRunItemById(report.id);
 
   if (!runItem) {
     console.error(`[scheduler] Failed to load run payload for report ${report.id}.`);
     return;
   }
 
-  const triggerResult = await triggerReportGeneration(runItem);
+  const triggerResult = await scheduler.triggerReportGeneration(runItem);
 
   if (triggerResult.error) {
     console.error(
@@ -73,12 +89,12 @@ async function processReport(report: {
   );
 }
 
-async function runSchedulerPass() {
-  const reports = await listSchedulerReports();
+async function runSchedulerPass(scheduler: SchedulerModule) {
+  const reports = await scheduler.listSchedulerReports();
 
   for (const report of reports) {
     try {
-      await processReport(report);
+      await processReport(scheduler, report);
     } catch (error) {
       console.error(`[scheduler] Unexpected error while processing report ${report.id}.`, error);
     }
@@ -86,6 +102,8 @@ async function runSchedulerPass() {
 }
 
 async function main() {
+  const scheduler = await import("../src/lib/reports/reports-scheduler");
+
   console.log(`[scheduler] Started with ${POLL_INTERVAL_MS / 1000}s polling interval.`);
 
   while (true) {
@@ -94,7 +112,7 @@ async function main() {
     console.log(`[scheduler] Pass started at ${startedAt.toISOString()}.`);
 
     try {
-      await runSchedulerPass();
+      await runSchedulerPass(scheduler);
     } catch (error) {
       console.error("[scheduler] Pass failed.", error);
     }
