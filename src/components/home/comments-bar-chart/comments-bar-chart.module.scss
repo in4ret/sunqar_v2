@@ -46,6 +46,14 @@
   line-height: 1.4;
 }
 
+.legend-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+}
+
 .chart-frame {
   position: relative;
   min-width: 0;
@@ -83,31 +91,47 @@
   font-weight: 600;
 }
 
-.bar {
-  fill: var(--color-primary-500);
+.bar-group {
   transition:
-    fill 0.18s ease,
     opacity 0.18s ease,
     transform 0.18s ease;
   transform-origin: center bottom;
 }
 
-.bar-interactive {
+.bar-group-interactive {
   cursor: pointer;
 }
 
-.bar-active,
-.bar-interactive:hover,
-.bar-interactive:focus-visible {
-  fill: var(--color-accent-400);
+.bar-group-active,
+.bar-group-interactive:hover,
+.bar-group-interactive:focus-within {
   opacity: 0.96;
   transform: translateY(-3px);
 }
 
+.bar-segment {
+  transition:
+    opacity 0.18s ease,
+    stroke 0.18s ease;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1;
+}
+
+.bar-group-active .bar-segment,
+.bar-group-interactive:hover .bar-segment,
+.bar-group-interactive:focus-within .bar-segment {
+  stroke: rgba(4, 26, 43, 0.32);
+}
+
+.bar-hitbox {
+  fill: transparent;
+  outline: none;
+}
+
 .tooltip {
   position: absolute;
-  min-width: 8rem;
-  max-width: 14rem;
+  min-width: 10rem;
+  max-width: 16rem;
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0.9rem;
@@ -128,6 +152,34 @@
   margin-top: 0.2rem;
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.tooltip-divider {
+  margin: 0.55rem 0;
+  border: 0;
+  border-top: 1px solid rgba(248, 251, 253, 0.12);
+}
+
+.tooltip-segments {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tooltip-segment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.tooltip-segment-label {
+  min-width: 0;
+  color: rgba(248, 251, 253, 0.82);
+}
+
+.tooltip-segment-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .empty-state {
@@ -156,6 +208,7 @@
 .skeleton-title,
 .skeleton-subtitle,
 .skeleton-range,
+.skeleton-legend,
 .skeleton-bar,
 .skeleton-axis-label {
   border-radius: 999px;
@@ -179,13 +232,23 @@
   height: 2.3rem;
 }
 
+.skeleton-legend {
+  width: 100%;
+  height: 1.1rem;
+}
+
 .skeleton-body {
+  display: grid;
+  gap: 1rem;
+  min-height: 16rem;
+}
+
+.skeleton-columns {
   display: grid;
   align-items: end;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 0.7rem;
-  min-height: 16rem;
-  padding-top: 1rem;
+  min-height: 100%;
 }
 
 .skeleton-column {

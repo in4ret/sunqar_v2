@@ -8,6 +8,7 @@ import * as d3 from "d3";
 import { useSize } from "@/hooks/use-size";
 import type {
   HomePageCommentsChartBucket,
+  HomePageCommentsChartSegment,
   HomePageCommentsChartStats,
 } from "@/lib/home-page-stats";
 
@@ -27,6 +28,7 @@ type CommentsBarChartProps = {
 
 type TooltipState = {
   periodLabel: string;
+  segments: HomePageCommentsChartSegment[];
   total: number;
   x: number;
   y: number;
@@ -45,6 +47,23 @@ const COMMENTS_CHART_RANGE_STORAGE = {
   changeEventName: COMMENTS_CHART_RANGE_CHANGE_EVENT,
   storageKey: COMMENTS_CHART_RANGE_STORAGE_KEY,
 } as const;
+const UNKNOWN_COMMENT_SOURCE = "__unknown__";
+const CHART_COLORS = [
+  "#2f6f9f",
+  "#2d7a57",
+  "#c89f26",
+  "#9a5f97",
+  "#b25f3b",
+  "#5d7ec2",
+  "#7b9244",
+  "#a65c76",
+];
+const SOURCE_COLOR_OVERRIDES: Record<string, string> = {
+  youtube: "#b25f3b",
+  ig: "#a65c76",
+  tiktok: "#9a5f97",
+  [UNKNOWN_COMMENT_SOURCE]: "#708b9f",
+};
 
 function parseChartDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
@@ -67,10 +86,28 @@ function getBarLabelIndices(length: number) {
   return indices;
 }
 
-export function CommentsBarChart({
-  className,
-  data,
-}: CommentsBarChartProps) {
+function formatSourceLabel(source: string, unknownSourceLabel: string) {
+  return source === UNKNOWN_COMMENT_SOURCE ? unknownSourceLabel : source;
+}
+
+function getSourceColor(source: string) {
+  const normalizedSource = source.trim().toLowerCase();
+  const overrideColor = SOURCE_COLOR_OVERRIDES[normalizedSource];
+
+  if (overrideColor) {
+    return overrideColor;
+  }
+
+  let hash = 0;
+
+  for (const character of normalizedSource) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+
+  return CHART_COLORS[hash % CHART_COLORS.length];
+}
+
+export function CommentsBarChart({ className, data }: CommentsBarChartProps) {
   const locale = useLocale();
   const t = useTranslations();
   const { ref: containerRef, height: containerHeight, width: containerWidth } =
@@ -78,12 +115,13 @@ export function CommentsBarChart({
   const range = useStoredHomePageChartRange(COMMENTS_CHART_RANGE_STORAGE);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-  const chartEntries = data[range];
+  const chartEntries = data.ranges[range];
   const totalComments = chartEntries.reduce((sum, item) => sum + item.total, 0);
   const chartClassName = [styles["card"], className].filter(Boolean).join(" ");
   const title = t("home.comments-chart-title");
   const rangeSelectorLabel = t("home.comments-chart-range-selector");
-  const valueLabel = t("home.comments-chart-value-label");
+  const totalLabel = t("home.comments-chart-total-label");
+  const unknownSourceLabel = t("home.comments-chart-unknown-source");
   const subtitles = useMemo(
     () => ({
       "all-time-monthly": t("home.comments-chart-subtitles.all-time-monthly"),
@@ -125,7 +163,6 @@ export function CommentsBarChart({
       innerHeight,
       innerWidth,
       labelIndices,
-      maxValue: maxDomainValue,
       ticks,
       xScale,
       yScale,
@@ -218,6 +255,7 @@ export function CommentsBarChart({
 
     setTooltip({
       periodLabel: formatPeriodLabel(item),
+      segments: item.segments,
       total: item.total,
       x: barRect.left - containerRect.left + barRect.width / 2,
       y: barRect.top - containerRect.top,
@@ -319,38 +357,60 @@ export function CommentsBarChart({
                 />
 
                 {chartEntries.map((item, index) => {
-                  const height = getBarHeight(item.total);
-                  const renderedHeight = Math.max(height, item.total > 0 ? 3 : 0);
                   const x = chartData.xScale?.(item.bucketStart) ?? 0;
                   const barWidth = chartData.xScale?.bandwidth() ?? 0;
-                  const y = chartData.innerHeight - renderedHeight;
                   const isActive = activeIndex === index;
-                  const barClassName = [
-                    styles["bar"],
-                    styles["bar-interactive"],
-                    isActive ? styles["bar-active"] : "",
+                  const barGroupClassName = [
+                    styles["bar-group"],
+                    styles["bar-group-interactive"],
+                    isActive ? styles["bar-group-active"] : "",
                   ]
                     .filter(Boolean)
                     .join(" ");
+                  let stackedOffset = 0;
 
                   return (
-                    <g key={item.bucketStart}>
+                    <g className={barGroupClassName} key={item.bucketStart}>
+                      {item.segments.map((segment, segmentIndex) => {
+                        const segmentHeight = Math.max(getBarHeight(segment.total), 0);
+                        const renderedHeight =
+                          segment.total > 0 ? Math.max(segmentHeight, item.total > 0 ? 3 : 0) : 0;
+
+                        if (renderedHeight === 0) {
+                          return null;
+                        }
+
+                        const y = chartData.innerHeight - stackedOffset - renderedHeight;
+                        stackedOffset += renderedHeight;
+
+                        return (
+                          <rect
+                            key={`${item.bucketStart}-${segment.source}-${segmentIndex}`}
+                            className={styles["bar-segment"]}
+                            fill={getSourceColor(segment.source)}
+                            height={renderedHeight}
+                            rx={segmentIndex === item.segments.length - 1 ? 4 : 0}
+                            ry={segmentIndex === item.segments.length - 1 ? 4 : 0}
+                            width={barWidth}
+                            x={x}
+                            y={y}
+                          />
+                        );
+                      })}
                       <rect
                         aria-label={`${formatPeriodLabel(item)}: ${item.total}`}
-                        className={barClassName}
-                        height={renderedHeight}
+                        className={styles["bar-hitbox"]}
+                        height={chartData.innerHeight}
                         onBlur={clearTooltip}
                         onFocus={(event) => updateTooltip(event.currentTarget, index, item)}
                         onKeyDown={(event) => handleBarKeyDown(event, index, item)}
                         onMouseEnter={(event) => updateTooltip(event.currentTarget, index, item)}
                         onMouseLeave={clearTooltip}
                         onMouseMove={(event) => updateTooltip(event.currentTarget, index, item)}
-                        rx={4}
-                        ry={4}
                         tabIndex={0}
                         width={barWidth}
                         x={x}
-                        y={y}
+                        y={0}
                       />
                       {chartData.labelIndices.has(index) ? (
                         <g transform={`translate(${x + barWidth / 2}, ${chartData.innerHeight})`}>
@@ -370,7 +430,22 @@ export function CommentsBarChart({
               <div className={styles["tooltip"]} style={{ left: tooltip.x, top: tooltip.y }}>
                 <div className={styles["tooltip-date"]}>{tooltip.periodLabel}</div>
                 <div className={styles["tooltip-value"]}>
-                  {valueLabel}: {tooltip.total}
+                  {totalLabel}: {tooltip.total}
+                </div>
+                {tooltip.segments.length > 0 ? <hr className={styles["tooltip-divider"]} /> : null}
+                <div className={styles["tooltip-segments"]}>
+                  {tooltip.segments.map((segment) => (
+                    <div className={styles["tooltip-segment"]} key={segment.source}>
+                      <span
+                        className={styles["legend-swatch"]}
+                        style={{ backgroundColor: getSourceColor(segment.source) }}
+                      />
+                      <span className={styles["tooltip-segment-label"]}>
+                        {formatSourceLabel(segment.source, unknownSourceLabel)}
+                      </span>
+                      <span className={styles["tooltip-segment-value"]}>{segment.total}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}
@@ -395,12 +470,15 @@ export function CommentsBarChartSkeleton({ className }: { className?: string }) 
         <span className={styles["skeleton-range"]} />
       </div>
       <div className={styles["skeleton-body"]}>
-        {skeletonHeights.map((height, index) => (
-          <div className={styles["skeleton-column"]} key={index}>
-            <span className={styles["skeleton-bar"]} style={{ height: `${height}%` }} />
-            <span className={styles["skeleton-axis-label"]} />
-          </div>
-        ))}
+        <span className={styles["skeleton-legend"]} />
+        <div className={styles["skeleton-columns"]}>
+          {skeletonHeights.map((height, index) => (
+            <div className={styles["skeleton-column"]} key={index}>
+              <span className={styles["skeleton-bar"]} style={{ height: `${height}%` }} />
+              <span className={styles["skeleton-axis-label"]} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

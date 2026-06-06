@@ -22,6 +22,7 @@ type AverageRow = {
 
 type CommentsChartCountRow = {
   bucket_date: string;
+  source: string | null;
   total: number | string;
 };
 
@@ -58,15 +59,24 @@ export type HomePageChartRange = "month-daily" | "six-months-weekly" | "all-time
 export type CommentsChartRange = HomePageChartRange;
 export type NewsChartRange = HomePageChartRange;
 
+export type HomePageCommentsChartSegment = {
+  source: string;
+  total: number;
+};
+
 export type HomePageCommentsChartBucket = {
   bucketEnd: string;
   bucketLabel: string;
   bucketStart: string;
+  segments: HomePageCommentsChartSegment[];
   total: number;
 };
 
 export type HomePageCommentsChartStats = {
-  [key in CommentsChartRange]: HomePageCommentsChartBucket[];
+  ranges: {
+    [key in CommentsChartRange]: HomePageCommentsChartBucket[];
+  };
+  sources: string[];
 };
 
 export type HomePageNewsChartSegment = {
@@ -129,6 +139,7 @@ const HOME_CHART_DAYS = 30;
 const HOME_CHART_MONTHS = 6;
 const MIN_CHART_DATE = "1970-01-01";
 const SECONDS_IN_DAY = 24 * 60 * 60;
+const UNKNOWN_COMMENT_SOURCE = "__unknown__";
 const UNKNOWN_NEWS_TYPE = "__unknown__";
 
 function escapeManticoreMatchValue(value: string) {
@@ -257,6 +268,12 @@ function normalizeNewsType(value: string | null | undefined) {
   return trimmedValue ? trimmedValue : UNKNOWN_NEWS_TYPE;
 }
 
+function normalizeCommentSource(value: string | null | undefined) {
+  const trimmedValue = value?.trim();
+
+  return trimmedValue ? trimmedValue : UNKNOWN_COMMENT_SOURCE;
+}
+
 function normalizeNewsCountry(value: string | null | undefined) {
   const trimmedValue = value?.trim();
 
@@ -369,14 +386,60 @@ function buildAllTimeMonthlyBucketSpecs(dates: string[]): ChartBucketSpec[] {
 
 function buildCommentsBucketsFromSpecs(
   bucketSpecs: ChartBucketSpec[],
-  dailyTotalsMap: Map<string, number>
+  dailySourceTotalsMap: Map<string, Map<string, number>>,
+  sources: string[]
 ): HomePageCommentsChartBucket[] {
-  return bucketSpecs.map(({ bucketEnd, bucketLabel, bucketStart, dates }) => ({
-    bucketEnd,
-    bucketLabel,
-    bucketStart,
-    total: dates.reduce((sum, date) => sum + (dailyTotalsMap.get(date) ?? 0), 0),
-  }));
+  return bucketSpecs.map(({ bucketEnd, bucketLabel, bucketStart, dates }) => {
+    const sourceTotals = new Map<string, number>();
+
+    for (const date of dates) {
+      const dailySourceTotals = dailySourceTotalsMap.get(date);
+
+      if (!dailySourceTotals) {
+        continue;
+      }
+
+      for (const [source, total] of dailySourceTotals.entries()) {
+        sourceTotals.set(source, (sourceTotals.get(source) ?? 0) + total);
+      }
+    }
+
+    const segments = sources
+      .map((source) => ({
+        source,
+        total: sourceTotals.get(source) ?? 0,
+      }))
+      .filter((segment) => segment.total > 0);
+    const total = segments.reduce((sum, segment) => sum + segment.total, 0);
+
+    return {
+      bucketEnd,
+      bucketLabel,
+      bucketStart,
+      segments,
+      total,
+    };
+  });
+}
+
+function getSortedCommentSources(sourceTotalsMap: Map<string, number>) {
+  return [...sourceTotalsMap.entries()]
+    .sort((left, right) => {
+      if (right[1] !== left[1]) {
+        return right[1] - left[1];
+      }
+
+      if (left[0] === UNKNOWN_COMMENT_SOURCE) {
+        return 1;
+      }
+
+      if (right[0] === UNKNOWN_COMMENT_SOURCE) {
+        return -1;
+      }
+
+      return left[0].localeCompare(right[0], "en", { sensitivity: "base" });
+    })
+    .map(([source]) => source);
 }
 
 function getSortedNewsTypes(typeTotalsMap: Map<string, number>) {
@@ -439,12 +502,20 @@ function buildNewsBucketsFromSpecs(
 
 function getEmptyCommentsChartStats(): HomePageCommentsChartStats {
   return {
-    "all-time-monthly": [],
-    "month-daily": buildCommentsBucketsFromSpecs(buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE), new Map()),
-    "six-months-weekly": buildCommentsBucketsFromSpecs(
-      buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE),
-      new Map()
-    ),
+    ranges: {
+      "all-time-monthly": [],
+      "month-daily": buildCommentsBucketsFromSpecs(
+        buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE),
+        new Map(),
+        []
+      ),
+      "six-months-weekly": buildCommentsBucketsFromSpecs(
+        buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE),
+        new Map(),
+        []
+      ),
+    },
+    sources: [],
   };
 }
 
@@ -745,26 +816,49 @@ async function getCommentsToneAverageStats(searchQuery: string): Promise<HomePag
 
 async function getCommentsChartStats(searchQuery: string): Promise<HomePageCommentsChartStats> {
   const rows = await manticoreSql<CommentsChartCountRow>(
-    `SELECT DATE(publishedat) AS bucket_date, COUNT(*) AS total FROM comments${getWhereClause(searchQuery)} GROUP BY bucket_date ORDER BY bucket_date ASC LIMIT 10000 OPTION max_matches=1000000`
+    `SELECT DATE(publishedat) AS bucket_date, source, COUNT(*) AS total FROM comments${getWhereClause(searchQuery)} GROUP BY bucket_date, source ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=1000000`
   );
-  const dailyTotalsMap = new Map(
-    rows.map((row) => [normalizeChartBucketDate(row.bucket_date), Number(row.total ?? 0)] as const)
-  );
-  const allDates = [...dailyTotalsMap.keys()];
+  const dailySourceTotalsMap = new Map<string, Map<string, number>>();
+  const overallSourceTotals = new Map<string, number>();
+
+  for (const row of rows) {
+    const bucketDate = normalizeChartBucketDate(row.bucket_date);
+
+    if (!isChartDateWithinRange(bucketDate, ALMATY_TIME_ZONE)) {
+      continue;
+    }
+
+    const source = normalizeCommentSource(row.source);
+    const total = Number(row.total ?? 0);
+    const dailySourceTotals = dailySourceTotalsMap.get(bucketDate) ?? new Map<string, number>();
+
+    dailySourceTotals.set(source, (dailySourceTotals.get(source) ?? 0) + total);
+    dailySourceTotalsMap.set(bucketDate, dailySourceTotals);
+    overallSourceTotals.set(source, (overallSourceTotals.get(source) ?? 0) + total);
+  }
+
+  const allDates = [...dailySourceTotalsMap.keys()];
+  const sources = getSortedCommentSources(overallSourceTotals);
 
   return {
-    "all-time-monthly": buildCommentsBucketsFromSpecs(
-      buildAllTimeMonthlyBucketSpecs(allDates),
-      dailyTotalsMap
-    ),
-    "month-daily": buildCommentsBucketsFromSpecs(
-      buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE),
-      dailyTotalsMap
-    ),
-    "six-months-weekly": buildCommentsBucketsFromSpecs(
-      buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE),
-      dailyTotalsMap
-    ),
+    ranges: {
+      "all-time-monthly": buildCommentsBucketsFromSpecs(
+        buildAllTimeMonthlyBucketSpecs(allDates),
+        dailySourceTotalsMap,
+        sources
+      ),
+      "month-daily": buildCommentsBucketsFromSpecs(
+        buildMonthDailyBucketSpecs(ALMATY_TIME_ZONE),
+        dailySourceTotalsMap,
+        sources
+      ),
+      "six-months-weekly": buildCommentsBucketsFromSpecs(
+        buildSixMonthsWeeklyBucketSpecs(ALMATY_TIME_ZONE),
+        dailySourceTotalsMap,
+        sources
+      ),
+    },
+    sources,
   };
 }
 
@@ -906,10 +1000,10 @@ const getCachedHomePageCommentsToneAverageStats = unstable_cache(
 
 const getCachedHomePageCommentsChartStats = unstable_cache(
   async (searchQuery: string) => getCommentsChartStats(searchQuery),
-  ["home-page-stats", "comments-chart-v3"],
+  ["home-page-stats", "comments-chart-v4"],
   {
     revalidate: HOME_STATS_TTL,
-    tags: ["home-page-stats:comments-chart-v3"],
+    tags: ["home-page-stats:comments-chart-v4"],
   }
 );
 

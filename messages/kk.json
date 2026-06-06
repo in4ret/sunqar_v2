@@ -100,7 +100,9 @@
       "six-months-weekly": "Соңғы 6 айда пікірлер табылған жоқ.",
       "all-time-monthly": "Барлық уақытта пікірлер табылған жоқ."
     },
-    "comments-chart-value-label": "Пікірлер",
+    "comments-chart-total-label": "Пікірлер",
+    "comments-chart-legend-label": "Дереккөздер",
+    "comments-chart-unknown-source": "Белгісіз",
     "news-chart-title": "Жаңалықтар",
     "news-chart-range-selector": "Жаңалықтар графигінің кезеңі",
     "news-chart-ranges": {

@@ -100,7 +100,9 @@
       "six-months-weekly": "За последние 6 месяцев комментариев не найдено.",
       "all-time-monthly": "За все время комментариев не найдено."
     },
-    "comments-chart-value-label": "Комментарии",
+    "comments-chart-total-label": "Комментарии",
+    "comments-chart-legend-label": "Источники",
+    "comments-chart-unknown-source": "Неизвестно",
     "news-chart-title": "Новости",
     "news-chart-range-selector": "Период графика новостей",
     "news-chart-ranges": {
