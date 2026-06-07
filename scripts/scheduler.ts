@@ -109,7 +109,7 @@ async function main() {
   while (true) {
     const startedAt = new Date();
 
-    console.log(`[scheduler] Pass started at ${startedAt.toISOString()}.`);
+    // console.log(`[scheduler] Pass started at ${startedAt.toISOString()}.`);
 
     try {
       await runSchedulerPass(scheduler);
