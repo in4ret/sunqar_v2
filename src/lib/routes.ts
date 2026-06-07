@@ -3,6 +3,7 @@ export const routes = {
   aiModels: "/ai_models",
   home: "/",
   login: "/login",
+  taskPreview: "/api/tasks",
   newReport: "/reports/new",
   reports: "/reports",
   sources: "/sources",
@@ -11,4 +12,8 @@ export const routes = {
 
 export function getReportEditRoute(reportId: string) {
   return `${routes.reports}/${reportId}/edit`;
+}
+
+export function getTaskPreviewRoute(taskId: string) {
+  return `${routes.taskPreview}/${taskId}/preview`;
 }

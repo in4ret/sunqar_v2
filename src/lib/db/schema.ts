@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 import type { ReportBlocks } from "@/lib/reports/report-blocks";
 
@@ -73,6 +73,26 @@ export const reports = sqliteTable("reports", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+export const tasks = sqliteTable(
+  "tasks",
+  {
+    taskId: text("task_id").primaryKey(),
+    reportId: text("report_id"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: text("status", { enum: ["pending", "success", "failure"] }).notNull(),
+    downloadUrl: text("download_url"),
+    error: text("error"),
+    read: integer("read", { mode: "boolean" }).notNull().default(false),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    doneAt: integer("done_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [index("tasks_user_id_idx").on(table.userId), index("tasks_read_idx").on(table.read)],
+);
+
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -100,4 +120,6 @@ export type Source = typeof sources.$inferSelect;
 export type NewSource = typeof sources.$inferInsert;
 export type Report = typeof reports.$inferSelect;
 export type NewReport = typeof reports.$inferInsert;
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
 export type Session = typeof sessions.$inferSelect;

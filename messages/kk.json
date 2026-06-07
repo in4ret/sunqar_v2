@@ -27,7 +27,20 @@
     "ai-models": "AI модельдер",
     "sources": "Дереккөздер",
     "users": "Пайдаланушылар",
-    "logout": "Шығу"
+    "logout": "Шығу",
+    "tasks": {
+      "toggle": "Тапсырмалар тізімін ашу",
+      "title": "Тапсырмалар",
+      "empty": "Сізде әзірге тапсырмалар жоқ.",
+      "created-at": "Құрылған: {date}",
+      "completed-at": "Аяқталған: {date}",
+      "download": "Нәтижені жүктеу",
+      "statuses": {
+        "pending": "Кезекте",
+        "success": "Дайын",
+        "failure": "Қате"
+      }
+    }
   },
   "footer": {
     "copyright": "Барлық құқықтар қорғалған."

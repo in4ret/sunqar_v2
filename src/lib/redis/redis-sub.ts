@@ -2,22 +2,25 @@ import "server-only";
 
 import Redis from "ioredis";
 
-import { CELERY_TASK_META_PREFIX, processCeleryTaskMeta } from "@/lib/redis/celery-task-meta";
+import {
+  CELERY_TASK_META_PREFIX,
+  processCeleryTaskMeta,
+  reconcilePendingTasks,
+} from "@/lib/redis/celery-task-meta";
 
 type GlobalRedisSubState = {
   redisTaskSubscriberStarted?: boolean;
+  redisTaskSubscriberStarting?: Promise<void>;
   redisTaskSubscriberCleanup?: () => Promise<void>;
 };
 
 const globalRedisSub = globalThis as typeof globalThis & GlobalRedisSubState;
 
-export function startRedisSub() {
+export async function startRedisSub() {
   if (globalRedisSub.redisTaskSubscriberStarted) {
     console.log("ℹ️ Redis task subscriber already started");
     return;
   }
-
-  globalRedisSub.redisTaskSubscriberStarted = true;
 
   const connection = process.env.REDIS_CONNECTION;
 
@@ -26,27 +29,51 @@ export function startRedisSub() {
     return;
   }
 
-  const redis = new Redis(connection);
-  const subscriber = new Redis(connection);
+  if (globalRedisSub.redisTaskSubscriberStarting) {
+    await globalRedisSub.redisTaskSubscriberStarting;
+    return;
+  }
 
-  redis.config("SET", "notify-keyspace-events", "KEA").catch((err) => {
-    console.warn("⚠️ \"SET notify-keyspace-events KEA\" failed:", err.message);
-  });
+  const startupPromise = (async () => {
+    const redis = new Redis(connection);
+    const subscriber = new Redis(connection);
 
-  subscriber.psubscribe("__keyevent@0__:set", (err) => {
-    if (err) {
-      console.error("❌ Error subscribing to Redis events:", err);
-    } else {
+    redis.config("SET", "notify-keyspace-events", "KEA").catch((err) => {
+      console.warn("⚠️ \"SET notify-keyspace-events KEA\" failed:", err.message);
+    });
+
+    subscriber.on("pmessage", async (_pattern, _channel, key) => {
+      if (key.startsWith(CELERY_TASK_META_PREFIX)) {
+        const taskId = key.slice(CELERY_TASK_META_PREFIX.length);
+        const raw = await redis.get(key);
+
+        await processCeleryTaskMeta(taskId, raw);
+      }
+    });
+
+    try {
+      await subscriber.psubscribe("__keyevent@0__:set");
+
+      globalRedisSub.redisTaskSubscriberStarted = true;
+
       console.log("✅ Subscribed to Redis SET events");
-    }
-  });
 
-  subscriber.on("pmessage", async (_pattern, _channel, key) => {
-    if (key.startsWith(CELERY_TASK_META_PREFIX)) {
-      const taskId = key.slice(CELERY_TASK_META_PREFIX.length);
-      const raw = await redis.get(key);
+      void reconcilePendingTasks().catch((error) => {
+        console.warn("⚠️ Failed to reconcile pending tasks after Redis subscriber startup:", error);
+      });
+    } catch (error) {
+      redis.disconnect();
+      subscriber.disconnect();
 
-      await processCeleryTaskMeta(taskId, raw);
+      throw error;
     }
-  });
+  })();
+
+  globalRedisSub.redisTaskSubscriberStarting = startupPromise;
+
+  try {
+    await startupPromise;
+  } finally {
+    globalRedisSub.redisTaskSubscriberStarting = undefined;
+  }
 }

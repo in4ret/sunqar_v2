@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { submitLogout } from "@/app/(protected)/actions";
 import { routes } from "@/lib/routes";
+import type { HeaderTaskItem } from "@/lib/tasks";
 
 import { Footer } from "../footer/footer";
 import { Header } from "../header/header";
@@ -18,12 +19,14 @@ type AppShellViewUser = {
 type AppShellViewProps = Readonly<{
   children: React.ReactNode;
   mainClassName?: string;
+  tasks: HeaderTaskItem[];
   user: AppShellViewUser | null;
 }>;
 
 export function AppShellView({
   children,
   mainClassName = "app-main",
+  tasks,
   user,
 }: AppShellViewProps) {
   const t = useTranslations();
@@ -96,7 +99,7 @@ export function AppShellView({
         />
       ) : null}
       <div className="app-content-shell">
-        <Header brandHref={homeHref} hasSidebar={hasSidebar} />
+        <Header brandHref={homeHref} hasSidebar={hasSidebar} tasks={tasks} />
         <main className={mainClassName}>{children}</main>
         <Footer />
       </div>

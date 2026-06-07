@@ -1,13 +1,14 @@
 import { desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
-import { aiModels, reports, users } from "@/lib/db/schema";
+import { aiModels, reports, tasks, users } from "@/lib/db/schema";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
 
 import type { ReportBlocks } from "./report-blocks";
 import { parseStoredReportPeriod } from "./report-period";
 
 export type ReportRunItem = {
+  authorId: string;
   authorName: string;
   blocks: ReportBlocks;
   description: string;
@@ -45,6 +46,7 @@ type LocalDateParts = {
 };
 
 type ReportRunItemRow = {
+  authorId: string;
   authorName: string | null;
   blocks: ReportBlocks;
   description: string;
@@ -277,6 +279,7 @@ function calculateNextMonthlyRunAt(
 export function getReportRunItemBaseQuery() {
   return db
     .select({
+      authorId: reports.createdBy,
       authorName: users.displayName,
       blocks: reports.blocks,
       description: reports.description,
@@ -302,6 +305,7 @@ export function mapReportRunItem(row: ReportRunItemRow): ReportRunItem {
   const aiModelIdById = new Map(aiModelRows.map((aiModel) => [aiModel.id, aiModel.modelId]));
 
   return {
+    authorId: row.authorId,
     id: row.id,
     title: row.title,
     description: row.description,
@@ -373,6 +377,18 @@ export async function getReportRunItemById(id: string): Promise<ReportRunItem | 
   return mapReportRunItem(row);
 }
 
+function extractReportTaskId(data: unknown): string | null {
+  const taskPayload = Array.isArray(data) ? data[0] : data;
+
+  if (!taskPayload || typeof taskPayload !== "object") {
+    return null;
+  }
+
+  const taskId = "task_id" in taskPayload ? taskPayload.task_id : null;
+
+  return typeof taskId === "string" && taskId.trim() ? taskId.trim() : null;
+}
+
 export async function triggerReportGeneration(report: ReportRunItem): Promise<{
   error: ReportRunErrorCode | null;
 }> {
@@ -435,6 +451,28 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     }
 
     const data = await response.json();
+    const taskId = extractReportTaskId(data);
+
+    if (!taskId) {
+      console.error(`Generate report request for report ${report.id} succeeded without a valid task_id.`, data);
+
+      return { error: "report-run-request-failed" };
+    }
+
+    db.insert(tasks)
+      .values({
+        createdAt: new Date(),
+        doneAt: null,
+        downloadUrl: null,
+        error: null,
+        read: false,
+        reportId: report.id,
+        status: "pending",
+        taskId,
+        userId: report.authorId,
+      })
+      .run();
+
     console.log("###", data);
   } catch (error) {
     console.error(`Generate report request failed for report ${report.id}.`, error);

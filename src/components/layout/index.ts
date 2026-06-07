@@ -3,3 +3,4 @@ export { Footer } from "./footer/footer";
 export { Header } from "./header/header";
 export { LanguageSwitcher } from "./language-switcher/language-switcher";
 export { Sidebar } from "./sidebar/sidebar";
+export { TaskNotifications } from "./task-notifications/task-notifications";

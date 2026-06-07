@@ -1,30 +1,70 @@
 import "server-only";
 
-// import Redis from "ioredis";
+import { eq } from "drizzle-orm";
+import Redis from "ioredis";
+
+import { db } from "@/lib/db/client";
+import { tasks } from "@/lib/db/schema";
 
 const CELERY_TASK_META_PREFIX = "celery-task-meta-";
 
+function completeTask(taskId: string, downloadUrl: string) {
+  db.update(tasks)
+    .set({
+      doneAt: new Date(),
+      downloadUrl,
+      error: null,
+      status: "success",
+    })
+    .where(eq(tasks.taskId, taskId))
+    .run();
+}
+
+function failTask(taskId: string, raw: string | null) {
+  db.update(tasks)
+    .set({
+      doneAt: new Date(),
+      downloadUrl: null,
+      error: raw,
+      status: "failure",
+    })
+    .where(eq(tasks.taskId, taskId))
+    .run();
+}
+
 export async function processCeleryTaskMeta(taskId: string, raw: string | null) {
+  const task = db
+    .select({ taskId: tasks.taskId })
+    .from(tasks)
+    .where(eq(tasks.taskId, taskId))
+    .get();
+
+  if (!task) return;
+
   try {
     const parsed = JSON.parse(raw ?? "");
     const status = typeof parsed.status === "string" ? parsed.status : "";
-    const downloadUrl = parsed.result.download_url ?? null;
+    const downloadUrl = parsed?.result?.download_url ?? null;
 
     if (status === "SUCCESS" && downloadUrl) {
-      // await completeTask(taskId, downloadUrl);
-      console.log("### Task", taskId, "succeed");
+      completeTask(taskId, downloadUrl);
+      console.log("### Task", taskId, "succeeded:", downloadUrl);
     } else {
-      // await failTask(taskId, raw);
+      failTask(taskId, raw);
       console.error("### Task", taskId, "failed:", raw);
     }
 
   } catch (error) {
-    // await failTask(taskId, raw);
+    failTask(taskId, raw);
+    console.error("### Failed to process celery task meta for task", taskId, error);
   }
 }
-/*
-export async function reconcilePendingTasks(tasks: ProcessingFile[]) {
-  const pendingTasks = tasks.filter((task) => task.status === "pending");
+export async function reconcilePendingTasks(): Promise<void> {
+  const pendingTasks = db
+    .select({ taskId: tasks.taskId })
+    .from(tasks)
+    .where(eq(tasks.status, "pending"))
+    .all();
 
   if (pendingTasks.length === 0) {
     return;
@@ -49,7 +89,13 @@ export async function reconcilePendingTasks(tasks: ProcessingFile[]) {
           return Promise.resolve();
         }
 
-        return processCeleryTaskMeta(pendingTasks[index].taskId, raw);
+        const pendingTask = pendingTasks[index];
+
+        if (!pendingTask) {
+          return Promise.resolve();
+        }
+
+        return processCeleryTaskMeta(pendingTask.taskId, raw);
       }),
     );
   } catch (error) {
@@ -58,5 +104,5 @@ export async function reconcilePendingTasks(tasks: ProcessingFile[]) {
     redis.disconnect();
   }
 }
-*/
+
 export { CELERY_TASK_META_PREFIX };

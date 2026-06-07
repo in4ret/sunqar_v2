@@ -27,7 +27,20 @@
     "ai-models": "AI модели",
     "sources": "Источники",
     "users": "Пользователи",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "tasks": {
+      "toggle": "Открыть список задач",
+      "title": "Задачи",
+      "empty": "У вас пока нет задач.",
+      "created-at": "Создана: {date}",
+      "completed-at": "Завершена: {date}",
+      "download": "Скачать результат",
+      "statuses": {
+        "pending": "В очереди",
+        "success": "Готово",
+        "failure": "Ошибка"
+      }
+    }
   },
   "footer": {
     "copyright": "Все права защищены."
