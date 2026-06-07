@@ -1,6 +1,6 @@
 import { desc, eq, inArray } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { db } from "@/lib/db/database";
 import { aiModels, reports, tasks, users } from "@/lib/db/schema";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
 
