@@ -12,7 +12,7 @@ import {
   submitUpdateAiModel,
 } from "@/app/(protected)/ai_models/actions";
 import { translateActionMessage } from "@/lib/i18n/action-messages";
-import { useToast } from "@/ui";
+import { SaveIcon, TrashIcon, useToast } from "@/ui";
 
 import styles from "./ai-model-manager.module.scss";
 
@@ -33,74 +33,6 @@ const initialState: AiModelFormState = {
   error: null,
   success: null,
 };
-
-function SaveIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={styles["button-icon"]}
-      fill="none"
-      focusable="false"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M5 4h11l3 3v13H5V4Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M8 4v6h7V4"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M8 20v-6h8v6"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function DeleteIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={styles["button-icon"]}
-      fill="none"
-      focusable="false"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 7h16"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M10 11v6M14 11v6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M6 7h12l-1 13H7L6 7Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M9 7V4h6v3"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 function AiModelCreateForm() {
   const [state, formAction, isPending] = useActionState(
@@ -304,7 +236,7 @@ function AiModelRow({
             form={updateFormId}
             type="submit"
           >
-            <SaveIcon />
+            <SaveIcon className={styles["button-icon"]} />
           </button>
           <form
             className={styles["delete-form"]}
@@ -322,7 +254,7 @@ function AiModelRow({
               disabled={isDeletePending}
               type="submit"
             >
-              <DeleteIcon />
+              <TrashIcon className={styles["button-icon"]} />
             </button>
           </form>
         </div>

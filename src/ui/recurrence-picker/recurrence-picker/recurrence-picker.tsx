@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { PencilIcon } from "../../icon/icon";
 import { formatRecurrenceLabel } from "../format-recurrence-label";
 import { FrequencySelect } from "../frequency-select/frequency-select";
 import { HumanReadablePreview } from "../human-readable-preview/human-readable-preview";
@@ -14,37 +15,6 @@ import { TimesInput } from "../times-input/times-input";
 import { WeekdaysSelector } from "../weekdays-selector/weekdays-selector";
 
 import styles from "./recurrence-picker.module.scss";
-
-function EditIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={styles["field-action-icon"]}
-      fill="none"
-      focusable="false"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 20h4l10-10-4-4L4 16v4Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="m12 6 4 4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="m14 4 4 4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 export function RecurrencePicker({
   className,
@@ -139,7 +109,7 @@ export function RecurrencePicker({
         >
           <span className={styles["field-value"]}>{fieldValue}</span>
           <span className={styles["field-action"]}>
-            <EditIcon />
+            <PencilIcon className={styles["field-action-icon"]} />
           </span>
         </button>
       </section>

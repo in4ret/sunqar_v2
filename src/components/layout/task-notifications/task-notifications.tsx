@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { getTaskPreviewRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
+import { BellIcon, CircleCheckIcon, CircleXIcon, LoaderCircleIcon } from "@/ui";
 
 import styles from "./task-notifications.module.scss";
 
@@ -71,7 +72,7 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
           setIsOpen((currentIsOpen) => !currentIsOpen);
         }}
       >
-        <span className={styles["task-notifications-icon"]} aria-hidden="true" />
+        <BellIcon className={styles["task-notifications-icon"]} />
       </button>
       {isOpen ? (
         <div
@@ -130,7 +131,10 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
                           data-status={task.status}
                           role="img"
                         >
-                          <span className={styles["task-notifications-status-icon-shape"]} />
+                          <TaskStatusIcon
+                            className={styles["task-notifications-status-icon-shape"]}
+                            status={task.status}
+                          />
                         </span>
                         <time
                           className={styles["task-notifications-date"]}
@@ -160,6 +164,24 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
       ) : null}
     </div>
   );
+}
+
+function TaskStatusIcon({
+  className,
+  status,
+}: {
+  className: string;
+  status: HeaderTaskItem["status"];
+}) {
+  if (status === "success") {
+    return <CircleCheckIcon className={className} />;
+  }
+
+  if (status === "failure") {
+    return <CircleXIcon className={className} />;
+  }
+
+  return <LoaderCircleIcon className={className} />;
 }
 
 function truncateError(value: string) {

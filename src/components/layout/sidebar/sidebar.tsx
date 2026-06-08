@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { routes } from "@/lib/routes";
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "@/ui";
 
 import {
   SIDEBAR_STATE_EVENT,
@@ -176,10 +177,11 @@ export function Sidebar({
               type="button"
               onClick={handleCollapsedChange}
             >
-              <span
-                className={styles["collapse-icon"]}
-                aria-hidden="true"
-              />
+              {isCollapsed ? (
+                <ChevronRightIcon className={styles["collapse-icon"]} />
+              ) : (
+                <ChevronLeftIcon className={styles["collapse-icon"]} />
+              )}
             </button>
           }
           user={user}
@@ -212,7 +214,7 @@ export function Sidebar({
                   triggerRef.current?.focus();
                 }}
               >
-                <span className={styles["close-icon"]} aria-hidden="true" />
+                <XIcon className={styles["close-icon"]} />
               </button>
             </div>
             <SidebarContent

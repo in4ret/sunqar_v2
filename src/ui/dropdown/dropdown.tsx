@@ -1,6 +1,8 @@
 "use client";
 
-import { type CSSProperties,useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+
+import { CheckIcon, ChevronDownIcon } from "../icon/icon";
 
 import styles from "./dropdown.module.scss";
 
@@ -251,7 +253,7 @@ export function Dropdown({
         }}
       >
         <span className={styles["dropdown-value"]}>{selectedOption?.label}</span>
-        <span className={styles["dropdown-chevron"]} aria-hidden="true" />
+        <ChevronDownIcon className={styles["dropdown-chevron"]} />
       </div>
       {isOpen ? (
         <div
@@ -286,6 +288,7 @@ export function Dropdown({
                 }}
               >
                 {option.label}
+                {isSelected ? <CheckIcon className={styles["dropdown-option-check"]} /> : null}
               </div>
             );
           })}

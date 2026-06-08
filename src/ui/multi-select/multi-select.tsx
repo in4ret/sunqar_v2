@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 
+import { ChevronDownIcon, ChevronRightIcon, XIcon } from "../icon/icon";
 import { Modal } from "../modal/modal";
 
 import styles from "./multi-select.module.scss";
@@ -421,11 +422,11 @@ export function MultiSelect({
                   toggleExpanded(node.value);
                 }}
               >
-                <span
-                  aria-hidden="true"
-                  className={styles["multi-select-branch-toggle-icon"]}
-                  data-expanded={isExpanded}
-                />
+                {isExpanded ? (
+                  <ChevronDownIcon className={styles["multi-select-branch-toggle-icon"]} />
+                ) : (
+                  <ChevronRightIcon className={styles["multi-select-branch-toggle-icon"]} />
+                )}
               </button>
             ) : (
               <span className={styles["multi-select-branch-toggle-spacer"]} aria-hidden="true" />
@@ -508,7 +509,7 @@ export function MultiSelect({
                           removeValue(option.value);
                         }}
                       >
-                        <span aria-hidden="true">&times;</span>
+                        <XIcon className={styles["multi-select-chip-remove-icon"]} />
                       </button>
                     </span>
                   ))
@@ -565,7 +566,7 @@ export function MultiSelect({
             toggleDropdown();
           }}
         >
-          <span className={styles["multi-select-chevron"]} aria-hidden="true" />
+          <ChevronDownIcon className={styles["multi-select-chevron"]} />
         </button>
       </div>
       {isOpen ? (
@@ -604,7 +605,7 @@ export function MultiSelect({
                     removeValue(option.value);
                   }}
                 >
-                  <span aria-hidden="true">&times;</span>
+                  <XIcon className={styles["multi-select-chip-remove-icon"]} />
                 </button>
               </span>
             ))}

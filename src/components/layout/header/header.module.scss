@@ -77,33 +77,9 @@
   outline-offset: 2px;
 }
 
-.sidebar-toggle-icon,
-.sidebar-toggle-icon::before,
-.sidebar-toggle-icon::after {
-  display: block;
-  width: 1.05rem;
-  height: 0.12rem;
-  border-radius: 999px;
-  background: currentColor;
-}
-
 .sidebar-toggle-icon {
-  position: relative;
-}
-
-.sidebar-toggle-icon::before,
-.sidebar-toggle-icon::after {
-  position: absolute;
-  left: 0;
-  content: "";
-}
-
-.sidebar-toggle-icon::before {
-  top: -0.35rem;
-}
-
-.sidebar-toggle-icon::after {
-  top: 0.35rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .brand-icon-shell {

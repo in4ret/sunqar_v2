@@ -4,6 +4,8 @@ import { type CSSProperties, useEffect, useId, useLayoutEffect, useRef, useState
 
 import { createPortal } from "react-dom";
 
+import { ChevronDownIcon } from "../icon/icon";
+
 import styles from "./combobox.module.scss";
 
 type ComboboxOption = {
@@ -307,7 +309,9 @@ export function Combobox({
             inputRef.current?.focus();
             openList();
           }}
-        />
+        >
+          <ChevronDownIcon className={styles["combobox-toggle-icon"]} />
+        </button>
       </div>
       {isOpen
         ? createPortal(

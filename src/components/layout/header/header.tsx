@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
+import { MenuIcon } from "@/ui";
 
 import { LanguageSwitcher } from "../language-switcher/language-switcher";
 import {
@@ -96,7 +97,7 @@ export function Header({
                   window.dispatchEvent(new CustomEvent(SIDEBAR_TOGGLE_EVENT));
                 }}
               >
-                <span className={styles["sidebar-toggle-icon"]} aria-hidden="true" />
+                <MenuIcon className={styles["sidebar-toggle-icon"]} />
               </button>
             ) : null}
             <Link className={styles["brand-link"]} href={brandHref}>

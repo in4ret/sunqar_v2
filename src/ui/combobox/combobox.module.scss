@@ -53,16 +53,9 @@
     background-color 160ms ease;
 }
 
-.combobox-toggle::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+.combobox-toggle-icon {
   width: 1rem;
-  height: 0.75rem;
-  background: currentColor;
-  content: "";
-  clip-path: polygon(8% 0, 50% 76%, 92% 0, 100% 18%, 50% 100%, 0 18%);
-  transform: translate(-50%, -50%);
+  height: 1rem;
   transition: transform 160ms ease;
 }
 
@@ -75,8 +68,8 @@
   color: var(--text-primary);
 }
 
-.combobox-input[aria-expanded="true"] + .combobox-toggle::before {
-  transform: translate(-50%, -50%) rotate(180deg);
+.combobox-input[aria-expanded="true"] + .combobox-toggle .combobox-toggle-icon {
+  transform: rotate(180deg);
 }
 
 .combobox-toggle:disabled {

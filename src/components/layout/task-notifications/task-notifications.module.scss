@@ -39,37 +39,8 @@
 }
 
 .task-notifications-icon {
-  position: relative;
-  width: 0.95rem;
+  width: 1rem;
   height: 1rem;
-  border: 0.12rem solid currentColor;
-  border-radius: 0.5rem 0.5rem 0.35rem 0.35rem;
-  border-bottom-width: 0.16rem;
-}
-
-.task-notifications-icon::before,
-.task-notifications-icon::after {
-  position: absolute;
-  left: 50%;
-  content: "";
-  transform: translateX(-50%);
-}
-
-.task-notifications-icon::before {
-  top: -0.36rem;
-  width: 0.38rem;
-  height: 0.24rem;
-  border: 0.12rem solid currentColor;
-  border-bottom: 0;
-  border-radius: 0.35rem 0.35rem 0 0;
-}
-
-.task-notifications-icon::after {
-  bottom: -0.27rem;
-  width: 0.42rem;
-  height: 0.12rem;
-  border-radius: 999px;
-  background: currentColor;
 }
 
 .task-notifications-panel {
@@ -146,8 +117,6 @@
 }
 
 .task-notifications-status-icon-shape {
-  position: relative;
-  display: inline-block;
   width: 1rem;
   height: 1rem;
 }
@@ -156,48 +125,8 @@
   color: var(--color-success-500);
 }
 
-.task-notifications-status-icon[data-status="success"] .task-notifications-status-icon-shape::before {
-  position: absolute;
-  inset: 0;
-  border: 0.12rem solid currentColor;
-  border-radius: 0.22rem;
-  content: "";
-}
-
-.task-notifications-status-icon[data-status="success"] .task-notifications-status-icon-shape::after {
-  position: absolute;
-  top: 0.16rem;
-  left: 0.32rem;
-  width: 0.24rem;
-  height: 0.48rem;
-  border-right: 0.14rem solid currentColor;
-  border-bottom: 0.14rem solid currentColor;
-  content: "";
-  transform: rotate(45deg);
-}
-
 .task-notifications-status-icon[data-status="failure"] {
   color: var(--color-error-500);
-}
-
-.task-notifications-status-icon[data-status="failure"] .task-notifications-status-icon-shape::before,
-.task-notifications-status-icon[data-status="failure"] .task-notifications-status-icon-shape::after {
-  position: absolute;
-  top: 0.08rem;
-  left: 0.44rem;
-  width: 0.12rem;
-  height: 0.84rem;
-  border-radius: 999px;
-  background: currentColor;
-  content: "";
-}
-
-.task-notifications-status-icon[data-status="failure"] .task-notifications-status-icon-shape::before {
-  transform: rotate(45deg);
-}
-
-.task-notifications-status-icon[data-status="failure"] .task-notifications-status-icon-shape::after {
-  transform: rotate(-45deg);
 }
 
 .task-notifications-status-icon[data-status="pending"] {
@@ -205,9 +134,6 @@
 }
 
 .task-notifications-status-icon[data-status="pending"] .task-notifications-status-icon-shape {
-  border: 0.14rem solid rgba(197, 129, 3, 0.22);
-  border-top-color: currentColor;
-  border-radius: 50%;
   animation: task-notifications-spin 900ms linear infinite;
 }
 

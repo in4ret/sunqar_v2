@@ -1,5 +1,21 @@
 export { Combobox } from "./combobox/combobox";
 export { Dropdown } from "./dropdown/dropdown";
+export {
+  BellIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  LoaderCircleIcon,
+  MenuIcon,
+  PencilIcon,
+  PlayIcon,
+  SaveIcon,
+  TrashIcon,
+  XIcon,
+} from "./icon/icon";
 export { Modal } from "./modal/modal";
 export { MultiSelect, type MultiSelectOption } from "./multi-select/multi-select";
 export type {

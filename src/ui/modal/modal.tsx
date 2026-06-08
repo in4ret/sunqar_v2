@@ -2,6 +2,8 @@
 
 import { type ReactNode, useEffect, useId } from "react";
 
+import { XIcon } from "../icon/icon";
+
 import styles from "./modal.module.scss";
 
 export type ModalProps = {
@@ -79,7 +81,7 @@ export function Modal({
               onClose();
             }}
           >
-            <span aria-hidden="true">&times;</span>
+            <XIcon className={styles["modal-close-icon"]} />
           </button>
         </div>
         <div className={styles["modal-body"]}>{children}</div>

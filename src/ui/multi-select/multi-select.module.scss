@@ -151,6 +151,11 @@
   opacity: 0.7;
 }
 
+.multi-select-chip-remove-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .multi-select-chevron-button {
   display: inline-flex;
   flex: 0 0 auto;
@@ -201,11 +206,9 @@
 }
 
 .multi-select-chevron {
-  width: 0.75rem;
-  height: 0.5rem;
+  width: 0.9rem;
+  height: 0.9rem;
   flex: 0 0 auto;
-  background-color: currentColor;
-  clip-path: polygon(8% 0, 50% 76%, 92% 0, 100% 18%, 50% 100%, 0 18%);
   transition: transform 160ms ease;
 }
 
@@ -304,16 +307,8 @@
 }
 
 .multi-select-branch-toggle-icon {
-  width: 0.65rem;
-  height: 0.65rem;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(-45deg);
-  transition: transform 140ms ease;
-}
-
-.multi-select-branch-toggle-icon[data-expanded="true"] {
-  transform: rotate(45deg);
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .multi-select-branch-toggle-spacer {

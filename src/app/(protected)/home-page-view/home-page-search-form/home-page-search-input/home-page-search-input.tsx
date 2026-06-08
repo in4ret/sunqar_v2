@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 
+import { XIcon } from "@/ui";
+
 import styles from "../../../page.module.scss";
 
 type HomePageSearchInputProps = {
@@ -44,7 +46,7 @@ export function HomePageSearchInput({
           onClick={handleClear}
           type="button"
         >
-          ×
+          <XIcon className={styles["home-page-search-clear-icon"]} />
         </button>
       ) : null}
     </span>

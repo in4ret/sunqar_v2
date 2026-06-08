@@ -20,7 +20,7 @@ import {
   submitDeleteSource,
 } from "@/app/(protected)/sources/actions";
 import { translateActionMessage } from "@/lib/i18n/action-messages";
-import { useToast } from "@/ui";
+import { TrashIcon, useToast } from "@/ui";
 
 import type { SourceManagerSource } from "../source-manager/source-manager.types";
 
@@ -31,43 +31,6 @@ const initialState: SourceFormState = {
   sourceId: null,
   success: null,
 };
-
-function DeleteIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={styles["button-icon"]}
-      fill="none"
-      focusable="false"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 7h16"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M10 11v6M14 11v6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M6 7h12l-1 13H7L6 7Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M9 7V4h6v3"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 type SourceRowProps = {
   confirmDelete: (sourceName: string) => boolean;
@@ -160,7 +123,7 @@ function SourceRow({
               type="submit"
               onClick={stopEventPropagation}
             >
-              <DeleteIcon />
+              <TrashIcon className={styles["button-icon"]} />
             </button>
           </form>
         </div>

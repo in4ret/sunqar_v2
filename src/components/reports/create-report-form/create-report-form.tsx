@@ -17,6 +17,7 @@ import {
   type MultiSelectOption,
   RecurrencePicker,
   type RecurrenceValue,
+  TrashIcon,
 } from "@/ui";
 
 import styles from "./create-report-form.module.scss";
@@ -77,43 +78,6 @@ const defaultRecurrenceValue: RecurrenceValue = {
   interval: 1,
   times: [],
 };
-
-function DeleteIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={styles["delete-icon"]}
-      fill="none"
-      focusable="false"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 7h16"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M10 11v6M14 11v6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M6 7h12l-1 13H7L6 7Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M9 7V4h6v3"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 function createBlockDraft(block?: Partial<ReportBlockFormValue>): ReportBlockDraft {
   return {
@@ -408,7 +372,7 @@ export function CreateReportForm({
                     onClick={index > 0 ? () => removeBlock(index) : undefined}
                     type="button"
                   >
-                    <DeleteIcon />
+                    <TrashIcon className={styles["delete-icon"]} />
                   </button>
                 </div>
               </section>
