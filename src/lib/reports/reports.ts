@@ -190,6 +190,7 @@ export async function createReport(input: {
   }
 
   const createdAt = new Date();
+  const reportId = crypto.randomUUID();
 
   db.insert(reports)
     .values({
@@ -198,12 +199,23 @@ export async function createReport(input: {
       createdAt,
       createdBy: report.createdBy,
       description: report.description,
-      id: crypto.randomUUID(),
+      id: reportId,
       period: report.period,
       title: report.title,
       updatedAt: createdAt,
       updatedBy: report.createdBy,
     })
+    .run();
+
+  const nextRunAt = await calcNextRunAt(reportId);
+
+  db.update(reports)
+    .set({
+      nextRunAt,
+      updatedAt: new Date(),
+      updatedBy: report.createdBy,
+    })
+    .where(eq(reports.id, reportId))
     .run();
 
   return {
@@ -266,6 +278,7 @@ export async function updateReportByUser(input: {
   if (!report.title || !report.description || !report.period) {
     return { error: "report-fields-required" as ReportMutationErrorCode };
   }
+  const updatedAt = new Date();
 
   db.update(reports)
     .set({
@@ -273,6 +286,17 @@ export async function updateReportByUser(input: {
       description: report.description,
       period: report.period,
       title: report.title,
+      updatedAt,
+      updatedBy: normalizedUpdatedBy,
+    })
+    .where(eq(reports.id, existingReport.id))
+    .run();
+
+  const nextRunAt = await calcNextRunAt(existingReport.id);
+
+  db.update(reports)
+    .set({
+      nextRunAt,
       updatedAt: new Date(),
       updatedBy: normalizedUpdatedBy,
     })

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/routes";
-import type { HeaderTaskItem } from "@/lib/tasks";
 import { MenuIcon } from "@/ui";
 
 import { LanguageSwitcher } from "../language-switcher/language-switcher";
@@ -21,13 +20,11 @@ import styles from "./header.module.scss";
 type HeaderProps = {
   brandHref?: string;
   hasSidebar?: boolean;
-  tasks: HeaderTaskItem[];
 };
 
 export function Header({
   brandHref = routes.home,
   hasSidebar = false,
-  tasks,
 }: HeaderProps) {
   const t = useTranslations();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -109,7 +106,7 @@ export function Header({
           </div>
         ) : null}
         <div className={styles["header-actions"]}>
-          <TaskNotifications tasks={tasks} />
+          <TaskNotifications />
           <LanguageSwitcher />
         </div>
       </div>

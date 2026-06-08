@@ -4,6 +4,7 @@ export const routes = {
   home: "/",
   login: "/login",
   taskApi: "/api/tasks",
+  taskStreamApi: "/api/tasks/stream",
   tasks: "/tasks",
   newReport: "/reports/new",
   reports: "/reports",

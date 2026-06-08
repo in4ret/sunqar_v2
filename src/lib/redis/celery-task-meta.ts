@@ -5,20 +5,9 @@ import Redis from "ioredis";
 
 import { db } from "@/lib/db/client";
 import { tasks } from "@/lib/db/schema";
+import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 
 const CELERY_TASK_META_PREFIX = "celery-task-meta-";
-
-function completeTask(taskId: string, downloadUrl: string) {
-  db.update(tasks)
-    .set({
-      doneAt: new Date(),
-      downloadUrl,
-      error: null,
-      status: "success",
-    })
-    .where(eq(tasks.taskId, taskId))
-    .run();
-}
 
 function failTask(taskId: string, raw: string | null) {
   db.update(tasks)
@@ -32,9 +21,21 @@ function failTask(taskId: string, raw: string | null) {
     .run();
 }
 
+function completeSuccessfulTask(taskId: string, downloadUrl: string) {
+  db.update(tasks)
+    .set({
+      doneAt: new Date(),
+      downloadUrl,
+      error: null,
+      status: "success",
+    })
+    .where(eq(tasks.taskId, taskId))
+    .run();
+}
+
 export async function processCeleryTaskMeta(taskId: string, raw: string | null) {
   const task = db
-    .select({ taskId: tasks.taskId })
+    .select({ taskId: tasks.taskId, userId: tasks.userId })
     .from(tasks)
     .where(eq(tasks.taskId, taskId))
     .get();
@@ -47,18 +48,20 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
     const downloadUrl = parsed?.result?.download_url ?? null;
 
     if (status === "SUCCESS" && downloadUrl) {
-      completeTask(taskId, downloadUrl);
+      completeSuccessfulTask(taskId, downloadUrl);
       console.log("### Task", taskId, "succeeded:", downloadUrl);
     } else {
       failTask(taskId, raw);
       console.error("### Task", taskId, "failed:", raw);
     }
-
   } catch (error) {
     failTask(taskId, raw);
     console.error("### Failed to process celery task meta for task", taskId, error);
   }
+
+  await publishTaskSnapshotInvalidation(task.userId);
 }
+
 export async function reconcilePendingTasks(): Promise<void> {
   const pendingTasks = db
     .select({ taskId: tasks.taskId })

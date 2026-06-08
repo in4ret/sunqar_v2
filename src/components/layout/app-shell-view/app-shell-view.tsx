@@ -4,10 +4,10 @@ import { useTranslations } from "next-intl";
 
 import { submitLogout } from "@/app/(protected)/actions";
 import { routes } from "@/lib/routes";
-import type { HeaderTaskItem } from "@/lib/tasks";
 
 import { Footer } from "../footer/footer";
 import { Header } from "../header/header";
+import { HeaderTasksProvider } from "../header-tasks-provider/header-tasks-provider";
 import { Sidebar } from "../sidebar/sidebar";
 
 type AppShellViewUser = {
@@ -19,14 +19,12 @@ type AppShellViewUser = {
 type AppShellViewProps = Readonly<{
   children: React.ReactNode;
   mainClassName?: string;
-  tasks: HeaderTaskItem[];
   user: AppShellViewUser | null;
 }>;
 
 export function AppShellView({
   children,
   mainClassName = "app-main",
-  tasks,
   user,
 }: AppShellViewProps) {
   const t = useTranslations();
@@ -78,31 +76,33 @@ export function AppShellView({
   );
 
   return (
-    <div className={hasSidebar ? "app-shell app-shell-with-sidebar" : "app-shell"}>
-      {user && hasSidebar ? (
-        <Sidebar
-          brandHref={homeHref}
-          closeLabel={t("header.close-menu")}
-          navigationLabel={t("header.primary-navigation")}
-          openLabel={t("header.open-menu")}
-          sections={navigationSections}
-          user={{
-            accountHref: routes.account,
-            accountLabel: t("header.account"),
-            displayName: user.displayName,
-            isAdmin: user.role === "admin",
-            login: user.login,
-            logoutAction: submitLogout,
-            logoutLabel: t("header.logout"),
-            roleLabel: userRoleLabel,
-          }}
-        />
-      ) : null}
-      <div className="app-content-shell">
-        <Header brandHref={homeHref} hasSidebar={hasSidebar} tasks={tasks} />
-        <main className={mainClassName}>{children}</main>
-        <Footer />
+    <HeaderTasksProvider>
+      <div className={hasSidebar ? "app-shell app-shell-with-sidebar" : "app-shell"}>
+        {user && hasSidebar ? (
+          <Sidebar
+            brandHref={homeHref}
+            closeLabel={t("header.close-menu")}
+            navigationLabel={t("header.primary-navigation")}
+            openLabel={t("header.open-menu")}
+            sections={navigationSections}
+            user={{
+              accountHref: routes.account,
+              accountLabel: t("header.account"),
+              displayName: user.displayName,
+              isAdmin: user.role === "admin",
+              login: user.login,
+              logoutAction: submitLogout,
+              logoutLabel: t("header.logout"),
+              roleLabel: userRoleLabel,
+            }}
+          />
+        ) : null}
+        <div className="app-content-shell">
+          <Header brandHref={homeHref} hasSidebar={hasSidebar} />
+          <main className={mainClassName}>{children}</main>
+          <Footer />
+        </div>
       </div>
-    </div>
+    </HeaderTasksProvider>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { startTransition, useEffect, useId, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { useHeaderTasks } from "@/components/layout/header-tasks-provider/header-tasks-provider";
 import { getTaskPreviewRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
 import {
@@ -17,14 +17,10 @@ import {
 
 import styles from "./task-notifications.module.scss";
 
-type TaskNotificationsProps = {
-  tasks: HeaderTaskItem[];
-};
-
-export function TaskNotifications({ tasks }: TaskNotificationsProps) {
+export function TaskNotifications() {
   const t = useTranslations();
   const locale = useLocale();
-  const router = useRouter();
+  const { removeTask, status, tasks } = useHeaderTasks();
   const { showToast } = useToast();
   const dialogId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -89,13 +85,8 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
         throw new Error(`Failed to delete task ${task.taskId}.`);
       }
 
-      showToast({
-        message: t("header.tasks.delete-success"),
-        status: "success",
-      });
-      startTransition(() => {
-        router.refresh();
-      });
+      removeTask(task.taskId);
+      showToast({ message: t("header.tasks.delete-success"), status: "success" });
     } catch (error) {
       console.error("Failed to delete task notification.", error);
       setHiddenTaskIds((currentTaskIds) =>
@@ -135,7 +126,11 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
           className={styles["task-notifications-panel"]}
           role="dialog"
         >
-          {visibleTasks.length > 0 ? (
+          {status === "loading" ? (
+            <p className={styles["task-notifications-empty"]}>{t("header.tasks.loading")}</p>
+          ) : status === "error" ? (
+            <p className={styles["task-notifications-empty"]}>{t("header.tasks.load-error")}</p>
+          ) : visibleTasks.length > 0 ? (
             <div className={styles["task-notifications-list"]}>
               {visibleTasks.map((task) => {
                 const isUnreadTask = !task.read && task.status !== "failure";

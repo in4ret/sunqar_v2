@@ -4,6 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { reports, tasks } from "@/lib/db/schema";
+import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 
 export type HeaderTaskItem = {
   taskId: string;
@@ -93,6 +94,8 @@ export async function markTaskAsReadById(taskId: string, userId: string): Promis
     .where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId)))
     .run();
 
+  await publishTaskSnapshotInvalidation(userId);
+
   return true;
 }
 
@@ -108,6 +111,8 @@ export async function deleteCompletedTaskById(taskId: string, userId: string): P
   }
 
   db.delete(tasks).where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId))).run();
+
+  await publishTaskSnapshotInvalidation(userId);
 
   return true;
 }

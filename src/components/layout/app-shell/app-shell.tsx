@@ -1,5 +1,4 @@
 import { getCurrentUser } from "@/lib/auth/auth";
-import { listTasksByUserId } from "@/lib/tasks";
 
 import { AppShellView } from "../app-shell-view/app-shell-view";
 
@@ -10,12 +9,10 @@ type AppShellProps = Readonly<{
 
 export async function AppShell({ children, mainClassName = "app-main" }: AppShellProps) {
   const user = await getCurrentUser();
-  const headerTasks = user ? await listTasksByUserId(user.id) : [];
 
   return (
     <AppShellView
       mainClassName={mainClassName}
-      tasks={headerTasks}
       user={
         user
           ? {

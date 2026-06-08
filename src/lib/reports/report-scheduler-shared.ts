@@ -2,6 +2,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/lib/db/database";
 import { aiModels, reports, tasks, users } from "@/lib/db/schema";
+import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
 
 import type { ReportBlocks } from "./report-blocks";
@@ -472,6 +473,8 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
         userId: report.authorId,
       })
       .run();
+
+    await publishTaskSnapshotInvalidation(report.authorId);
 
     console.log("###", data);
   } catch (error) {
