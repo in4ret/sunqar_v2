@@ -49,10 +49,10 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
 
     if (status === "SUCCESS" && downloadUrl) {
       completeSuccessfulTask(taskId, downloadUrl);
-      console.log("### Task", taskId, "succeeded:", downloadUrl);
+      // console.log("### Task", taskId, "succeeded:", downloadUrl);
     } else {
       failTask(taskId, raw);
-      console.error("### Task", taskId, "failed:", raw);
+      // console.error("### Task", taskId, "failed:", raw);
     }
   } catch (error) {
     failTask(taskId, raw);

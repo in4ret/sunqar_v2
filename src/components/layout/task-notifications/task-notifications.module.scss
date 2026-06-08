@@ -7,6 +7,7 @@
 }
 
 .task-notifications-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -39,8 +40,46 @@
 }
 
 .task-notifications-icon {
+  position: relative;
+  z-index: 1;
   width: 1rem;
   height: 1rem;
+}
+
+.task-notifications-button-spinner {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-warning-500);
+  pointer-events: none;
+}
+
+.task-notifications-button-spinner-shape {
+  width: 2.15rem;
+  height: 2.15rem;
+}
+
+.task-notifications-unread-badge {
+  position: absolute;
+  top: -0.12rem;
+  right: -0.12rem;
+  z-index: 2;
+  display: inline-flex;
+  min-width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.22rem;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  background: var(--color-error-500);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .task-notifications-panel {
@@ -184,7 +223,8 @@
   color: var(--color-warning-500);
 }
 
-.task-notifications-status-icon[data-status="pending"] .task-notifications-status-icon-shape {
+.task-notifications-status-icon[data-status="pending"] .task-notifications-status-icon-shape,
+.task-notifications-button-spinner[data-status="pending"] .task-notifications-button-spinner-shape {
   animation: task-notifications-spin 900ms linear infinite;
 }
 

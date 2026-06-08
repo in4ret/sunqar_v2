@@ -36,6 +36,14 @@ export function TaskNotifications() {
       }),
     [locale],
   );
+  const hasPendingTasks = useMemo(
+    () => tasks.some((task) => task.status === "pending"),
+    [tasks],
+  );
+  const unreadTasksCount = useMemo(
+    () => tasks.filter((task) => !task.read && task.status === "success").length,
+    [tasks],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -118,6 +126,23 @@ export function TaskNotifications() {
         }}
       >
         <BellIcon className={styles["task-notifications-icon"]} />
+        {hasPendingTasks ? (
+          <span
+            aria-hidden="true"
+            className={styles["task-notifications-button-spinner"]}
+            data-status="pending"
+          >
+            <TaskStatusIcon
+              className={styles["task-notifications-button-spinner-shape"]}
+              status="pending"
+            />
+          </span>
+        ) : null}
+        {unreadTasksCount > 0 ? (
+          <span aria-hidden="true" className={styles["task-notifications-unread-badge"]}>
+            {unreadTasksCount}
+          </span>
+        ) : null}
       </button>
       {isOpen ? (
         <div
