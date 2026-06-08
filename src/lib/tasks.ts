@@ -12,6 +12,7 @@ export type HeaderTaskItem = {
   doneAt: string | null;
   downloadUrl: string | null;
   error: string | null;
+  read: boolean;
   reportTitle: string | null;
   reportDescription: string | null;
 };
@@ -30,6 +31,7 @@ export async function listTasksByUserId(userId: string): Promise<HeaderTaskItem[
       doneAt: tasks.doneAt,
       downloadUrl: tasks.downloadUrl,
       error: tasks.error,
+      read: tasks.read,
       reportTitle: reports.title,
       reportDescription: reports.description,
     })
@@ -45,6 +47,7 @@ export async function listTasksByUserId(userId: string): Promise<HeaderTaskItem[
       doneAt: task.doneAt?.toISOString() ?? null,
       downloadUrl: task.downloadUrl,
       error: task.error,
+      read: task.read,
       reportTitle: task.reportTitle,
       reportDescription: task.reportDescription,
     }));
@@ -68,4 +71,43 @@ export async function getTaskPreviewById(taskId: string, userId: string): Promis
     taskId: task.taskId,
     downloadUrl: task.downloadUrl,
   };
+}
+
+export async function markTaskAsReadById(taskId: string, userId: string): Promise<boolean> {
+  const task = db
+    .select({ taskId: tasks.taskId, read: tasks.read })
+    .from(tasks)
+    .where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId)))
+    .get();
+
+  if (!task) {
+    return false;
+  }
+
+  if (task.read) {
+    return true;
+  }
+
+  db.update(tasks)
+    .set({ read: true })
+    .where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId)))
+    .run();
+
+  return true;
+}
+
+export async function deleteCompletedTaskById(taskId: string, userId: string): Promise<boolean> {
+  const task = db
+    .select({ taskId: tasks.taskId, status: tasks.status })
+    .from(tasks)
+    .where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId)))
+    .get();
+
+  if (!task || task.status === "pending") {
+    return false;
+  }
+
+  db.delete(tasks).where(and(eq(tasks.taskId, taskId), eq(tasks.userId, userId))).run();
+
+  return true;
 }

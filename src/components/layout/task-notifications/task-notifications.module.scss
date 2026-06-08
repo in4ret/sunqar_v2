@@ -48,27 +48,13 @@
   top: calc(100% + 0.6rem);
   right: 0;
   z-index: 20;
-  width: min(24rem, calc(100vw - 1rem));
+  width: min(32rem, calc(100vw - 1rem));
+  overflow: hidden;
   border: 1px solid var(--border-default);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 1rem 2.5rem rgba(8, 55, 89, 0.16);
   backdrop-filter: blur(16px);
-}
-
-.task-notifications-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1rem 0.75rem;
-  border-bottom: 1px solid rgba(8, 55, 89, 0.08);
-}
-
-.task-notifications-title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 700;
 }
 
 .task-notifications-list {
@@ -79,14 +65,39 @@
 }
 
 .task-notifications-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
   padding: 0.9rem 1rem;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .task-notifications-item + .task-notifications-item {
   border-top: 1px solid rgba(8, 55, 89, 0.08);
+}
+
+.task-notifications-item[data-unread="true"] {
+  background:
+    linear-gradient(90deg, var(--color-primary-500) 0, var(--color-primary-500) 0.22rem, transparent 0.22rem),
+    linear-gradient(180deg, rgba(230, 244, 255, 0.92) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.task-notifications-item[data-unread="true"] .task-notifications-report-title {
+  font-weight: 800;
+}
+
+.task-notifications-item[data-unread="true"] .task-notifications-date {
+  color: var(--text-primary);
+}
+
+.task-notifications-item[data-status="failure"] .task-notifications-report-title,
+.task-notifications-item[data-status="failure"] .task-notifications-report-description,
+.task-notifications-item[data-status="failure"] .task-notifications-date,
+.task-notifications-item[data-status="failure"] .task-notifications-error {
+  color: var(--color-error-500);
 }
 
 .task-notifications-item-top {
@@ -104,6 +115,46 @@
   justify-content: flex-end;
   gap: 0.45rem;
   margin-left: auto;
+}
+
+.task-notifications-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.task-notifications-delete-button:hover {
+  border-color: rgba(8, 55, 89, 0.08);
+  background: rgba(8, 55, 89, 0.05);
+  color: var(--color-error-500);
+}
+
+.task-notifications-delete-button:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.task-notifications-delete-button:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+
+.task-notifications-delete-icon {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .task-notifications-status-icon {
@@ -147,9 +198,26 @@
 
 .task-notifications-report {
   display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.task-notifications-report-content {
+  display: flex;
   flex-direction: column;
   gap: 0.2rem;
   min-width: 0;
+}
+
+.task-notifications-unread-indicator {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.32rem;
+  border-radius: 999px;
+  background: var(--color-primary-500);
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.14);
 }
 
 .task-notifications-report-link {

@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
-import { getTaskPreviewRoute } from "@/lib/routes";
+import { getTaskPreviewRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
-import { BellIcon, CircleCheckIcon, CircleXIcon, LoaderCircleIcon } from "@/ui";
+import {
+  BellIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  LoaderCircleIcon,
+  TrashIcon,
+  useToast,
+} from "@/ui";
 
 import styles from "./task-notifications.module.scss";
 
@@ -13,15 +21,17 @@ type TaskNotificationsProps = {
   tasks: HeaderTaskItem[];
 };
 
-const errorPreviewMaxLength = 160;
-
 export function TaskNotifications({ tasks }: TaskNotificationsProps) {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
+  const { showToast } = useToast();
   const dialogId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [hiddenTaskIds, setHiddenTaskIds] = useState<string[]>([]);
+  const [deletingTaskIds, setDeletingTaskIds] = useState<string[]>([]);
   const dateTimeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -57,6 +67,50 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
+  const visibleTasks = useMemo(
+    () => tasks.filter((task) => !hiddenTaskIds.includes(task.taskId)),
+    [hiddenTaskIds, tasks],
+  );
+
+  async function handleDeleteTask(task: HeaderTaskItem) {
+    if (task.status === "pending" || deletingTaskIds.includes(task.taskId)) {
+      return;
+    }
+
+    setDeletingTaskIds((currentTaskIds) => [...currentTaskIds, task.taskId]);
+    setHiddenTaskIds((currentTaskIds) => [...currentTaskIds, task.taskId]);
+
+    try {
+      const response = await fetch(getTaskRoute(task.taskId), {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete task ${task.taskId}.`);
+      }
+
+      showToast({
+        message: t("header.tasks.delete-success"),
+        status: "success",
+      });
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      console.error("Failed to delete task notification.", error);
+      setHiddenTaskIds((currentTaskIds) =>
+        currentTaskIds.filter((taskId) => taskId !== task.taskId),
+      );
+      showToast({
+        message: t("header.tasks.delete-error"),
+        status: "error",
+      });
+    } finally {
+      setDeletingTaskIds((currentTaskIds) =>
+        currentTaskIds.filter((taskId) => taskId !== task.taskId),
+      );
+    }
+  }
 
   return (
     <div ref={rootRef} className={styles["task-notifications"]}>
@@ -81,12 +135,12 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
           className={styles["task-notifications-panel"]}
           role="dialog"
         >
-          <div className={styles["task-notifications-header"]}>
-            <p className={styles["task-notifications-title"]}>{t("header.tasks.title")}</p>
-          </div>
-          {tasks.length > 0 ? (
+          {visibleTasks.length > 0 ? (
             <div className={styles["task-notifications-list"]}>
-              {tasks.map((task) => {
+              {visibleTasks.map((task) => {
+                const isUnreadTask = !task.read && task.status !== "failure";
+                const isCompletedTask = task.status !== "pending";
+                const isDeletingTask = deletingTaskIds.includes(task.taskId);
                 const taskDate =
                   task.status === "pending" || !task.doneAt ? task.createdAt : task.doneAt;
                 const formattedTaskDate = dateTimeFormatter.format(new Date(taskDate));
@@ -106,7 +160,13 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
                 ) : null;
 
                 return (
-                  <article key={task.taskId} className={styles["task-notifications-item"]}>
+                  <article
+                    key={task.taskId}
+                    className={styles["task-notifications-item"]}
+                    data-read={task.read ? "true" : "false"}
+                    data-unread={isUnreadTask ? "true" : "false"}
+                    data-status={task.status}
+                  >
                     <div className={styles["task-notifications-item-top"]}>
                       {hasReportDetails ? (
                         task.downloadUrl ? (
@@ -116,10 +176,30 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
                             rel="noreferrer"
                             target="_blank"
                           >
-                            <div className={styles["task-notifications-report"]}>{reportDetails}</div>
+                            <div className={styles["task-notifications-report"]}>
+                              {isUnreadTask ? (
+                                <span
+                                  aria-hidden="true"
+                                  className={styles["task-notifications-unread-indicator"]}
+                                />
+                              ) : null}
+                              <div className={styles["task-notifications-report-content"]}>
+                                {reportDetails}
+                              </div>
+                            </div>
                           </a>
                         ) : (
-                          <div className={styles["task-notifications-report"]}>{reportDetails}</div>
+                          <div className={styles["task-notifications-report"]}>
+                            {isUnreadTask ? (
+                              <span
+                                aria-hidden="true"
+                                className={styles["task-notifications-unread-indicator"]}
+                              />
+                            ) : null}
+                            <div className={styles["task-notifications-report-content"]}>
+                              {reportDetails}
+                            </div>
+                          </div>
                         )
                       ) : (
                         <div className={styles["task-notifications-report"]} />
@@ -143,14 +223,24 @@ export function TaskNotifications({ tasks }: TaskNotificationsProps) {
                         >
                           {formattedTaskDate}
                         </time>
+                        {isCompletedTask ? (
+                          <button
+                            aria-label={t("header.tasks.delete")}
+                            className={styles["task-notifications-delete-button"]}
+                            disabled={isDeletingTask}
+                            type="button"
+                            onClick={() => {
+                              void handleDeleteTask(task);
+                            }}
+                          >
+                            <TrashIcon className={styles["task-notifications-delete-icon"]} />
+                          </button>
+                        ) : null}
                       </div>
                     </div>
-                    {task.status === "failure" && task.error ? (
-                      <p
-                        className={styles["task-notifications-error"]}
-                        title={task.error}
-                      >
-                        {truncateError(task.error)}
+                    {task.status === "failure" ? (
+                      <p className={styles["task-notifications-error"]}>
+                        {t("header.tasks.error-message")}
                       </p>
                     ) : null}
                   </article>
@@ -182,12 +272,4 @@ function TaskStatusIcon({
   }
 
   return <LoaderCircleIcon className={className} />;
-}
-
-function truncateError(value: string) {
-  if (value.length <= errorPreviewMaxLength) {
-    return value;
-  }
-
-  return `${value.slice(0, errorPreviewMaxLength - 1)}…`;
 }

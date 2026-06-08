@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth/auth";
-import { getTaskPreviewById } from "@/lib/tasks";
+import { getTaskPreviewById, markTaskAsReadById } from "@/lib/tasks";
 
 type TaskPreviewRouteProps = {
   params: Promise<{
@@ -22,6 +22,8 @@ export async function GET(_request: Request, { params }: TaskPreviewRouteProps) 
   if (!task) {
     return buildTextResponse("Task not found.", 404);
   }
+
+  await markTaskAsReadById(taskId, user.id);
 
   if (!task.downloadUrl) {
     return buildTextResponse("Task result is not ready.", 409);

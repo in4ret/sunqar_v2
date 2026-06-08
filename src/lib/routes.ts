@@ -3,7 +3,8 @@ export const routes = {
   aiModels: "/ai_models",
   home: "/",
   login: "/login",
-  taskPreview: "/api/tasks",
+  taskApi: "/api/tasks",
+  tasks: "/tasks",
   newReport: "/reports/new",
   reports: "/reports",
   sources: "/sources",
@@ -15,5 +16,9 @@ export function getReportEditRoute(reportId: string) {
 }
 
 export function getTaskPreviewRoute(taskId: string) {
-  return `${routes.taskPreview}/${taskId}/preview`;
+  return `${routes.tasks}/${taskId}`;
+}
+
+export function getTaskRoute(taskId: string) {
+  return `${routes.taskApi}/${taskId}`;
 }
