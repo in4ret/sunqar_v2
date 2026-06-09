@@ -33,7 +33,6 @@ export function HeaderTasksProvider({ children }: HeaderTasksProviderProps) {
   const hasReceivedSnapshotRef = useRef(false);
 
   useEffect(() => {
-    console.log("useEffect");
     const eventSource = new EventSource(routes.taskStreamApi);
 
     function handleSnapshot(event: MessageEvent<string>) {

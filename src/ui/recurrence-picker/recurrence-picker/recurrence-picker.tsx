@@ -69,12 +69,10 @@ export function RecurrencePicker({
   }, [isOpen]);
 
   function updateDraftValue(nextValue: Partial<typeof normalizedValue>) {
-    setDraftValue((currentDraftValue) =>
-      normalizeRecurrenceValue({
-        ...currentDraftValue,
-        ...nextValue,
-      }),
-    );
+    setDraftValue((currentDraftValue) => ({
+      ...currentDraftValue,
+      ...nextValue,
+    }));
   }
 
   function openModal() {

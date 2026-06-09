@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { normalizeTimes } from "../recurrence-picker.utils";
-
 import styles from "./times-input.module.scss";
 
 type TimesInputProps = {
@@ -12,6 +10,18 @@ type TimesInputProps = {
   onChange: (times: string[]) => void;
   value: string[];
 };
+
+type DraftTimeRow = {
+  id: string;
+  value: string;
+};
+
+function createDraftTimeRow(time: string): DraftTimeRow {
+  return {
+    id: crypto.randomUUID(),
+    value: time,
+  };
+}
 
 function getDraftTimes(times: string[]) {
   return times.length > 0 ? times : [""];
@@ -22,12 +32,14 @@ export function TimesInput({
   onChange,
   value,
 }: TimesInputProps) {
-  const [draftTimes, setDraftTimes] = useState<string[]>(() => getDraftTimes(value));
+  const [draftTimeRows, setDraftTimeRows] = useState<DraftTimeRow[]>(() =>
+    getDraftTimes(value).map(createDraftTimeRow),
+  );
   const t = useTranslations("recurrence-picker");
-  const hasEmptyTime = draftTimes.some((time) => time.trim() === "");
+  const hasEmptyTime = draftTimeRows.some((row) => row.value.trim() === "");
 
-  function emitTimes(nextDraftTimes: string[]) {
-    onChange(normalizeTimes(nextDraftTimes));
+  function emitTimes(nextDraftTimeRows: DraftTimeRow[]) {
+    onChange(nextDraftTimeRows.map((row) => row.value));
   }
 
   return (
@@ -37,22 +49,24 @@ export function TimesInput({
         <p className={styles["section-hint"]}>{t("times.hint")}</p>
       </div>
       <div className={styles["list"]}>
-        {draftTimes.map((time, index) => (
-          <div key={`${index}-${time || "empty"}`} className={styles["row"]}>
+        {draftTimeRows.map((row, index) => (
+          <div key={row.id} className={styles["row"]}>
             <input
               aria-label={t("times.row-label", { index: index + 1 })}
               className={styles["input"]}
               disabled={disabled}
               step={60}
               type="time"
-              value={time}
+              value={row.value}
               onChange={(event) => {
-                const nextDraftTimes = draftTimes.map((draftTime, draftIndex) =>
-                  draftIndex === index ? event.currentTarget.value : draftTime,
+                const nextDraftTimeRows = draftTimeRows.map((draftTimeRow) =>
+                  draftTimeRow.id === row.id
+                    ? { ...draftTimeRow, value: event.currentTarget.value }
+                    : draftTimeRow,
                 );
 
-                setDraftTimes(nextDraftTimes);
-                emitTimes(nextDraftTimes);
+                setDraftTimeRows(nextDraftTimeRows);
+                emitTimes(nextDraftTimeRows);
               }}
             />
             <button
@@ -61,11 +75,14 @@ export function TimesInput({
               disabled={disabled}
               type="button"
               onClick={() => {
-                const nextDraftTimes = draftTimes.filter((_, draftIndex) => draftIndex !== index);
-                const safeDraftTimes = nextDraftTimes.length > 0 ? nextDraftTimes : [""];
+                const nextDraftTimeRows = draftTimeRows.filter(
+                  (draftTimeRow) => draftTimeRow.id !== row.id,
+                );
+                const safeDraftTimeRows =
+                  nextDraftTimeRows.length > 0 ? nextDraftTimeRows : [createDraftTimeRow("")];
 
-                setDraftTimes(safeDraftTimes);
-                emitTimes(nextDraftTimes);
+                setDraftTimeRows(safeDraftTimeRows);
+                emitTimes(nextDraftTimeRows);
               }}
             >
               {t("times.remove-short")}
@@ -78,7 +95,7 @@ export function TimesInput({
         disabled={disabled || hasEmptyTime}
         type="button"
         onClick={() => {
-          setDraftTimes((currentDraftTimes) => [...currentDraftTimes, ""]);
+          setDraftTimeRows((currentDraftTimeRows) => [...currentDraftTimeRows, createDraftTimeRow("")]);
         }}
       >
         {t("times.add")}
