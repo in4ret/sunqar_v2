@@ -1,15 +1,18 @@
 import { getCurrentUser } from "@/lib/auth/auth";
-import { getTaskPreviewById, markTaskAsReadById } from "@/lib/tasks";
+import { getTaskDownloadById, markTaskAsReadById } from "@/lib/tasks";
 
-type TaskPreviewRouteProps = {
+type TaskDownloadRouteProps = {
   params: Promise<{
     taskId: string;
   }>;
 };
 
 const pdfContentType = "application/pdf";
+const docxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const supportedContentTypes = [pdfContentType, docxContentType] as const;
+const genericBinaryContentType = "application/octet-stream";
 
-export async function GET(_request: Request, { params }: TaskPreviewRouteProps) {
+export async function GET(_request: Request, { params }: TaskDownloadRouteProps) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -17,7 +20,7 @@ export async function GET(_request: Request, { params }: TaskPreviewRouteProps) 
   }
 
   const { taskId } = await params;
-  const task = await getTaskPreviewById(taskId, user.id);
+  const task = await getTaskDownloadById(taskId, user.id);
 
   if (!task) {
     return buildTextResponse("Task not found.", 404);
@@ -44,13 +47,13 @@ export async function GET(_request: Request, { params }: TaskPreviewRouteProps) 
       redirect: "follow",
     });
   } catch (error) {
-    console.error("Failed to fetch task preview.", error);
+    console.error("Failed to fetch task file.", error);
 
     return buildTextResponse("Failed to fetch task result.", 502);
   }
 
   if (!upstreamResponse.ok) {
-    console.error("Task preview upstream request failed.", {
+    console.error("Task file upstream request failed.", {
       status: upstreamResponse.status,
       taskId: task.taskId,
       url: upstreamUrl.toString(),
@@ -63,17 +66,21 @@ export async function GET(_request: Request, { params }: TaskPreviewRouteProps) 
     return buildTextResponse("Upstream task result is unavailable.", 502);
   }
 
-  const upstreamContentType = upstreamResponse.headers.get("content-type");
+  const upstreamFilename = getUpstreamFilename(upstreamResponse.headers, upstreamUrl);
+  const upstreamContentType = getSupportedContentType(
+    upstreamResponse.headers.get("content-type"),
+    upstreamFilename,
+  );
 
-  if (!upstreamContentType?.toLowerCase().startsWith(pdfContentType)) {
-    return buildTextResponse("Upstream task result is not a PDF.", 502);
+  if (!upstreamContentType) {
+    return buildTextResponse("Upstream task result has an unsupported file type.", 502);
   }
 
-  const filename = getPreviewFilename(upstreamUrl, task.taskId);
+  const filename = getDownloadFilename(upstreamFilename, task.taskId, upstreamContentType);
   const responseHeaders = new Headers({
     "Cache-Control": "no-store",
-    "Content-Disposition": `inline; filename="${filename}"`,
-    "Content-Type": pdfContentType,
+    "Content-Disposition": `attachment; filename="${filename}"`,
+    "Content-Type": upstreamContentType,
   });
   const contentLength = upstreamResponse.headers.get("content-length");
 
@@ -85,6 +92,26 @@ export async function GET(_request: Request, { params }: TaskPreviewRouteProps) 
     headers: responseHeaders,
     status: 200,
   });
+}
+
+function getSupportedContentType(value: string | null, filename: string | null) {
+  const normalizedValue = value?.toLowerCase().trim();
+
+  if (normalizedValue) {
+    const supportedContentType = supportedContentTypes.find((contentType) =>
+      normalizedValue.startsWith(contentType),
+    );
+
+    if (supportedContentType) {
+      return supportedContentType;
+    }
+
+    if (normalizedValue.startsWith(genericBinaryContentType)) {
+      return getContentTypeFromFilename(filename);
+    }
+  }
+
+  return getContentTypeFromFilename(filename);
 }
 
 function buildTextResponse(message: string, status: number) {
@@ -115,15 +142,64 @@ function parseUpstreamUrl(value: string) {
   }
 }
 
-function getPreviewFilename(url: URL, taskId: string) {
-  const rawFilename = url.pathname.split("/").at(-1) ?? "";
-  const decodedFilename = decodeURIComponent(rawFilename).trim();
+function getUpstreamFilename(headers: Headers, url: URL) {
+  const filenameFromHeader = parseFilenameFromContentDisposition(headers.get("content-disposition"));
 
-  if (decodedFilename.toLowerCase().endsWith(".pdf")) {
-    return decodedFilename;
+  if (filenameFromHeader) {
+    return filenameFromHeader;
   }
 
-  return `${taskId}.pdf`;
+  const rawFilename = url.pathname.split("/").at(-1) ?? "";
+
+  return decodeURIComponent(rawFilename).trim();
+}
+
+function parseFilenameFromContentDisposition(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const utf8FilenameMatch = value.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+
+  if (utf8FilenameMatch?.[1]) {
+    return decodeURIComponent(utf8FilenameMatch[1]).trim();
+  }
+
+  const asciiFilenameMatch = value.match(/filename\s*=\s*"([^"]+)"/i) ?? value.match(/filename\s*=\s*([^;]+)/i);
+
+  return asciiFilenameMatch?.[1]?.trim() ?? null;
+}
+
+function getDownloadFilename(
+  upstreamFilename: string | null,
+  taskId: string,
+  contentType: (typeof supportedContentTypes)[number],
+) {
+  const normalizedFilename = upstreamFilename?.trim() ?? "";
+
+  if (normalizedFilename.toLowerCase().endsWith(".pdf")) {
+    return normalizedFilename;
+  }
+
+  if (normalizedFilename.toLowerCase().endsWith(".docx")) {
+    return normalizedFilename;
+  }
+
+  return `${taskId}.${contentType === docxContentType ? "docx" : "pdf"}`;
+}
+
+function getContentTypeFromFilename(filename: string | null) {
+  const normalizedFilename = filename?.toLowerCase().trim() ?? "";
+
+  if (normalizedFilename.endsWith(".pdf")) {
+    return pdfContentType;
+  }
+
+  if (normalizedFilename.endsWith(".docx")) {
+    return docxContentType;
+  }
+
+  return null;
 }
 
 function buildUpstreamHeaders(url: URL) {

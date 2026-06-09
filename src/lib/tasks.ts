@@ -18,7 +18,7 @@ export type HeaderTaskItem = {
   reportDescription: string | null;
 };
 
-export type TaskPreviewItem = {
+export type TaskDownloadItem = {
   taskId: string;
   downloadUrl: string | null;
 };
@@ -54,7 +54,7 @@ export async function listTasksByUserId(userId: string): Promise<HeaderTaskItem[
     }));
 }
 
-export async function getTaskPreviewById(taskId: string, userId: string): Promise<TaskPreviewItem | null> {
+export async function getTaskDownloadById(taskId: string, userId: string): Promise<TaskDownloadItem | null> {
   const task = db
     .select({
       taskId: tasks.taskId,

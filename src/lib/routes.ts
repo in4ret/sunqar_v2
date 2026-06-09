@@ -16,7 +16,7 @@ export function getReportEditRoute(reportId: string) {
   return `${routes.reports}/${reportId}/edit`;
 }
 
-export function getTaskPreviewRoute(taskId: string) {
+export function getTaskDownloadRoute(taskId: string) {
   return `${routes.tasks}/${taskId}`;
 }
 

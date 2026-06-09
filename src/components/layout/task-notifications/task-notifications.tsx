@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { useHeaderTasks } from "@/components/layout/header-tasks-provider/header-tasks-provider";
-import { getTaskPreviewRoute, getTaskRoute } from "@/lib/routes";
+import { getTaskDownloadRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
 import {
   BellIcon,
@@ -192,9 +192,8 @@ export function TaskNotifications() {
                         task.downloadUrl ? (
                           <a
                             className={styles["task-notifications-report-link"]}
-                            href={getTaskPreviewRoute(task.taskId)}
+                            href={getTaskDownloadRoute(task.taskId)}
                             rel="noreferrer"
-                            target="_blank"
                           >
                             <div className={styles["task-notifications-report"]}>
                               {isUnreadTask ? (
