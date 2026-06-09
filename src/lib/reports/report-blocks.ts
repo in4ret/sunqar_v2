@@ -1,4 +1,4 @@
-const reportBlockKeys = ["title", "aiModel", "prompt", "sources", "keywords"] as const;
+const reportBlockKeys = ["title", "aiModel", "prompt", "sources", "keywords", "from", "to"] as const;
 
 export type ReportBlock = {
   title: string;
@@ -6,6 +6,8 @@ export type ReportBlock = {
   prompt: string;
   sources: string[];
   keywords: string[];
+  from: number | null;
+  to: number | null;
 };
 
 export type ReportBlocks = [ReportBlock, ...ReportBlock[]];
@@ -30,10 +32,19 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+function isNullableTimestamp(value: unknown): value is number | null {
+  return value === null || (typeof value === "number" && Number.isFinite(value));
+}
+
 export function isReportBlock(value: unknown): value is ReportBlock {
   if (!isRecord(value) || !hasExactKeys(value, reportBlockKeys)) {
     return false;
   }
+
+  const hasValidRange =
+    isNullableTimestamp(value.from) &&
+    isNullableTimestamp(value.to) &&
+    (value.from === null || value.to === null || value.from <= value.to);
 
   return (
     typeof value.title === "string" &&
@@ -43,7 +54,8 @@ export function isReportBlock(value: unknown): value is ReportBlock {
     typeof value.prompt === "string" &&
     value.prompt.trim().length > 0 &&
     isStringArray(value.sources) &&
-    isStringArray(value.keywords)
+    isStringArray(value.keywords) &&
+    hasValidRange
   );
 }
 
@@ -57,6 +69,6 @@ export function parseReportBlocks(value: unknown): ReportBlocks {
   }
 
   throw new Error(
-    "Invalid report blocks: expected a non-empty array of blocks with title, aiModel, prompt, sources, and keywords.",
+    "Invalid report blocks: expected a non-empty array of blocks with title, aiModel, prompt, sources, keywords, from, and to.",
   );
 }

@@ -41,9 +41,11 @@ type CreateReportFormSource = {
 
 type ReportBlockFormValue = {
   aiModel: string;
+  from: string;
   keywords: string;
   prompt: string;
   sources: string[];
+  to: string;
   title: string;
 };
 
@@ -56,7 +58,7 @@ type CreateReportFormProps = {
   missingSourceNames?: string[];
   sources: CreateReportFormSource[];
   initialValues?: {
-    blocks: ReportBlockFormValue[];
+    blocks: Array<Omit<ReportBlockFormValue, "from" | "to"> & { from: number | null; to: number | null }>;
     description: string;
     id: string;
     period: RecurrenceValue;
@@ -67,9 +69,11 @@ type CreateReportFormProps = {
 
 const emptyBlock: ReportBlockFormValue = {
   aiModel: "",
+  from: "",
   keywords: "",
   prompt: "",
   sources: [],
+  to: "",
   title: "",
 };
 
@@ -85,6 +89,54 @@ function createBlockDraft(block?: Partial<ReportBlockFormValue>): ReportBlockDra
     ...block,
     clientId: crypto.randomUUID(),
   };
+}
+
+function padDateTimePart(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatDateTimeLocalValue(timestamp: number | null) {
+  if (timestamp === null) {
+    return "";
+  }
+
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return [
+    `${date.getFullYear()}-${padDateTimePart(date.getMonth() + 1)}-${padDateTimePart(date.getDate())}`,
+    `${padDateTimePart(date.getHours())}:${padDateTimePart(date.getMinutes())}`,
+  ].join("T");
+}
+
+function parseDateTimeLocalValue(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return "";
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(trimmedValue);
+
+  if (!match) {
+    return "";
+  }
+
+  const [, year, month, day, hour, minute] = match;
+  const timestamp = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    0,
+    0,
+  ).getTime();
+
+  return Number.isFinite(timestamp) ? String(timestamp) : "";
 }
 
 function normalizeSourceGroupValue(value: string | null) {
@@ -168,7 +220,13 @@ export function CreateReportForm({
   const action = mode === "edit" ? submitUpdateReport : submitCreateReport;
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [blocks, setBlocks] = useState<ReportBlockDraft[]>(() =>
-    initialValues?.blocks.map((block) => createBlockDraft(block)) ?? [createBlockDraft()],
+    initialValues?.blocks.map((block) =>
+      createBlockDraft({
+        ...block,
+        from: formatDateTimeLocalValue(block.from),
+        to: formatDateTimeLocalValue(block.to),
+      }),
+    ) ?? [createBlockDraft()],
   );
   const [period, setPeriod] = useState<RecurrenceValue>(
     initialValues?.period ?? defaultRecurrenceValue,
@@ -360,6 +418,38 @@ export function CreateReportForm({
                         placeholder={t("reports.form.block-keywords-placeholder")}
                         type="text"
                         value={block.keywords}
+                      />
+                    </label>
+                  </div>
+                  <div className={styles["block-range-fields"]}>
+                    <label className={styles["field"]}>
+                      <span className={styles["field-label"]}>{t("reports.form.block-from")}</span>
+                      <input
+                        className={styles["field-input"]}
+                        name="sunqar-report-block-from"
+                        onChange={(event) => updateBlock(index, "from", event.currentTarget.value)}
+                        type="datetime-local"
+                        value={block.from}
+                      />
+                      <input
+                        name="sunqar-report-block-from-timestamp"
+                        type="hidden"
+                        value={parseDateTimeLocalValue(block.from)}
+                      />
+                    </label>
+                    <label className={styles["field"]}>
+                      <span className={styles["field-label"]}>{t("reports.form.block-to")}</span>
+                      <input
+                        className={styles["field-input"]}
+                        name="sunqar-report-block-to"
+                        onChange={(event) => updateBlock(index, "to", event.currentTarget.value)}
+                        type="datetime-local"
+                        value={block.to}
+                      />
+                      <input
+                        name="sunqar-report-block-to-timestamp"
+                        type="hidden"
+                        value={parseDateTimeLocalValue(block.to)}
                       />
                     </label>
                   </div>

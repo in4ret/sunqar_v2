@@ -199,6 +199,8 @@
       "block-sources": "Дереккөздер",
       "block-sources-placeholder": "Дереккөздерді таңдаңыз",
       "block-sources-empty": "Барлық дереккөз таңдалған немесе тізім бос",
+      "block-from": "Кезеңнің басы",
+      "block-to": "Кезеңнің соңы",
       "sources-without-country": "Елсіз",
       "sources-without-type": "Түрісіз",
       "sources-unavailable": "Қолжетімсіз дереккөздер",

@@ -46,9 +46,11 @@ export default async function EditReportPage({ params }: EditReportPageProps) {
         initialValues={{
           blocks: report.blocks.map((block) => ({
             aiModel: block.aiModel,
+            from: block.from,
             keywords: block.keywords.join(", "),
             prompt: block.prompt,
             sources: block.sources,
+            to: block.to,
             title: block.title,
           })),
           description: report.description,

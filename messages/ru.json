@@ -199,6 +199,8 @@
       "block-sources": "Источники",
       "block-sources-placeholder": "Выберите источники",
       "block-sources-empty": "Все источники уже выбраны или список пуст",
+      "block-from": "Начало периода",
+      "block-to": "Конец периода",
       "sources-without-country": "Без страны",
       "sources-without-type": "Без типа",
       "sources-unavailable": "Недоступные источники",

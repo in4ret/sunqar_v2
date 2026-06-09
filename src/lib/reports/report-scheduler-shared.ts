@@ -405,11 +405,13 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     description: report.description,
     author: report.authorName,
     blocks: report.blocks.map((block) => ({
+      from: block.from,
+      key_words: block.keywords,
       title: block.title,
       model: block.aiModel,
       prompt: block.prompt,
       sources: block.sources,
-      key_words: block.keywords,
+      to: block.to,
     })),
   };
   const astanaTime = new Intl.DateTimeFormat("en-CA", {

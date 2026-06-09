@@ -46,6 +46,22 @@ function getStringList(value: FormDataEntryValue | null) {
     .filter(Boolean);
 }
 
+function getTimestampValue(value: FormDataEntryValue | null) {
+  const rawValue = String(value ?? "").trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const timestamp = Number(rawValue);
+
+  if (!Number.isFinite(timestamp)) {
+    throw new Error("Invalid timestamp value.");
+  }
+
+  return timestamp;
+}
+
 function getReportBlocks(formData: FormData): ReportBlocks {
   const blockIndices = new Set<number>();
 
@@ -57,14 +73,17 @@ function getReportBlocks(formData: FormData): ReportBlocks {
     }
   }
 
-  const blocks = Array.from(blockIndices)
-    .sort((left, right) => left - right)
-    .map((index) => ({
+  const sortedBlockIndices = Array.from(blockIndices).sort((left, right) => left - right);
+  const fromValues = formData.getAll("sunqar-report-block-from-timestamp");
+  const toValues = formData.getAll("sunqar-report-block-to-timestamp");
+  const blocks = sortedBlockIndices.map((index, position) => ({
       aiModel: String(formData.get(`blocks[${index}].aiModel`) ?? "").trim(),
+      from: getTimestampValue(fromValues[position] ?? null),
       keywords: getStringList(formData.get(`blocks[${index}].keywords`)),
       prompt: String(formData.get(`blocks[${index}].prompt`) ?? "").trim(),
       sources: getStringList(formData.get(`blocks[${index}].sources`)),
       title: String(formData.get(`blocks[${index}].title`) ?? "").trim(),
+      to: getTimestampValue(toValues[position] ?? null),
     }));
 
   if (blocks.length === 0) {
