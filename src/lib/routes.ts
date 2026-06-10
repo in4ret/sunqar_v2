@@ -3,6 +3,7 @@ export const routes = {
   aiModels: "/ai_models",
   home: "/",
   login: "/login",
+  news: "/news",
   taskApi: "/api/tasks",
   taskStreamApi: "/api/tasks/stream",
   tasks: "/tasks",

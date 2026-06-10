@@ -36,6 +36,10 @@ export function AppShellView({
       href: routes.reports,
       label: t("header.reports"),
     },
+    {
+      href: routes.news,
+      label: t("header.news"),
+    },
   ];
   const adminNavigationItems = [
     {
