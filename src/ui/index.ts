@@ -18,6 +18,7 @@ export {
 } from "./icon/icon";
 export { Modal } from "./modal/modal";
 export { MultiSelect, type MultiSelectOption } from "./multi-select/multi-select";
+export { SearchInput } from "./search-input/search-input";
 export type {
   RecurrencePickerProps,
   RecurrenceValue,

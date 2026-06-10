@@ -11,10 +11,10 @@ import {
 import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useNavigationHistory } from "@/lib/providers";
 import { routes } from "@/lib/routes";
+import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
 import {
   Dropdown,
   MultiSelect,
-  type MultiSelectOption,
   RecurrencePicker,
   type RecurrenceValue,
   TrashIcon,
@@ -31,12 +31,6 @@ const initialState: ReportMutationState = {
 type CreateReportFormAiModel = {
   label: string;
   value: string;
-};
-
-type CreateReportFormSource = {
-  country: string | null;
-  name: string;
-  type: string | null;
 };
 
 type ReportBlockFormValue = {
@@ -56,7 +50,7 @@ type ReportBlockDraft = ReportBlockFormValue & {
 type CreateReportFormProps = {
   aiModels: CreateReportFormAiModel[];
   missingSourceNames?: string[];
-  sources: CreateReportFormSource[];
+  sources: SourceOptionItem[];
   initialValues?: {
     blocks: Array<Omit<ReportBlockFormValue, "from" | "to"> & { from: number | null; to: number | null }>;
     description: string;
@@ -137,77 +131,6 @@ function parseDateTimeLocalValue(value: string) {
   ).getTime();
 
   return Number.isFinite(timestamp) ? String(timestamp) : "";
-}
-
-function normalizeSourceGroupValue(value: string | null) {
-  const trimmedValue = value?.trim();
-
-  return trimmedValue ? trimmedValue : null;
-}
-
-function compareByLabel(left: { label: string }, right: { label: string }) {
-  return left.label.localeCompare(right.label);
-}
-
-function buildSourceOptions({
-  missingSourceNames,
-  sources,
-  unavailableLabel,
-  withoutCountryLabel,
-  withoutTypeLabel,
-}: {
-  missingSourceNames: string[];
-  sources: CreateReportFormSource[];
-  unavailableLabel: string;
-  withoutCountryLabel: string;
-  withoutTypeLabel: string;
-}) {
-  const countries = new Map<string, Map<string, MultiSelectOption[]>>();
-
-  for (const source of sources) {
-    const countryLabel = normalizeSourceGroupValue(source.country) ?? withoutCountryLabel;
-    const typeLabel = normalizeSourceGroupValue(source.type) ?? withoutTypeLabel;
-    const countryGroup = countries.get(countryLabel) ?? new Map<string, MultiSelectOption[]>();
-    const typeGroup = countryGroup.get(typeLabel) ?? [];
-
-    typeGroup.push({
-      label: source.name,
-      value: source.name,
-    });
-    countryGroup.set(typeLabel, typeGroup);
-    countries.set(countryLabel, countryGroup);
-  }
-
-  const groupedOptions = [...countries.entries()]
-    .map<MultiSelectOption>(([countryLabel, typeGroups]) => ({
-      children: [...typeGroups.entries()]
-        .map<MultiSelectOption>(([typeLabel, sourceOptions]) => ({
-          children: [...sourceOptions].sort(compareByLabel),
-          label: typeLabel,
-          value: `country:${countryLabel}/type:${typeLabel}`,
-        }))
-        .sort(compareByLabel),
-      label: countryLabel,
-      value: `country:${countryLabel}`,
-    }))
-    .sort(compareByLabel);
-
-  const uniqueMissingSourceNames = [...new Set(
-    missingSourceNames.map((sourceName) => sourceName.trim()).filter(Boolean),
-  )].sort((left, right) => left.localeCompare(right));
-
-  if (uniqueMissingSourceNames.length > 0) {
-    groupedOptions.push({
-      children: uniqueMissingSourceNames.map((sourceName) => ({
-        label: sourceName,
-        value: sourceName,
-      })),
-      label: unavailableLabel,
-      value: "unavailable-sources",
-    });
-  }
-
-  return groupedOptions;
 }
 
 export function CreateReportForm({

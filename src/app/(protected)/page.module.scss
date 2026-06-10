@@ -13,55 +13,6 @@
   align-items: end;
 }
 
-.home-page-search-input-wrapper {
-  position: relative;
-  display: block;
-}
-
-.home-page-search-input {
-  width: 100%;
-  padding: 0.9rem 3.5rem 0.9rem 1rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.9rem;
-  background: #ffffff;
-  color: var(--text-primary);
-  font: inherit;
-}
-
-.home-page-search-input:focus {
-  outline: 2px solid var(--color-info-500);
-  outline-offset: 2px;
-}
-
-.home-page-search-clear {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transform: translateY(-50%);
-}
-
-.home-page-search-clear-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-.home-page-search-clear:hover,
-.home-page-search-clear:focus-visible {
-  background: var(--bg-soft);
-  color: var(--text-primary);
-}
-
 .home-page-search-submit {
   padding: 0.95rem 1.1rem;
   border: 0;

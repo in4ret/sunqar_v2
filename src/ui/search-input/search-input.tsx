@@ -2,11 +2,11 @@
 
 import { useRef } from "react";
 
-import { XIcon } from "@/ui";
+import { XIcon } from "../icon/icon";
 
-import styles from "../../../page.module.scss";
+import styles from "./search-input.module.scss";
 
-type HomePageSearchInputProps = {
+type SearchInputProps = {
   clearLabel: string;
   name: string;
   onChange: (value: string) => void;
@@ -14,13 +14,13 @@ type HomePageSearchInputProps = {
   value: string;
 };
 
-export function HomePageSearchInput({
+export function SearchInput({
   clearLabel,
   name,
   onChange,
   placeholder,
   value,
-}: HomePageSearchInputProps) {
+}: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleClear() {
@@ -29,10 +29,10 @@ export function HomePageSearchInput({
   }
 
   return (
-    <span className={styles["home-page-search-input-wrapper"]}>
+    <span className={styles["search-input-wrapper"]}>
       <input
         ref={inputRef}
-        className={styles["home-page-search-input"]}
+        className={styles["search-input"]}
         name={name}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
@@ -42,11 +42,11 @@ export function HomePageSearchInput({
       {value ? (
         <button
           aria-label={clearLabel}
-          className={styles["home-page-search-clear"]}
+          className={styles["search-input-clear"]}
           onClick={handleClear}
           type="button"
         >
-          <XIcon className={styles["home-page-search-clear-icon"]} />
+          <XIcon className={styles["search-input-clear-icon"]} />
         </button>
       ) : null}
     </span>

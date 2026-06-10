@@ -1,0 +1,51 @@
+@use "@/styles/breakpoints.scss" as breakpoints;
+
+.news-page-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.news-page-sources-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.news-page-sources-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.news-page-search-submit {
+  padding: 0.95rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.news-page-search-submit:hover,
+.news-page-search-submit:focus-visible {
+  background: var(--button-primary-bg-hover);
+  color: var(--button-primary-text-hover);
+}
+
+.news-page-search-submit:active {
+  background: var(--button-primary-bg-active);
+  color: var(--button-primary-text-active);
+}
+
+@media (max-width: breakpoints.$breakpoint-mobile) {
+  .news-page-search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .news-page-search-submit {
+    width: 100%;
+  }
+}

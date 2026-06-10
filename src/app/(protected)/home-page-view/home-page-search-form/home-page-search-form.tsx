@@ -6,8 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/routes";
 import { normalizeSearchQuery } from "@/lib/utils";
-
-import { HomePageSearchInput } from "./home-page-search-input/home-page-search-input";
+import { SearchInput } from "@/ui";
 
 import styles from "../../page.module.scss";
 
@@ -53,7 +52,7 @@ export function HomePageSearchForm({
       method="get"
       onSubmit={handleSubmit}
     >
-      <HomePageSearchInput
+      <SearchInput
         clearLabel={t("home.search-clear")}
         name={HOME_PAGE_SEARCH_INPUT_NAME}
         onChange={handleChange}
