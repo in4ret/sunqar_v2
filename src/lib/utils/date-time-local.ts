@@ -59,6 +59,30 @@ export function normalizeDateTimeLocalParam(searchParam: string | string[] | und
   return normalizeDateTimeLocalValue(value);
 }
 
+export function formatDateTimeLocalValue(date: Date) {
+  const timestamp = date.getTime();
+
+  if (!Number.isFinite(timestamp)) {
+    return "";
+  }
+
+  return [
+    `${String(date.getFullYear()).padStart(4, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")}`,
+    `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`,
+  ].join("T");
+}
+
+export function getDefaultNewsPageSearchFromValue(now: Date = new Date()) {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const defaultSearchFrom = new Date(startOfToday);
+
+  defaultSearchFrom.setDate(defaultSearchFrom.getDate() - 6);
+
+  return formatDateTimeLocalValue(defaultSearchFrom);
+}
+
 export function parseDateTimeLocalValueToEpochSeconds(value: string) {
   const parts = parseDateTimeLocalParts(value);
 

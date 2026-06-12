@@ -1,101 +1,50 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+
+import { ONE_HOUR_REVALIDATE } from "@/lib/cache";
 import { manticoreSql } from "@/lib/manticore";
-import { normalizeSearchQuery } from "@/lib/utils";
+import {
+  buildNewsWhereClause,
+  type NewsQueryInput,
+  type NormalizedNewsQueryInput,
+  normalizeNewsQueryInput,
+} from "@/lib/news/news-filters";
 
 type CountRow = {
   total: number | string;
 };
 
-type NewsCountDateRange = {
-  fromEpochSeconds: number | null;
-  toEpochSeconds: number | null;
-};
-
-function escapeManticoreMatchValue(value: string) {
-  return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
-}
-
-function escapeSqlStringValue(value: string) {
-  return value.replaceAll("'", "\\'");
-}
-
-function normalizeSources(sources: string[]) {
-  return sources.map((source) => source.trim()).filter(Boolean);
-}
-
-function normalizeEpochSecondsValue(value: string) {
-  const trimmedValue = value.trim();
-
-  if (!/^\d+$/.test(trimmedValue)) {
-    return null;
-  }
-
-  const epochSeconds = Number(trimmedValue);
-
-  if (!Number.isSafeInteger(epochSeconds) || epochSeconds < 0) {
-    return null;
-  }
-
-  return epochSeconds;
-}
-
-function normalizeNewsCountDateRange(from: string, to: string): NewsCountDateRange {
-  const fromEpochSeconds = normalizeEpochSecondsValue(from);
-  const toEpochSeconds = normalizeEpochSecondsValue(to);
-
-  if (
-    fromEpochSeconds !== null &&
-    toEpochSeconds !== null &&
-    fromEpochSeconds > toEpochSeconds
-  ) {
-    return {
-      fromEpochSeconds: null,
-      toEpochSeconds: null,
-    };
-  }
-
-  return {
-    fromEpochSeconds,
-    toEpochSeconds,
-  };
-}
-
-function buildNewsCountWhereClause(query: string, sources: string[], from: string, to: string) {
-  const normalizedQuery = normalizeSearchQuery(query);
-  const normalizedSources = normalizeSources(sources);
-  const { fromEpochSeconds, toEpochSeconds } = normalizeNewsCountDateRange(from, to);
-  const conditions: string[] = [];
-
-  if (normalizedQuery) {
-    conditions.push(`MATCH('${escapeManticoreMatchValue(normalizedQuery)}')`);
-  }
-
-  if (normalizedSources.length > 0) {
-    const sourceValues = normalizedSources.map((source) => `'${escapeSqlStringValue(source)}'`);
-
-    conditions.push(`source IN (${sourceValues.join(", ")})`);
-  }
-
-  if (fromEpochSeconds !== null) {
-    conditions.push(`publishedat >= ${fromEpochSeconds}`);
-  }
-
-  if (toEpochSeconds !== null) {
-    conditions.push(`publishedat < ${toEpochSeconds + 60}`);
-  }
-
-  if (conditions.length === 0) {
-    return "";
-  }
-
-  return ` WHERE ${conditions.join(" AND ")}`;
-}
-
-export async function countNews(input: { from: string; query: string; sources: string[]; to: string }) {
+async function getNewsCount(input: NormalizedNewsQueryInput) {
   const rows = await manticoreSql<CountRow>(
-    `SELECT COUNT(*) AS total FROM news${buildNewsCountWhereClause(input.query, input.sources, input.from, input.to)}`
+    `SELECT COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to)}`,
   );
 
   return Number(rows[0]?.total ?? 0);
+}
+
+const getCachedNewsCount = unstable_cache(
+  async (query: string, serializedSources: string, from: string, to: string) =>
+    getNewsCount({
+      from,
+      query,
+      sources: serializedSources ? serializedSources.split("\u0000") : [],
+      to,
+    }),
+  ["news-count-v1"],
+  {
+    revalidate: ONE_HOUR_REVALIDATE,
+    tags: ["news:count"],
+  }
+);
+
+export async function countNews(input: NewsQueryInput) {
+  const normalizedInput = normalizeNewsQueryInput(input);
+
+  return getCachedNewsCount(
+    normalizedInput.query,
+    normalizedInput.sources.join("\u0000"),
+    normalizedInput.from,
+    normalizedInput.to,
+  );
 }

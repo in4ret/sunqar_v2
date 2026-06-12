@@ -1,4 +1,6 @@
 export {
+  formatDateTimeLocalValue,
+  getDefaultNewsPageSearchFromValue,
   normalizeDateTimeLocalParam,
   normalizeDateTimeLocalValue,
   parseDateTimeLocalValueToEpochSeconds,

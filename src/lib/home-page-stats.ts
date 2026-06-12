@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 
 import crypto from "node:crypto";
 
+import { ONE_HOUR_REVALIDATE } from "@/lib/cache";
 import {
   type HomePageNewsCountryChartSlice,
   type HomePageNewsCountryChartStats,
@@ -134,7 +135,6 @@ type HomePageReportTrendInput = {
 };
 
 const ALMATY_TIME_ZONE = "Asia/Almaty";
-const HOME_STATS_TTL = 60 * 60;
 const HOME_CHART_DAYS = 30;
 const HOME_CHART_MONTHS = 6;
 const MIN_CHART_DATE = "1970-01-01";
@@ -966,7 +966,7 @@ const getCachedHomePageNewsStats = unstable_cache(
   async (searchQuery: string) => getNewsStats(searchQuery),
   ["home-page-stats", "news"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:news"],
   }
 );
@@ -975,7 +975,7 @@ const getCachedHomePageSourcesStats = unstable_cache(
   async (searchQuery: string) => getSourcesStats(searchQuery),
   ["home-page-stats", "sources"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:sources"],
   }
 );
@@ -984,7 +984,7 @@ const getCachedHomePageCommentsStats = unstable_cache(
   async (searchQuery: string) => getCommentsStats(searchQuery),
   ["home-page-stats", "comments"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:comments"],
   }
 );
@@ -993,7 +993,7 @@ const getCachedHomePageCommentsToneAverageStats = unstable_cache(
   async (searchQuery: string) => getCommentsToneAverageStats(searchQuery),
   ["home-page-stats", "comments-tone-average"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:comments-tone-average"],
   }
 );
@@ -1002,7 +1002,7 @@ const getCachedHomePageCommentsChartStats = unstable_cache(
   async (searchQuery: string) => getCommentsChartStats(searchQuery),
   ["home-page-stats", "comments-chart-v4"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:comments-chart-v4"],
   }
 );
@@ -1011,7 +1011,7 @@ const getCachedHomePageNewsChartStats = unstable_cache(
   async (searchQuery: string) => getNewsChartStats(searchQuery),
   ["home-page-stats", "news-chart-v1"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:news-chart-v1"],
   }
 );
@@ -1020,7 +1020,7 @@ const getCachedHomePageNewsCountryChartStats = unstable_cache(
   async (searchQuery: string) => getNewsCountryChartStats(searchQuery),
   ["home-page-stats", "news-country-chart-v1"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:news-country-chart-v1"],
   }
 );
@@ -1038,7 +1038,7 @@ const getCachedHomePageReportTrendStats = unstable_cache(
   },
   ["home-page-stats", "report-trend-v2"],
   {
-    revalidate: HOME_STATS_TTL,
+    revalidate: ONE_HOUR_REVALIDATE,
     tags: ["home-page-stats:report-trend-v2"],
   }
 );

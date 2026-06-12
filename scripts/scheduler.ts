@@ -107,10 +107,6 @@ async function main() {
   console.log(`[scheduler] Started with ${POLL_INTERVAL_MS / 1000}s polling interval.`);
 
   while (true) {
-    const startedAt = new Date();
-
-    // console.log(`[scheduler] Pass started at ${startedAt.toISOString()}.`);
-
     try {
       await runSchedulerPass(scheduler);
     } catch (error) {

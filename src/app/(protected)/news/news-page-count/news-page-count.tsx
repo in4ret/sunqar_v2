@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { parseDateTimeLocalValueToEpochSeconds } from "@/lib/utils";
+import { StatsValueSkeleton } from "@/ui/stats/stats";
 
 import styles from "./news-page-count.module.scss";
 
@@ -116,7 +117,7 @@ export function NewsPageCount({
     <section className={styles["news-page-count"]}>
       <span className={styles["news-page-count-label"]}>{t("news.count-label")}</span>
       <strong className={styles["news-page-count-value"]}>
-        {state.status === "loading" ? t("news.count-loading") : formattedTotal}
+        {state.status === "loading" ? <StatsValueSkeleton /> : formattedTotal}
       </strong>
     </section>
   );
