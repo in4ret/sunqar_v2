@@ -24,9 +24,12 @@ import {
 } from "@/lib/utils";
 
 type NewsChartCountRow = {
-  bucket_date: string;
   source: string | null;
   total: number | string;
+};
+
+type NewsChartBoundaryRow = {
+  publishedat: number | string | null;
 };
 
 type EffectiveChartRange = {
@@ -66,17 +69,6 @@ function parseChartDate(value: string) {
   return new Date(Date.UTC(year, month - 1, day, 12));
 }
 
-function normalizeChartBucketDate(value: string) {
-  const trimmedValue = value.trim();
-  const matchedDate = trimmedValue.match(/^\d{4}-\d{2}-\d{2}/);
-
-  if (matchedDate) {
-    return matchedDate[0];
-  }
-
-  return formatChartDate(new Date(trimmedValue));
-}
-
 function addDays(date: Date, days: number) {
   const next = new Date(date);
 
@@ -103,6 +95,34 @@ function endOfMonth(date: Date) {
 
 function getLocalDateAtUtcNoon(epochSeconds: number, timeZone: string) {
   return parseChartDate(formatDateForTimeZone(new Date(epochSeconds * 1000), timeZone));
+}
+
+function getTimeZoneOffsetMilliseconds(date: Date, timeZone: string) {
+  const timeZoneName = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(date)
+    .find((part) => part.type === "timeZoneName")?.value;
+  const match = timeZoneName?.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/);
+
+  if (!match) {
+    return 0;
+  }
+
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = Number(match[3] ?? "0");
+
+  return sign * ((hours * 60 + minutes) * 60 * 1000);
+}
+
+function getStartOfDayEpochSeconds(value: string, timeZone: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  const utcMidnight = Date.UTC(year, month - 1, day, 0, 0, 0);
+  const offset = getTimeZoneOffsetMilliseconds(new Date(utcMidnight), timeZone);
+
+  return Math.floor((utcMidnight - offset) / 1000);
 }
 
 function buildDayBucketSpecs(fromEpochSeconds: number, toEpochSeconds: number) {
@@ -373,26 +393,103 @@ function buildBucketSpecs(
   return buildMonthBucketSpecs(dates, range.toEpochSeconds);
 }
 
+function getBucketStartEpochSeconds(bucket: ChartBucketSpec) {
+  return getStartOfDayEpochSeconds(bucket.bucketStart, ALMATY_TIME_ZONE);
+}
+
+function getBucketEndExclusiveEpochSeconds(bucket: ChartBucketSpec) {
+  const nextDate = formatChartDate(addDays(parseChartDate(bucket.bucketEnd), 1));
+
+  return getStartOfDayEpochSeconds(nextDate, ALMATY_TIME_ZONE);
+}
+
+function normalizePublishedAtEpochSeconds(value: number | string | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!/^\d+$/.test(trimmedValue)) {
+    return null;
+  }
+
+  const epochSeconds = Number(trimmedValue);
+
+  return Number.isFinite(epochSeconds) ? epochSeconds : null;
+}
+
+async function getChartBoundaryDates(input: NormalizedNewsQueryInput, fallbackToEpochSeconds: number | null) {
+  const whereClause = buildNewsWhereClause(input.query, input.sources, input.from, input.to);
+  const [firstRows, lastRows] = await Promise.all([
+    manticoreSql<NewsChartBoundaryRow>(
+      `SELECT publishedat FROM news${whereClause} ORDER BY publishedat ASC LIMIT 1 OPTION max_matches=10000`,
+    ),
+    manticoreSql<NewsChartBoundaryRow>(
+      `SELECT publishedat FROM news${whereClause} ORDER BY publishedat DESC LIMIT 1 OPTION max_matches=10000`,
+    ),
+  ]);
+  const firstEpochSeconds = normalizePublishedAtEpochSeconds(firstRows[0]?.publishedat);
+  const lastEpochSeconds = normalizePublishedAtEpochSeconds(lastRows[0]?.publishedat);
+
+  if (firstEpochSeconds === null || lastEpochSeconds === null) {
+    const fallbackDate =
+      fallbackToEpochSeconds !== null
+        ? getLocalDateAtUtcNoon(fallbackToEpochSeconds, ALMATY_TIME_ZONE)
+        : parseChartDate(formatDateForTimeZone(new Date(), ALMATY_TIME_ZONE));
+
+    return [formatChartDate(fallbackDate)];
+  }
+
+  return [
+    formatChartDate(getLocalDateAtUtcNoon(firstEpochSeconds, ALMATY_TIME_ZONE)),
+    formatChartDate(getLocalDateAtUtcNoon(lastEpochSeconds, ALMATY_TIME_ZONE)),
+  ];
+}
+
+async function getBucketSourceTotals(
+  input: NormalizedNewsQueryInput,
+  bucket: ChartBucketSpec,
+) {
+  const bucketStartEpochSeconds = getBucketStartEpochSeconds(bucket);
+  const bucketEndExclusiveEpochSeconds = getBucketEndExclusiveEpochSeconds(bucket);
+  const rows = await manticoreSql<NewsChartCountRow>(
+    `SELECT source, COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to, [
+      `publishedat >= ${bucketStartEpochSeconds}`,
+      `publishedat < ${bucketEndExclusiveEpochSeconds}`,
+    ])} GROUP BY source ORDER BY total DESC LIMIT 100000 OPTION max_matches=100000`,
+  );
+  const sourceTotals = new Map<string, number>();
+
+  for (const row of rows) {
+    const source = normalizeNewsSource(row.source);
+    const total = Number(row.total ?? 0);
+
+    sourceTotals.set(source, (sourceTotals.get(source) ?? 0) + total);
+  }
+
+  return sourceTotals;
+}
+
 function buildBucketsFromSpecs(
   bucketSpecs: ChartBucketSpec[],
-  dailySourceTotalsMap: Map<string, Map<string, number>>,
+  bucketSourceTotalsMap: Map<string, Map<string, number>>,
   sources: string[],
 ): NewsChartSourceBucket[] {
   const visibleSources = sources.filter((source) => source !== OTHER_NEWS_SOURCE);
   const visibleSourceSet = new Set(visibleSources);
 
-  return bucketSpecs.map(({ bucketEnd, bucketStart, dates }) => {
+  return bucketSpecs.map(({ bucketEnd, bucketStart }) => {
     const sourceTotals = new Map<string, number>();
     let otherTotal = 0;
+    const bucketSourceTotals = bucketSourceTotalsMap.get(bucketStart);
 
-    for (const date of dates) {
-      const dailySourceTotals = dailySourceTotalsMap.get(date);
-
-      if (!dailySourceTotals) {
-        continue;
-      }
-
-      for (const [source, total] of dailySourceTotals.entries()) {
+    if (bucketSourceTotals) {
+      for (const [source, total] of bucketSourceTotals.entries()) {
         if (visibleSourceSet.has(source)) {
           sourceTotals.set(source, (sourceTotals.get(source) ?? 0) + total);
           continue;
@@ -422,31 +519,32 @@ function buildBucketsFromSpecs(
 async function getNewsChartData(
   input: NormalizedNewsQueryInput,
 ): Promise<NewsChartSourceStats> {
-  const rows = await manticoreSql<NewsChartCountRow>(
-    `SELECT DATE(publishedat) AS bucket_date, source, COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to)} GROUP BY bucket_date, source ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=10000`,
-  );
-  const dailySourceTotalsMap = new Map<string, Map<string, number>>();
-  const overallSourceTotals = new Map<string, number>();
-
-  for (const row of rows) {
-    const bucketDate = normalizeChartBucketDate(row.bucket_date);
-    const source = normalizeNewsSource(row.source);
-    const total = Number(row.total ?? 0);
-    const dailySourceTotals = dailySourceTotalsMap.get(bucketDate) ?? new Map<string, number>();
-
-    dailySourceTotals.set(source, (dailySourceTotals.get(source) ?? 0) + total);
-    dailySourceTotalsMap.set(bucketDate, dailySourceTotals);
-    overallSourceTotals.set(source, (overallSourceTotals.get(source) ?? 0) + total);
-  }
-
   const effectiveRange = resolveEffectiveChartRange(input);
   const granularity = getChartGranularity(effectiveRange);
-  const allDates = [...dailySourceTotalsMap.keys()];
+  const boundaryDates =
+    effectiveRange.fromEpochSeconds === null || effectiveRange.toEpochSeconds === null
+      ? await getChartBoundaryDates(input, effectiveRange.toEpochSeconds)
+      : [];
+  const bucketSpecs = buildBucketSpecs(granularity, effectiveRange, boundaryDates);
+  const bucketSourceTotalsMap = new Map<string, Map<string, number>>();
+  const overallSourceTotals = new Map<string, number>();
+
+  await Promise.all(
+    bucketSpecs.map(async (bucket) => {
+      const bucketSourceTotals = await getBucketSourceTotals(input, bucket);
+
+      bucketSourceTotalsMap.set(bucket.bucketStart, bucketSourceTotals);
+
+      for (const [source, total] of bucketSourceTotals.entries()) {
+        overallSourceTotals.set(source, (overallSourceTotals.get(source) ?? 0) + total);
+      }
+    }),
+  );
+
   const sources = getTopSources(overallSourceTotals);
-  const bucketSpecs = buildBucketSpecs(granularity, effectiveRange, allDates);
 
   return {
-    buckets: buildBucketsFromSpecs(bucketSpecs, dailySourceTotalsMap, sources),
+    buckets: buildBucketsFromSpecs(bucketSpecs, bucketSourceTotalsMap, sources),
     granularity,
     sources,
   };

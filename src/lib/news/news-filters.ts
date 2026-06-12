@@ -72,7 +72,13 @@ export function normalizeNewsDateRange(from: string, to: string): NewsDateRange 
   };
 }
 
-export function buildNewsWhereClause(query: string, sources: string[], from: string, to: string) {
+export function buildNewsWhereClause(
+  query: string,
+  sources: string[],
+  from: string,
+  to: string,
+  extraConditions: string[] = [],
+) {
   const normalizedQuery = normalizeSearchQuery(query);
   const normalizedSources = normalizeNewsSources(sources);
   const { fromEpochSeconds, toEpochSeconds } = normalizeNewsDateRange(from, to);
@@ -95,6 +101,8 @@ export function buildNewsWhereClause(query: string, sources: string[], from: str
   if (toEpochSeconds !== null) {
     conditions.push(`publishedat < ${toEpochSeconds + 60}`);
   }
+
+  conditions.push(...extraConditions);
 
   if (conditions.length === 0) {
     return "";
