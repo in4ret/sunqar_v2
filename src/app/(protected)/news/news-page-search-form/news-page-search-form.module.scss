@@ -2,20 +2,30 @@
 
 .news-page-search-form {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.2fr)
-    minmax(11rem, 0.85fr)
-    minmax(11rem, 0.85fr)
-    minmax(0, 1fr)
-    auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-areas:
+    "search search sources submit"
+    "from to sources submit";
   gap: 1rem;
-  align-items: end;
+  align-items: start;
 }
 
 .news-page-search-field,
 .news-page-date-field {
   display: grid;
   gap: 0.5rem;
+}
+
+.news-page-search-field {
+  grid-area: search;
+}
+
+.news-page-date-field:nth-of-type(2) {
+  grid-area: from;
+}
+
+.news-page-date-field:nth-of-type(3) {
+  grid-area: to;
 }
 
 .news-page-date-input {
@@ -44,11 +54,15 @@
 }
 
 .news-page-sources-field {
+  grid-area: sources;
   display: grid;
   gap: 0.5rem;
 }
 
 .news-page-search-submit {
+  grid-area: submit;
+  justify-self: end;
+  margin-top: 1.6rem;
   padding: 0.95rem 1.1rem;
   border: 0;
   border-radius: 999px;
@@ -73,9 +87,16 @@
 @media (max-width: breakpoints.$breakpoint-mobile) {
   .news-page-search-form {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "from"
+      "to"
+      "sources"
+      "submit";
   }
 
   .news-page-search-submit {
+    margin-top: 0;
     width: 100%;
   }
 }
