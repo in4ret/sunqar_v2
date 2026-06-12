@@ -1,0 +1,24 @@
+.news-page-count {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.news-page-count-label {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.news-page-count-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.news-page-count-error {
+  font-size: 0.95rem;
+  color: var(--destructive);
+}

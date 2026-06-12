@@ -2,20 +2,50 @@
 
 .news-page-search-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns:
+    minmax(0, 1.2fr)
+    minmax(11rem, 0.85fr)
+    minmax(11rem, 0.85fr)
+    minmax(0, 1fr)
+    auto;
   gap: 1rem;
-  align-items: center;
+  align-items: end;
+}
+
+.news-page-search-field,
+.news-page-date-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.news-page-date-input {
+  min-width: 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  background: var(--bg-surface);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.news-page-date-input:focus {
+  outline: none;
+}
+
+.news-page-date-input:focus-visible {
+  border-color: var(--button-primary-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--button-primary-bg) 18%, transparent);
+}
+
+.news-page-field-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .news-page-sources-field {
   display: grid;
   gap: 0.5rem;
-}
-
-.news-page-sources-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--foreground);
 }
 
 .news-page-search-submit {

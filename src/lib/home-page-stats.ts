@@ -134,7 +134,7 @@ type HomePageReportTrendInput = {
 };
 
 const ALMATY_TIME_ZONE = "Asia/Almaty";
-const HOME_STATS_TTL = 1 * 24 * 60 * 60;
+const HOME_STATS_TTL = 60 * 60;
 const HOME_CHART_DAYS = 30;
 const HOME_CHART_MONTHS = 6;
 const MIN_CHART_DATE = "1970-01-01";
@@ -674,7 +674,7 @@ async function getReportTrendStats(
             `SELECT DATE(publishedat) AS bucket_date, COUNT(*) AS total FROM news${getWhereClause(
               matchExpression,
               [sourceCondition]
-            )} GROUP BY bucket_date ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=1000000`
+            )} GROUP BY bucket_date ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=10000`
           );
           const dailyTotalsMap = new Map<string, number>();
 
@@ -816,7 +816,7 @@ async function getCommentsToneAverageStats(searchQuery: string): Promise<HomePag
 
 async function getCommentsChartStats(searchQuery: string): Promise<HomePageCommentsChartStats> {
   const rows = await manticoreSql<CommentsChartCountRow>(
-    `SELECT DATE(publishedat) AS bucket_date, source, COUNT(*) AS total FROM comments${getWhereClause(searchQuery)} GROUP BY bucket_date, source ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=1000000`
+    `SELECT DATE(publishedat) AS bucket_date, source, COUNT(*) AS total FROM comments${getWhereClause(searchQuery)} GROUP BY bucket_date, source ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=10000`
   );
   const dailySourceTotalsMap = new Map<string, Map<string, number>>();
   const overallSourceTotals = new Map<string, number>();
@@ -864,7 +864,7 @@ async function getCommentsChartStats(searchQuery: string): Promise<HomePageComme
 
 async function getNewsChartStats(searchQuery: string): Promise<HomePageNewsChartStats> {
   const rows = await manticoreSql<NewsChartCountRow>(
-    `SELECT DATE(publishedat) AS bucket_date, type, COUNT(*) AS total FROM news${getWhereClause(searchQuery)} GROUP BY bucket_date, type ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=1000000`
+    `SELECT DATE(publishedat) AS bucket_date, type, COUNT(*) AS total FROM news${getWhereClause(searchQuery)} GROUP BY bucket_date, type ORDER BY bucket_date ASC LIMIT 100000 OPTION max_matches=10000`
   );
   const dailyTypeTotalsMap = new Map<string, Map<string, number>>();
   const overallTypeTotals = new Map<string, number>();
@@ -912,7 +912,7 @@ async function getNewsChartStats(searchQuery: string): Promise<HomePageNewsChart
 
 async function getNewsCountryChartStats(searchQuery: string): Promise<HomePageNewsCountryChartStats> {
   const rows = await manticoreSql<NewsCountryChartCountRow>(
-    `SELECT country, COUNT(*) AS total FROM news${getWhereClause(searchQuery)} GROUP BY country ORDER BY total DESC LIMIT 100000 OPTION max_matches=1000000`
+    `SELECT country, COUNT(*) AS total FROM news${getWhereClause(searchQuery)} GROUP BY country ORDER BY total DESC LIMIT 100000 OPTION max_matches=10000`
   );
   const countryTotals = new Map<string, number>();
 
