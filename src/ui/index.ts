@@ -1,6 +1,14 @@
 export { Combobox } from "./combobox/combobox";
+export {
+  DataTable,
+  type DataTableColumn,
+  type DataTableLabels,
+  type DataTableSort,
+} from "./data-table/data-table";
 export { Dropdown } from "./dropdown/dropdown";
 export {
+  ArrowDownNarrowWideIcon,
+  ArrowUpWideNarrowIcon,
   BellIcon,
   CheckIcon,
   ChevronDownIcon,
@@ -8,6 +16,7 @@ export {
   ChevronRightIcon,
   CircleCheckIcon,
   CircleXIcon,
+  FunnelIcon,
   LoaderCircleIcon,
   MenuIcon,
   PencilIcon,

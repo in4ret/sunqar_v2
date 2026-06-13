@@ -1,6 +1,7 @@
 import 'server-only';
 
 const MANTICORE_URL = process.env.MANTICORE_URL;
+const MAX_MANTICORE_CONCURRENT_QUERIES = 3;
 
 type ManticoreSqlResponse = {
   columns?: Array<Record<string, string>>;
@@ -19,16 +20,44 @@ type ManticoreSqlResponse = {
   };
 };
 
-let manticoreQueue: Promise<unknown> = Promise.resolve();
+type ManticoreQueueTask = {
+  run: () => Promise<void>;
+};
+
+let activeManticoreQueries = 0;
+const manticoreQueue: ManticoreQueueTask[] = [];
 
 export async function manticoreSql<T = unknown>(
   query: string
 ): Promise<T[]> {
-  const task = manticoreQueue.then(() => executeManticoreSql<T>(query));
+  return new Promise<T[]>((resolve, reject) => {
+    manticoreQueue.push({
+      run: () => {
+        return executeManticoreSql<T>(query).then(resolve).catch(reject);
+      },
+    });
+    processManticoreQueue();
+  });
+}
 
-  manticoreQueue = task.catch(() => undefined);
+function processManticoreQueue() {
+  while (
+    activeManticoreQueries < MAX_MANTICORE_CONCURRENT_QUERIES &&
+    manticoreQueue.length > 0
+  ) {
+    const task = manticoreQueue.shift();
 
-  return task;
+    if (!task) {
+      return;
+    }
+
+    activeManticoreQueries += 1;
+
+    task.run().finally(() => {
+      activeManticoreQueries -= 1;
+      processManticoreQueue();
+    });
+  }
 }
 
 async function executeManticoreSql<T = unknown>(

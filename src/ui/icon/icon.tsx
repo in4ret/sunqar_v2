@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ArrowDownNarrowWide,
+  ArrowUpWideNarrow,
   Bell,
   Check,
   ChevronDown,
@@ -8,6 +10,7 @@ import {
   ChevronRight,
   CircleCheck,
   CircleX,
+  Funnel,
   LoaderCircle,
   type LucideIcon,
   type LucideProps,
@@ -44,6 +47,14 @@ function AppIcon({
 
 type SharedIconProps = Omit<AppIconProps, "icon">;
 
+export function ArrowDownNarrowWideIcon(props: SharedIconProps) {
+  return <AppIcon icon={ArrowDownNarrowWide} {...props} />;
+}
+
+export function ArrowUpWideNarrowIcon(props: SharedIconProps) {
+  return <AppIcon icon={ArrowUpWideNarrow} {...props} />;
+}
+
 export function BellIcon(props: SharedIconProps) {
   return <AppIcon icon={Bell} {...props} />;
 }
@@ -70,6 +81,10 @@ export function CircleCheckIcon(props: SharedIconProps) {
 
 export function CircleXIcon(props: SharedIconProps) {
   return <AppIcon icon={CircleX} {...props} />;
+}
+
+export function FunnelIcon(props: SharedIconProps) {
+  return <AppIcon icon={Funnel} {...props} />;
 }
 
 export function LoaderCircleIcon(props: SharedIconProps) {

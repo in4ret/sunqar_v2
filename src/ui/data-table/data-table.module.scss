@@ -1,0 +1,328 @@
+@use "../../styles/breakpoints" as *;
+
+.data-table-shell {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+.data-table-toolbar,
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-count,
+.page-status {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.page-size-label {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.page-size-select,
+.page-button {
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.page-size-select {
+  min-width: 4.5rem;
+  padding: 0.35rem 0.45rem;
+}
+
+.data-table-scroll {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  overflow-x: auto;
+}
+
+.data-table {
+  width: max(100%, var(--data-table-total-width));
+  min-width: var(--data-table-total-width);
+}
+
+.data-table-head {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  background: var(--color-neutral-100);
+}
+
+.data-table-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: var(--data-table-grid-template-columns);
+}
+
+.data-table-body .data-table-row:hover,
+.data-table-body .data-table-row[data-selected="true"] {
+  background: var(--bg-soft);
+}
+
+.data-table-body {
+  position: relative;
+}
+
+.data-table-body-stale .data-table-row {
+  filter: blur(1.2px);
+  opacity: 0.58;
+  pointer-events: none;
+  transition:
+    filter 160ms ease,
+    opacity 160ms ease;
+  user-select: none;
+}
+
+.data-table-header-cell,
+.data-table-cell {
+  min-width: 0;
+  border-bottom: 1px solid var(--border-strong);
+  overflow-wrap: anywhere;
+}
+
+.data-table-cell {
+  border-right: 1px solid var(--border-strong);
+}
+
+.data-table-cell:last-child {
+  border-right: 0;
+}
+
+.data-table-header-cell {
+  position: relative;
+  display: flex;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.55rem;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.data-table-cell {
+  display: flex;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.55rem;
+  align-items: center;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.925rem;
+}
+
+.header-content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  padding-right: 0.55rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.header-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table-body .data-table-row:hover .data-table-cell,
+.data-table-body .data-table-row[data-selected="true"] .data-table-cell {
+  background: var(--bg-soft);
+}
+
+.sort-button {
+  display: inline-flex;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.sort-button span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-indicator {
+  width: 1rem;
+  flex: 0 0 1rem;
+  text-align: center;
+}
+
+.filter-control {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.filter-button {
+  display: inline-flex;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.filter-button:hover,
+.filter-button:focus-visible,
+.filter-button[aria-expanded="true"] {
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--color-primary-600);
+}
+
+.filter-button:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-info-500) 18%, transparent);
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.filter-button-active {
+  color: var(--color-info-500);
+}
+
+.filter-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.filter-popover {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  display: grid;
+  width: max-content;
+  min-width: min(16rem, calc(100vw - 2rem));
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 0.65rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.7rem;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+.checkbox-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  accent-color: var(--color-primary-500);
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: -0.25rem;
+  width: 0.5rem;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.resize-handle::after {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.22rem;
+  width: 1px;
+  height: calc(100% - 1.1rem);
+  background: var(--border-strong);
+  content: "";
+}
+
+.resize-handle:hover::after,
+.resize-handle:focus-visible::after {
+  width: 2px;
+  background: var(--color-primary-500);
+}
+
+.state-row {
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.status-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  min-height: 100%;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg-elevated) 48%, transparent);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  pointer-events: auto;
+  text-align: center;
+}
+
+.page-button {
+  min-width: 2.35rem;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .data-table {
+    width: max(44rem, var(--data-table-total-width));
+    min-width: max(44rem, var(--data-table-total-width));
+  }
+
+  .data-table-toolbar,
+  .pagination {
+    justify-content: flex-start;
+  }
+}

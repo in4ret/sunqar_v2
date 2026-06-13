@@ -16,6 +16,7 @@ import {
   useStoredNewsPageSources,
 } from "../news-page-search-form/news-page-search-form-storage";
 import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-chart";
+import { NewsPageTable } from "../news-page-table/news-page-table";
 
 import styles from "./news-page-view.module.scss";
 
@@ -115,6 +116,14 @@ export function NewsPageView({
         selectedSources={validatedSelectedSources}
       />
       <NewsPageSourceChart
+        hasLoadedStoredSources={selectedSources !== null && isSearchReady}
+        searchFrom={submittedSearchFrom}
+        searchQuery={submittedSearchQuery}
+        searchTo={submittedSearchTo}
+        searchTrigger={searchTrigger}
+        selectedSources={validatedSelectedSources}
+      />
+      <NewsPageTable
         hasLoadedStoredSources={selectedSources !== null && isSearchReady}
         searchFrom={submittedSearchFrom}
         searchQuery={submittedSearchQuery}
