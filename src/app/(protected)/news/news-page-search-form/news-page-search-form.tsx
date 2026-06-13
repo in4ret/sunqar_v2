@@ -6,7 +6,11 @@ import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/routes";
 import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
-import { normalizeDateTimeLocalValue, normalizeSearchQuery } from "@/lib/utils";
+import {
+  formatDateTimeLocalValueToEpochSeconds,
+  normalizeDateTimeLocalValue,
+  normalizeSearchQuery,
+} from "@/lib/utils";
 import { MultiSelect, SearchInput } from "@/ui";
 
 import {
@@ -75,25 +79,27 @@ export function NewsPageSearchForm({
     );
     const nextSearchQuery = normalizeSearchQuery(typeof formValue === "string" ? formValue : "");
     const nextSearchTo = normalizeDateTimeLocalValue(typeof formToValue === "string" ? formToValue : "");
+    const nextSearchFromEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchFrom);
+    const nextSearchToEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchTo);
     const nextUrl = new URL(routes.news, window.location.origin);
 
-    if (nextSearchFrom) {
-      nextUrl.searchParams.set("from", nextSearchFrom);
+    if (nextSearchFromEpochSeconds) {
+      nextUrl.searchParams.set("from", nextSearchFromEpochSeconds);
     }
 
     if (nextSearchQuery) {
       nextUrl.searchParams.set("q", nextSearchQuery);
     }
 
-    if (nextSearchTo) {
-      nextUrl.searchParams.set("to", nextSearchTo);
+    if (nextSearchToEpochSeconds) {
+      nextUrl.searchParams.set("to", nextSearchToEpochSeconds);
     }
 
     setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedSources);
     onSearchSubmit({
-      searchFrom: nextSearchFrom,
+      searchFrom: nextSearchFromEpochSeconds,
       searchQuery: nextSearchQuery,
-      searchTo: nextSearchTo,
+      searchTo: nextSearchToEpochSeconds,
     });
 
     router.push(`${nextUrl.pathname}${nextUrl.search}`);

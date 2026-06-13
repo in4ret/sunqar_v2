@@ -1,5 +1,9 @@
 import { listSources } from "@/lib/sources/sources";
-import { normalizeDateTimeLocalParam, normalizeSearchQueryParam } from "@/lib/utils";
+import {
+  formatEpochSecondsToDateTimeLocalValue,
+  normalizeEpochSecondsParam,
+  normalizeSearchQueryParam,
+} from "@/lib/utils";
 
 import { NewsPageView } from "./news-page-view/news-page-view";
 
@@ -16,12 +20,14 @@ export default async function NewsPage({
 }) {
   const { from, q, to } = await searchParams;
   const sources = await listSources();
-  const searchFrom = normalizeDateTimeLocalParam(from);
+  const searchFrom = normalizeEpochSecondsParam(from);
   const searchQuery = normalizeSearchQueryParam(q);
-  const searchTo = normalizeDateTimeLocalParam(to);
+  const searchTo = normalizeEpochSecondsParam(to);
 
   return (
     <NewsPageView
+      displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
+      displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
       searchFrom={searchFrom}
       searchQuery={searchQuery}
       searchTo={searchTo}

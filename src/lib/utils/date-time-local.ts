@@ -59,6 +59,23 @@ export function normalizeDateTimeLocalParam(searchParam: string | string[] | und
   return normalizeDateTimeLocalValue(value);
 }
 
+export function normalizeEpochSecondsParam(searchParam: string | string[] | undefined) {
+  const value = typeof searchParam === "string" ? searchParam : searchParam?.[0] ?? "";
+  const trimmedValue = value.trim();
+
+  if (!/^\d+$/.test(trimmedValue)) {
+    return "";
+  }
+
+  const epochSeconds = Number(trimmedValue);
+
+  if (!Number.isSafeInteger(epochSeconds) || epochSeconds < 0) {
+    return "";
+  }
+
+  return String(epochSeconds);
+}
+
 export function formatDateTimeLocalValue(date: Date) {
   const timestamp = date.getTime();
 
@@ -72,6 +89,16 @@ export function formatDateTimeLocalValue(date: Date) {
     ).padStart(2, "0")}`,
     `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`,
   ].join("T");
+}
+
+export function formatEpochSecondsToDateTimeLocalValue(value: string) {
+  const normalizedValue = normalizeEpochSecondsParam(value);
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return formatDateTimeLocalValue(new Date(Number(normalizedValue) * 1000));
 }
 
 export function getDefaultNewsPageSearchFromValue(now: Date = new Date()) {
@@ -105,4 +132,10 @@ export function parseDateTimeLocalValueToEpochSeconds(value: string) {
   }
 
   return Math.floor(timestamp / 1000);
+}
+
+export function formatDateTimeLocalValueToEpochSeconds(value: string) {
+  const epochSeconds = parseDateTimeLocalValueToEpochSeconds(value);
+
+  return epochSeconds === null ? "" : String(epochSeconds);
 }

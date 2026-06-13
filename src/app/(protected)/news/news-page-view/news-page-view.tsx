@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState,useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import type { SourceOptionItem } from "@/lib/sources/source-options";
-import { getDefaultNewsPageSearchFromValue } from "@/lib/utils";
+import {
+  formatDateTimeLocalValueToEpochSeconds,
+  getDefaultNewsPageSearchFromValue,
+} from "@/lib/utils";
 
 import { NewsPageCount } from "../news-page-count/news-page-count";
 import { NewsPageSearchForm } from "../news-page-search-form/news-page-search-form";
@@ -17,6 +20,8 @@ import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-
 import styles from "./news-page-view.module.scss";
 
 type NewsPageViewProps = {
+  displaySearchFrom: string;
+  displaySearchTo: string;
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
@@ -36,7 +41,14 @@ function subscribeToDefaultSearchFrom() {
   return () => {};
 }
 
-export function NewsPageView({ searchFrom, searchQuery, searchTo, sources }: NewsPageViewProps) {
+export function NewsPageView({
+  displaySearchFrom,
+  displaySearchTo,
+  searchFrom,
+  searchQuery,
+  searchTo,
+  sources,
+}: NewsPageViewProps) {
   const selectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -59,8 +71,13 @@ export function NewsPageView({ searchFrom, searchQuery, searchTo, sources }: New
     pendingSearchState.previousSearchFrom === searchFrom &&
     pendingSearchState.previousSearchQuery === searchQuery &&
     pendingSearchState.previousSearchTo === searchTo;
-  const effectiveSearchFrom = shouldUseDefaultSearchFrom ? defaultSearchFrom : searchFrom;
-  const submittedSearchFrom = hasPendingSearchState ? pendingSearchState.nextSearchFrom : effectiveSearchFrom;
+  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom ? defaultSearchFrom : displaySearchFrom;
+  const effectiveSearchFromEpochSeconds = shouldUseDefaultSearchFrom
+    ? formatDateTimeLocalValueToEpochSeconds(defaultSearchFrom)
+    : searchFrom;
+  const submittedSearchFrom = hasPendingSearchState
+    ? pendingSearchState.nextSearchFrom
+    : effectiveSearchFromEpochSeconds;
   const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
   const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
   const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
@@ -68,7 +85,7 @@ export function NewsPageView({ searchFrom, searchQuery, searchTo, sources }: New
   return (
     <section className={styles["news-page"]}>
       <NewsPageSearchForm
-        key={JSON.stringify([effectiveSearchFrom, searchQuery, searchTo])}
+        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, displaySearchTo])}
         onSearchSubmit={({ searchFrom: nextSearchFrom, searchQuery: nextSearchQuery, searchTo: nextSearchTo }) => {
           setPendingSearchState({
             nextSearchFrom,
@@ -80,9 +97,9 @@ export function NewsPageView({ searchFrom, searchQuery, searchTo, sources }: New
           });
           setSearchTrigger((currentValue) => currentValue + 1);
         }}
-        searchFrom={effectiveSearchFrom}
+        searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
-        searchTo={searchTo}
+        searchTo={displaySearchTo}
         selectedSources={validatedSelectedSources}
         setSelectedSources={(nextSources) => {
           setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, nextSources);

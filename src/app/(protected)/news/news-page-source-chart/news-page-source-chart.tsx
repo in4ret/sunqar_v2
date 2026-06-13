@@ -13,7 +13,6 @@ import {
   OTHER_NEWS_SOURCE,
   UNKNOWN_NEWS_SOURCE,
 } from "@/lib/news/news-chart-shared";
-import { parseDateTimeLocalValueToEpochSeconds } from "@/lib/utils";
 
 import styles from "./news-page-source-chart.module.scss";
 
@@ -152,14 +151,12 @@ export function NewsPageSourceChart({
       setState({ status: "loading" });
 
       try {
-        const fromEpochSeconds = parseDateTimeLocalValueToEpochSeconds(searchFrom);
-        const toEpochSeconds = parseDateTimeLocalValueToEpochSeconds(searchTo);
         const response = await fetch("/api/news/chart", {
           body: JSON.stringify({
-            from: fromEpochSeconds === null ? "" : String(fromEpochSeconds),
+            from: searchFrom,
             query: searchQuery,
             sources: selectedSourcesRef.current,
-            to: toEpochSeconds === null ? "" : String(toEpochSeconds),
+            to: searchTo,
           }),
           headers: {
             "Content-Type": "application/json",

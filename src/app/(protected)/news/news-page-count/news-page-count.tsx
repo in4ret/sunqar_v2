@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { parseDateTimeLocalValueToEpochSeconds } from "@/lib/utils";
 import { StatsValueSkeleton } from "@/ui/stats/stats";
 
 import styles from "./news-page-count.module.scss";
@@ -63,14 +62,12 @@ export function NewsPageCount({
       setState({ status: "loading" });
 
       try {
-        const fromEpochSeconds = parseDateTimeLocalValueToEpochSeconds(searchFrom);
-        const toEpochSeconds = parseDateTimeLocalValueToEpochSeconds(searchTo);
         const response = await fetch("/api/news", {
           body: JSON.stringify({
-            from: fromEpochSeconds === null ? "" : String(fromEpochSeconds),
+            from: searchFrom,
             query: searchQuery,
             sources: selectedSourcesRef.current,
-            to: toEpochSeconds === null ? "" : String(toEpochSeconds),
+            to: searchTo,
           }),
           headers: {
             "Content-Type": "application/json",
