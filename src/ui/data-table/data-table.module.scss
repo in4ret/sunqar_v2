@@ -123,6 +123,17 @@
   font-size: 0.925rem;
 }
 
+.data-table-header-cell:first-child,
+.data-table-cell:first-child {
+  border-right: 1px solid var(--border-strong);
+  justify-content: center;
+}
+
+.data-table-header-cell:first-child .header-content {
+  padding-right: 0;
+  justify-content: center;
+}
+
 .header-content {
   display: flex;
   width: 100%;

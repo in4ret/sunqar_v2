@@ -33,6 +33,7 @@ export type DataTableSort = {
 
 export type DataTableColumn<TData> = {
   cell: (row: TData) => ReactNode;
+  enableResizing?: boolean;
   enableSorting?: boolean;
   filterRenderer?: ReactNode;
   header: ReactNode;
@@ -41,6 +42,7 @@ export type DataTableColumn<TData> = {
   maxSize?: number;
   minSize?: number;
   size: number;
+  width?: string;
 };
 
 export type DataTableLabels = {
@@ -81,6 +83,24 @@ type DataTableProps<TData> = {
 };
 
 type StoredColumnSizing = Record<string, number>;
+
+function getDefaultColumnSizing<TData>(columns: Array<DataTableColumn<TData>>) {
+  return Object.fromEntries(columns.map((column) => [column.id, column.size]));
+}
+
+function getStoredColumnSizing<TData>(
+  columns: Array<DataTableColumn<TData>>,
+  storageKey: string | undefined,
+): StoredColumnSizing {
+  const storedColumnSizing = readStoredColumnSizing(storageKey);
+
+  return Object.fromEntries(
+    columns
+      .filter((column) => column.enableResizing !== false)
+      .map((column) => [column.id, storedColumnSizing[column.id]])
+      .filter((entry): entry is [string, number] => typeof entry[1] === "number"),
+  );
+}
 
 function getNextSort(currentSort: DataTableSort, columnId: string): DataTableSort {
   if (!currentSort || currentSort.field !== columnId) {
@@ -146,8 +166,8 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const [columnSizing, setColumnSizing] = useState<StoredColumnSizing>(() =>
     ({
-      ...Object.fromEntries(columns.map((column) => [column.id, column.size])),
-      ...readStoredColumnSizing(storageKey),
+      ...getDefaultColumnSizing(columns),
+      ...getStoredColumnSizing(columns, storageKey),
     }),
   );
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -170,9 +190,14 @@ export function DataTable<TData>({
 
   useEffect(() => {
     setColumnSizing((currentSizing) => ({
-      ...Object.fromEntries(columns.map((column) => [column.id, column.size])),
+      ...getDefaultColumnSizing(columns),
       ...currentSizing,
-      ...readStoredColumnSizing(storageKey),
+      ...getStoredColumnSizing(columns, storageKey),
+      ...Object.fromEntries(
+        columns
+          .filter((column) => column.enableResizing === false)
+          .map((column) => [column.id, column.size]),
+      ),
     }));
   }, [columns, storageKey]);
 
@@ -224,6 +249,7 @@ export function DataTable<TData>({
     () =>
       columns.map((column) => ({
         cell: ({ row }) => column.cell(row.original),
+        enableResizing: column.enableResizing ?? true,
         enableSorting: column.enableSorting ?? false,
         header: () => column.header,
         id: column.id,
@@ -250,19 +276,22 @@ export function DataTable<TData>({
     },
   });
   const rows = table.getRowModel().rows;
+  const columnsById = new Map(columns.map((column) => [column.id, column]));
   const columnSizeVars = table.getFlatHeaders().reduce<Record<string, string>>((vars, header) => {
-    vars[`--data-table-column-${header.column.id}-width`] = `${header.getSize()}px`;
+    const column = columnsById.get(header.column.id);
+
+    vars[`--data-table-column-${header.column.id}-width`] = column?.width ?? `${header.getSize()}px`;
 
     return vars;
   }, {});
-  const gridTemplateColumns = table
+  const columnWidthValues = table
     .getFlatHeaders()
-    .map((header) => `var(--data-table-column-${header.column.id}-width)`)
-    .join(" ");
+    .map((header) => `var(--data-table-column-${header.column.id}-width)`);
+  const gridTemplateColumns = columnWidthValues.join(" ");
   const tableStyle = {
     ...columnSizeVars,
     "--data-table-grid-template-columns": gridTemplateColumns,
-    "--data-table-total-width": `${table.getTotalSize()}px`,
+    "--data-table-total-width": `calc(${columnWidthValues.join(" + ")})`,
   } as CSSProperties & Record<string, string>;
 
   function handleVisibleRowsSelectionChange(checked: boolean) {

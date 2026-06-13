@@ -267,11 +267,13 @@ export function NewsPageTable({
     () => [
       {
         cell: () => null,
+        enableResizing: false,
         header: <span className={styles["sr-only"]}>{t("news.table.select")}</span>,
         id: "select",
-        maxSize: 120,
-        minSize: 76,
-        size: 100,
+        maxSize: 40,
+        minSize: 40,
+        size: 40,
+        width: "2.5rem",
       },
       {
         cell: (row) =>
