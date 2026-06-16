@@ -165,11 +165,9 @@ export function DataTable<TData>({
   total,
 }: DataTableProps<TData>) {
   const [columnSizing, setColumnSizing] = useState<StoredColumnSizing>(() =>
-    ({
-      ...getDefaultColumnSizing(columns),
-      ...getStoredColumnSizing(columns, storageKey),
-    }),
+    getDefaultColumnSizing(columns),
   );
+  const [loadedColumnSizingStorageKey, setLoadedColumnSizingStorageKey] = useState<string | null>(null);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const currentPage = Math.min(pageIndex + 1, totalPages);
   const hasRows = data.length > 0;
@@ -199,15 +197,20 @@ export function DataTable<TData>({
           .map((column) => [column.id, column.size]),
       ),
     }));
+    setLoadedColumnSizingStorageKey(storageKey ?? null);
   }, [columns, storageKey]);
 
   useEffect(() => {
-    if (!storageKey || typeof window === "undefined") {
+    if (
+      !storageKey ||
+      loadedColumnSizingStorageKey !== storageKey ||
+      typeof window === "undefined"
+    ) {
       return;
     }
 
     window.localStorage.setItem(storageKey, JSON.stringify(columnSizing));
-  }, [columnSizing, storageKey]);
+  }, [columnSizing, loadedColumnSizingStorageKey, storageKey]);
 
   useEffect(() => {
     if (headerCheckboxRef.current) {
