@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { routes } from "@/lib/routes";
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "@/ui";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LogOutIcon,
+  UserRoundIcon,
+  XIcon,
+} from "@/ui";
 
 import {
   SIDEBAR_STATE_EVENT,
@@ -16,7 +22,9 @@ import styles from "./sidebar.module.scss";
 
 
 type SidebarItem = {
+  children?: SidebarItem[];
   href: string;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
 };
 
@@ -234,7 +242,35 @@ export function Sidebar({
 }
 
 const DRAWER_ANIMATION_MS = 220;
+const LAST_NEWS_TAB_STORAGE_KEY = "sunqar:last-news-tab";
+const LAST_NEWS_TAB_STORAGE_EVENT = "sunqar:last-news-tab-change";
 const MOBILE_BREAKPOINT_PX = "768px";
+const NEWS_TAB_HREFS = new Set([routes.newsChart, routes.newsText]);
+
+function getStoredLastNewsTabHref() {
+  if (typeof window === "undefined") {
+    return routes.newsChart;
+  }
+
+  return window.localStorage.getItem(LAST_NEWS_TAB_STORAGE_KEY) === "text"
+    ? routes.newsText
+    : routes.newsChart;
+}
+
+function subscribeToLastNewsTab(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(LAST_NEWS_TAB_STORAGE_EVENT, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(LAST_NEWS_TAB_STORAGE_EVENT, callback);
+  };
+}
+
+function setStoredLastNewsTab(tab: "chart" | "text") {
+  window.localStorage.setItem(LAST_NEWS_TAB_STORAGE_KEY, tab);
+  window.dispatchEvent(new CustomEvent(LAST_NEWS_TAB_STORAGE_EVENT));
+}
 
 type SidebarContentProps = {
   brandHref?: string;
@@ -257,6 +293,39 @@ function SidebarContent({
   toggleButton,
   user,
 }: SidebarContentProps) {
+  const lastNewsTabHref = useSyncExternalStore(
+    subscribeToLastNewsTab,
+    getStoredLastNewsTabHref,
+    () => routes.newsChart,
+  );
+
+  useEffect(() => {
+    if (pathname === routes.newsChart) {
+      setStoredLastNewsTab("chart");
+      return;
+    }
+
+    if (pathname === routes.newsText) {
+      setStoredLastNewsTab("text");
+    }
+  }, [pathname]);
+
+  function getItemHref(item: SidebarItem) {
+    if (item.href === routes.news) {
+      return lastNewsTabHref;
+    }
+
+    return item.href;
+  }
+
+  function getIsItemActive(item: SidebarItem) {
+    if (item.href === routes.news && (pathname === routes.news || NEWS_TAB_HREFS.has(pathname))) {
+      return true;
+    }
+
+    return pathname === item.href || Boolean(item.children?.some((childItem) => pathname === childItem.href));
+  }
+
   return (
     <div className={styles["sidebar-content"]}>
       {showBrand ? (
@@ -278,19 +347,44 @@ function SidebarContent({
                 ) : null}
                 <ul className={styles["nav-list"]}>
                   {section.items.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = getIsItemActive(item);
+                    const Icon = item.icon;
 
                     return (
                       <li key={item.href}>
                         <Link
-                          aria-current={isActive ? "page" : undefined}
+                          aria-current={pathname === item.href ? "page" : undefined}
                           className={styles["nav-link"]}
                           data-active={isActive ? "true" : undefined}
-                          href={item.href}
+                          href={getItemHref(item)}
                           onClick={onNavigate}
                         >
+                          <Icon className={styles["nav-icon"]} />
                           <span className={styles["nav-label"]}>{item.label}</span>
                         </Link>
+                        {item.children && item.children.length > 0 ? (
+                          <ul className={styles["nav-sub-list"]}>
+                            {item.children.map((childItem) => {
+                              const isChildActive = pathname === childItem.href;
+                              const ChildIcon = childItem.icon;
+
+                              return (
+                                <li key={childItem.href}>
+                                  <Link
+                                    aria-current={isChildActive ? "page" : undefined}
+                                    className={styles["nav-sub-link"]}
+                                    data-active={isChildActive ? "true" : undefined}
+                                    href={childItem.href}
+                                    onClick={onNavigate}
+                                  >
+                                    <ChildIcon className={styles["nav-sub-icon"]} />
+                                    <span className={styles["nav-sub-label"]}>{childItem.label}</span>
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : null}
                       </li>
                     );
                   })}
@@ -352,7 +446,8 @@ function UserPanel({
           href={user.accountHref}
           onClick={onNavigate}
         >
-          {user.accountLabel}
+          <UserRoundIcon className={styles["user-action-icon"]} />
+          <span className={styles["account-label"]}>{user.accountLabel}</span>
         </Link>
         <form action={user.logoutAction}>
           <button
@@ -360,6 +455,7 @@ function UserPanel({
             className={styles["logout-button"]}
             type="submit"
           >
+            <LogOutIcon className={styles["user-action-icon"]} />
             <span className={styles["logout-label"]}>{user.logoutLabel}</span>
           </button>
         </form>

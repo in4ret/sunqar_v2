@@ -4,6 +4,8 @@ export const routes = {
   home: "/",
   login: "/login",
   news: "/news",
+  newsChart: "/news/chart",
+  newsText: "/news/text",
   taskApi: "/api/tasks",
   taskStreamApi: "/api/tasks/stream",
   tasks: "/tasks",
@@ -12,6 +14,12 @@ export const routes = {
   sources: "/sources",
   users: "/users",
 } as const;
+
+export type NewsTab = "chart" | "text";
+
+export function getNewsTabRoute(tab: NewsTab) {
+  return tab === "chart" ? routes.newsChart : routes.newsText;
+}
 
 export function getReportEditRoute(reportId: string) {
   return `${routes.reports}/${reportId}/edit`;

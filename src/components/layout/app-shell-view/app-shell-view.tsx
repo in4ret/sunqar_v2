@@ -4,6 +4,15 @@ import { useTranslations } from "next-intl";
 
 import { submitLogout } from "@/app/(protected)/actions";
 import { routes } from "@/lib/routes";
+import {
+  BotIcon,
+  ChartPieIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  NewspaperIcon,
+  TextIcon,
+  UsersIcon,
+} from "@/ui";
 
 import { Footer } from "../footer/footer";
 import { Header } from "../header/header";
@@ -34,24 +43,41 @@ export function AppShellView({
   const userNavigationItems = [
     {
       href: routes.reports,
+      icon: FileTextIcon,
       label: t("header.reports"),
     },
     {
+      children: [
+        {
+          href: routes.newsChart,
+          icon: ChartPieIcon,
+          label: t("news.tabs.chart"),
+        },
+        {
+          href: routes.newsText,
+          icon: TextIcon,
+          label: t("news.tabs.text"),
+        },
+      ],
       href: routes.news,
+      icon: NewspaperIcon,
       label: t("header.news"),
     },
   ];
   const adminNavigationItems = [
     {
       href: routes.users,
+      icon: UsersIcon,
       label: t("header.users"),
     },
     {
       href: routes.sources,
+      icon: DatabaseIcon,
       label: t("header.sources"),
     },
     {
       href: routes.aiModels,
+      icon: BotIcon,
       label: t("header.ai-models"),
     },
   ];

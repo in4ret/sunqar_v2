@@ -4,7 +4,7 @@ import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { routes } from "@/lib/routes";
+import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
 import {
   formatDateTimeLocalValueToEpochSeconds,
@@ -21,6 +21,7 @@ import {
 import styles from "./news-page-search-form.module.scss";
 
 type NewsPageSearchFormProps = {
+  activeTab: NewsTab;
   onSearchSubmit: (input: { searchFrom: string; searchQuery: string; searchTo: string }) => void;
   searchFrom: string;
   selectedSources: string[];
@@ -36,6 +37,7 @@ const NEWS_PAGE_SOURCES_INPUT_NAME = "sunqar-news-sources";
 const NEWS_PAGE_TO_INPUT_NAME = "sunqar-news-to";
 
 export function NewsPageSearchForm({
+  activeTab,
   onSearchSubmit,
   searchFrom,
   searchQuery,
@@ -81,7 +83,7 @@ export function NewsPageSearchForm({
     const nextSearchTo = normalizeDateTimeLocalValue(typeof formToValue === "string" ? formToValue : "");
     const nextSearchFromEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchFrom);
     const nextSearchToEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchTo);
-    const nextUrl = new URL(routes.news, window.location.origin);
+    const nextUrl = new URL(getNewsTabRoute(activeTab), window.location.origin);
 
     if (nextSearchFromEpochSeconds) {
       nextUrl.searchParams.set("from", nextSearchFromEpochSeconds);
@@ -107,7 +109,7 @@ export function NewsPageSearchForm({
 
   return (
     <form
-      action={routes.news}
+      action={getNewsTabRoute(activeTab)}
       className={styles["news-page-search-form"]}
       method="get"
       onSubmit={handleSubmit}

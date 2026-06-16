@@ -57,6 +57,7 @@
   grid-area: sources;
   display: grid;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .news-page-search-submit {
@@ -71,7 +72,7 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-  min-width: 10rem;
+  min-width: 6rem;
 }
 
 .news-page-search-submit:hover,

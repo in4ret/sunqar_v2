@@ -4,21 +4,30 @@ import {
   ArrowDownNarrowWide,
   ArrowUpWideNarrow,
   Bell,
+  Bot,
+  ChartPie,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
   CircleX,
+  Database,
+  FileText,
   Funnel,
   LoaderCircle,
+  LogOut,
   type LucideIcon,
   type LucideProps,
   Menu,
+  Newspaper,
   Pencil,
   Play,
   Save,
+  Text,
   Trash2,
+  UserRound,
+  Users,
   X,
 } from "lucide-react";
 
@@ -59,8 +68,16 @@ export function BellIcon(props: SharedIconProps) {
   return <AppIcon icon={Bell} {...props} />;
 }
 
+export function BotIcon(props: SharedIconProps) {
+  return <AppIcon icon={Bot} {...props} />;
+}
+
 export function CheckIcon(props: SharedIconProps) {
   return <AppIcon icon={Check} {...props} />;
+}
+
+export function ChartPieIcon(props: SharedIconProps) {
+  return <AppIcon icon={ChartPie} {...props} />;
 }
 
 export function ChevronDownIcon(props: SharedIconProps) {
@@ -83,6 +100,14 @@ export function CircleXIcon(props: SharedIconProps) {
   return <AppIcon icon={CircleX} {...props} />;
 }
 
+export function DatabaseIcon(props: SharedIconProps) {
+  return <AppIcon icon={Database} {...props} />;
+}
+
+export function FileTextIcon(props: SharedIconProps) {
+  return <AppIcon icon={FileText} {...props} />;
+}
+
 export function FunnelIcon(props: SharedIconProps) {
   return <AppIcon icon={Funnel} {...props} />;
 }
@@ -91,8 +116,16 @@ export function LoaderCircleIcon(props: SharedIconProps) {
   return <AppIcon icon={LoaderCircle} {...props} />;
 }
 
+export function LogOutIcon(props: SharedIconProps) {
+  return <AppIcon icon={LogOut} {...props} />;
+}
+
 export function MenuIcon(props: SharedIconProps) {
   return <AppIcon icon={Menu} {...props} />;
+}
+
+export function NewspaperIcon(props: SharedIconProps) {
+  return <AppIcon icon={Newspaper} {...props} />;
 }
 
 export function PencilIcon(props: SharedIconProps) {
@@ -107,8 +140,20 @@ export function SaveIcon(props: SharedIconProps) {
   return <AppIcon icon={Save} {...props} />;
 }
 
+export function TextIcon(props: SharedIconProps) {
+  return <AppIcon icon={Text} {...props} />;
+}
+
 export function TrashIcon(props: SharedIconProps) {
   return <AppIcon icon={Trash2} {...props} />;
+}
+
+export function UserRoundIcon(props: SharedIconProps) {
+  return <AppIcon icon={UserRound} {...props} />;
+}
+
+export function UsersIcon(props: SharedIconProps) {
+  return <AppIcon icon={Users} {...props} />;
 }
 
 export function XIcon(props: SharedIconProps) {

@@ -1,11 +1,10 @@
-import { listSources } from "@/lib/sources/sources";
+import { redirect } from "next/navigation";
+
+import { getNewsTabRoute } from "@/lib/routes";
 import {
-  formatEpochSecondsToDateTimeLocalValue,
   normalizeEpochSecondsParam,
   normalizeSearchQueryParam,
 } from "@/lib/utils";
-
-import { NewsPageView } from "./news-page-view/news-page-view";
 
 type NewsPageSearchParams = Promise<{
   from?: string | string[];
@@ -19,19 +18,22 @@ export default async function NewsPage({
   searchParams: NewsPageSearchParams;
 }) {
   const { from, q, to } = await searchParams;
-  const sources = await listSources();
   const searchFrom = normalizeEpochSecondsParam(from);
   const searchQuery = normalizeSearchQueryParam(q);
   const searchTo = normalizeEpochSecondsParam(to);
+  const nextUrl = new URL(getNewsTabRoute("chart"), "http://sunqar.local");
 
-  return (
-    <NewsPageView
-      displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
-      displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
-      searchFrom={searchFrom}
-      searchQuery={searchQuery}
-      searchTo={searchTo}
-      sources={sources}
-    />
-  );
+  if (searchFrom) {
+    nextUrl.searchParams.set("from", searchFrom);
+  }
+
+  if (searchQuery) {
+    nextUrl.searchParams.set("q", searchQuery);
+  }
+
+  if (searchTo) {
+    nextUrl.searchParams.set("to", searchTo);
+  }
+
+  redirect(`${nextUrl.pathname}${nextUrl.search}`);
 }
