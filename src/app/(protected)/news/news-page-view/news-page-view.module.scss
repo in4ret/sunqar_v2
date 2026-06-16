@@ -17,12 +17,8 @@
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
-  gap: 0.25rem;
-  padding: 0.25rem;
-  border: 1px solid var(--border-default);
-  border-radius: 0.75rem;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-soft);
+  gap: 0.125rem;
+  border-bottom: 1px solid var(--border-default);
 }
 
 .news-page-tab {
@@ -32,7 +28,10 @@
   min-height: 2.5rem;
   min-width: 7.5rem;
   padding: 0.55rem 1rem;
-  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  border-bottom-color: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: transparent;
   color: var(--text-secondary);
   font-size: 0.92rem;
   font-weight: 700;
@@ -41,19 +40,22 @@
   text-decoration: none;
   transition:
     background 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease;
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .news-page-tab:hover,
 .news-page-tab:focus-visible {
+  background: var(--bg-soft);
   color: var(--text-primary);
 }
 
 .news-page-tab[aria-selected="true"] {
-  background: var(--bg-strong);
-  box-shadow: 0 0.5rem 1.4rem rgba(4, 26, 43, 0.16);
-  color: var(--text-on-primary);
+  margin-bottom: -1px;
+  border-color: var(--border-default);
+  border-bottom-color: var(--bg-elevated);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .news-page-tab-panel {
