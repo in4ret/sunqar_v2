@@ -14,13 +14,13 @@
 ```env
 AUTH_SECRET=change-me-in-production
 DATABASE_PATH=./data/sunqar.db
-REPORT_DOWNLOAD_USERNAME=
-REPORT_DOWNLOAD_PASSWORD=
+GENERATE_REPORT_USERNAME=
+GENERATE_REPORT_PASSWORD=
 ```
 
 - `AUTH_SECRET` обязателен в production
 - `DATABASE_PATH` по умолчанию указывает на `data/sunqar.db`
-- `REPORT_DOWNLOAD_USERNAME` и `REPORT_DOWNLOAD_PASSWORD` опциональны и нужны, если `download_url` файлов защищен `Basic Auth`
+- `GENERATE_REPORT_USERNAME` и `GENERATE_REPORT_PASSWORD` опциональны и нужны, если `download_url` файлов защищен `Basic Auth`
 
 ## Install
 

@@ -3,6 +3,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/database";
 import { aiModels, reports, tasks, users } from "@/lib/db/schema";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
+import { extractTaskId } from "@/lib/tasks/extract-task-id";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
 
 import type { ReportBlocks } from "./report-blocks";
@@ -378,18 +379,6 @@ export async function getReportRunItemById(id: string): Promise<ReportRunItem | 
   return mapReportRunItem(row);
 }
 
-function extractReportTaskId(data: unknown): string | null {
-  const taskPayload = Array.isArray(data) ? data[0] : data;
-
-  if (!taskPayload || typeof taskPayload !== "object") {
-    return null;
-  }
-
-  const taskId = "task_id" in taskPayload ? taskPayload.task_id : null;
-
-  return typeof taskId === "string" && taskId.trim() ? taskId.trim() : null;
-}
-
 export async function triggerReportGeneration(report: ReportRunItem): Promise<{
   error: ReportRunErrorCode | null;
 }> {
@@ -454,7 +443,7 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     }
 
     const data = await response.json();
-    const taskId = extractReportTaskId(data);
+    const taskId = extractTaskId(data);
 
     if (!taskId) {
       console.error(`Generate report request for report ${report.id} succeeded without a valid task_id.`, data);
@@ -468,6 +457,7 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
         doneAt: null,
         downloadUrl: null,
         error: null,
+        prompt: null,
         read: false,
         reportId: report.id,
         status: "pending",

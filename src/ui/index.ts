@@ -16,6 +16,8 @@ export {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
   CircleCheckIcon,
   CircleXIcon,
   DatabaseIcon,

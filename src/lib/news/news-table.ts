@@ -24,6 +24,7 @@ import {
 type RawNewsTableRow = {
   id?: number | string | null;
   publishedat?: number | string | null;
+  row_id?: number | string | null;
   source?: number | string | null;
   title?: number | string | null;
   url?: number | string | null;
@@ -132,30 +133,20 @@ function buildOrderClause(sort: NewsTableSort) {
   return ` ORDER BY ${SORT_FIELDS[normalizedSort.field]} ${normalizedSort.direction.toUpperCase()}, id DESC`;
 }
 
-function getFallbackNewsTableRowId(row: RawNewsTableRow, index: number) {
-  return [
-    row.publishedat === null || typeof row.publishedat === "undefined" ? "" : String(row.publishedat),
-    row.source === null || typeof row.source === "undefined" ? "" : String(row.source),
-    row.url === null || typeof row.url === "undefined" ? "" : String(row.url),
-    row.title === null || typeof row.title === "undefined" ? "" : String(row.title),
-    index,
-  ].join("\u0000");
-}
-
-function normalizeNewsTableRow(row: RawNewsTableRow, index: number): NewsTableRow | null {
-  const rawId = row.id;
-  const id =
-    rawId === null || typeof rawId === "undefined" || String(rawId) === ""
-      ? getFallbackNewsTableRowId(row, index)
-      : String(rawId);
+function normalizeNewsTableRow(row: RawNewsTableRow): NewsTableRow | null {
+  const rawId = row.row_id ?? row.id;
   const publishedat = Number(row.publishedat ?? 0);
+
+  if (rawId === null || typeof rawId === "undefined" || String(rawId) === "") {
+    return null;
+  }
 
   if (!Number.isFinite(publishedat)) {
     return null;
   }
 
   return {
-    id,
+    id: String(rawId),
     publishedat,
     source: row.source === null || typeof row.source === "undefined" ? "" : String(row.source),
     title: row.title === null || typeof row.title === "undefined" ? "" : String(row.title),
@@ -186,7 +177,7 @@ export async function listNewsTableRows(input: NewsTableQueryInput): Promise<New
   const orderClause = buildOrderClause(input.sort);
   const [rows, countRows] = await Promise.all([
     manticoreSql<RawNewsTableRow>(
-      `SELECT id, title, url, publishedat, source FROM news${whereClause}${orderClause} LIMIT ${offset}, ${pageSize} OPTION max_matches=${MAX_MANTICORE_MATCHES}`,
+      `SELECT TO_STRING(id) AS row_id, title, url, publishedat, source FROM news${whereClause}${orderClause} LIMIT ${offset}, ${pageSize} OPTION max_matches=${MAX_MANTICORE_MATCHES}`,
     ),
     manticoreSql<CountRow>(
       `SELECT COUNT(*) AS total FROM news${whereClause} OPTION max_matches=${MAX_MANTICORE_MATCHES}`,
@@ -196,9 +187,7 @@ export async function listNewsTableRows(input: NewsTableQueryInput): Promise<New
   return {
     pageIndex,
     pageSize,
-    rows: rows
-      .map((row, index) => normalizeNewsTableRow(row, offset + index))
-      .filter((row): row is NewsTableRow => row !== null),
+    rows: rows.map(normalizeNewsTableRow).filter((row): row is NewsTableRow => row !== null),
     total: Number(countRows[0]?.total ?? 0),
   };
 }

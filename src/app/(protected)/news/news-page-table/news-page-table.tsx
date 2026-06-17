@@ -17,10 +17,14 @@ import {
 import { formatDateTimeLocalValueToEpochSeconds } from "@/lib/utils";
 import { DataTable, type DataTableColumn, type DataTableSort } from "@/ui";
 
+import { NewsPageRelatedTable } from "../news-page-related-table/news-page-related-table";
+
 import styles from "./news-page-table.module.scss";
 
 type NewsPageTableProps = {
   hasLoadedStoredSources: boolean;
+  onPrimarySelectedRowIdsChange?: (rowIds: string[]) => void;
+  onRelatedSelectedRowIdsChange?: (rowIds: string[]) => void;
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
@@ -48,6 +52,11 @@ type PageState = {
 type SelectionState = {
   querySignature: string;
   rowIds: Set<string>;
+};
+
+type ActiveRowState = {
+  querySignature: string;
+  rowId: string | null;
 };
 
 const NEWS_TABLE_COLUMN_WIDTHS_STORAGE_KEY = "sunqar-news-table-column-widths";
@@ -111,6 +120,8 @@ function isNewsTableResult(value: unknown): value is NewsTableResult {
 
 export function NewsPageTable({
   hasLoadedStoredSources,
+  onPrimarySelectedRowIdsChange,
+  onRelatedSelectedRowIdsChange,
   searchFrom,
   searchQuery,
   searchTo,
@@ -132,6 +143,10 @@ export function NewsPageTable({
   const [selectionState, setSelectionState] = useState<SelectionState>({
     querySignature: "",
     rowIds: new Set(),
+  });
+  const [activeRowState, setActiveRowState] = useState<ActiveRowState>({
+    querySignature: "",
+    rowId: null,
   });
   const selectedSourcesRef = useRef(selectedSources);
   const apiFilters = useMemo(() => toApiFilters(debouncedFilters), [debouncedFilters]);
@@ -161,7 +176,11 @@ export function NewsPageTable({
     ],
   );
   const pageIndex = pageState.querySignature === querySignature ? pageState.pageIndex : 0;
-  const selectedRowIds = selectionState.querySignature === querySignature ? selectionState.rowIds : new Set<string>();
+  const selectedRowIds = useMemo(
+    () => (selectionState.querySignature === querySignature ? selectionState.rowIds : new Set<string>()),
+    [querySignature, selectionState.querySignature, selectionState.rowIds],
+  );
+  const activeRowId = activeRowState.querySignature === querySignature ? activeRowState.rowId : null;
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -177,6 +196,18 @@ export function NewsPageTable({
   useEffect(() => {
     selectedSourcesRef.current = selectedSources;
   }, [selectedSources]);
+
+  useEffect(() => {
+    if (!onPrimarySelectedRowIdsChange) {
+      return;
+    }
+
+    onPrimarySelectedRowIdsChange(Array.from(selectedRowIds));
+  }, [onPrimarySelectedRowIdsChange, selectedRowIds]);
+
+  useEffect(() => {
+    onRelatedSelectedRowIdsChange?.([]);
+  }, [activeRowId, onRelatedSelectedRowIdsChange]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -297,6 +328,10 @@ export function NewsPageTable({
                 querySignature,
                 rowIds: new Set(),
               });
+              setActiveRowState({
+                querySignature,
+                rowId: null,
+              });
               setFilters((current) => ({ ...current, title: event.target.value }));
             }}
           />
@@ -326,6 +361,10 @@ export function NewsPageTable({
                   querySignature,
                   rowIds: new Set(),
                 });
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, publishedFrom: event.target.value }));
               }}
             />
@@ -338,6 +377,10 @@ export function NewsPageTable({
                 setSelectionState({
                   querySignature,
                   rowIds: new Set(),
+                });
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
                 });
                 setFilters((current) => ({ ...current, publishedTo: event.target.value }));
               }}
@@ -365,6 +408,10 @@ export function NewsPageTable({
                 querySignature,
                 rowIds: new Set(),
               });
+              setActiveRowState({
+                querySignature,
+                rowId: null,
+              });
               setFilters((current) => ({ ...current, source: event.target.value }));
             }}
           />
@@ -381,10 +428,8 @@ export function NewsPageTable({
 
   return (
     <section className={styles["news-page-table"]}>
-      <header className={styles["table-header"]}>
-        <h2 className={styles["table-title"]}>{t("news.table.heading")}</h2>
-      </header>
       <DataTable
+        activeRowId={activeRowId}
         columns={columns}
         data={rows}
         getRowId={(row) => row.id}
@@ -417,6 +462,12 @@ export function NewsPageTable({
         status={state.status}
         storageKey={NEWS_TABLE_COLUMN_WIDTHS_STORAGE_KEY}
         total={total}
+        onActiveRowIdChange={(rowId) => {
+          setActiveRowState({
+            querySignature,
+            rowId,
+          });
+        }}
         onPageChange={(nextPageIndex) => {
           setPageState({
             pageIndex: nextPageIndex,
@@ -436,6 +487,12 @@ export function NewsPageTable({
         }}
         onSortChange={setSort}
       />
+      {activeRowId ? (
+        <NewsPageRelatedTable
+          activeNewsId={activeRowId}
+          onSelectedRowIdsChange={onRelatedSelectedRowIdsChange}
+        />
+      ) : null}
     </section>
   );
 }

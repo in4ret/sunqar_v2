@@ -45,7 +45,7 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
   try {
     const parsed = JSON.parse(raw ?? "");
     const status = typeof parsed.status === "string" ? parsed.status : "";
-    const downloadUrl = parsed?.result?.download_url ?? null;
+    const downloadUrl = parsed?.result?.download_url ?? parsed?.result?.result?.download_url ?? null;
 
     if (status === "SUCCESS" && downloadUrl) {
       completeSuccessfulTask(taskId, downloadUrl);

@@ -2,6 +2,8 @@
 
 import { type CSSProperties, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
+import { createPortal } from "react-dom";
+
 import { CheckIcon, ChevronDownIcon } from "../icon/icon";
 
 import styles from "./dropdown.module.scss";
@@ -57,6 +59,7 @@ export function Dropdown({
   const [activeIndex, setActiveIndex] = useState(0);
   const [placement, setPlacement] = useState<DropdownPlacement>("bottom");
   const [listMaxHeight, setListMaxHeight] = useState(MAX_LIST_HEIGHT);
+  const [listStyle, setListStyle] = useState<CSSProperties>({});
   const selectedValue = value ?? internalValue;
   const selectedIndex = Math.max(
     0,
@@ -90,6 +93,19 @@ export function Dropdown({
 
     setPlacement(nextPlacement);
     setListMaxHeight(Math.max(availableSpace, MIN_LIST_HEIGHT));
+    setListStyle(
+      nextPlacement === "bottom"
+        ? {
+            left: buttonRect.left,
+            top: buttonRect.bottom + LIST_GAP,
+            width: buttonRect.width,
+          }
+        : {
+            bottom: viewportHeight - buttonRect.top + LIST_GAP,
+            left: buttonRect.left,
+            width: buttonRect.width,
+          },
+    );
   }
 
   function closeDropdown({ restoreFocus }: { restoreFocus: boolean }) {
@@ -106,7 +122,13 @@ export function Dropdown({
     }
 
     function handlePointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const eventTarget = event.target as Node;
+
+      if (rootRef.current?.contains(eventTarget) || listRef.current?.contains(eventTarget)) {
+        return;
+      }
+
+      if (!rootRef.current?.contains(eventTarget)) {
         closeDropdown({ restoreFocus: true });
       }
     }
@@ -255,45 +277,54 @@ export function Dropdown({
         <span className={styles["dropdown-value"]}>{selectedOption?.label}</span>
         <ChevronDownIcon className={styles["dropdown-chevron"]} />
       </div>
-      {isOpen ? (
-        <div
-          id={listboxId}
-          aria-activedescendant={getOptionId(activeIndex)}
-          ref={listRef}
-          className={styles["dropdown-list"]}
-          role="listbox"
-          style={{ "--dropdown-list-max-height": `${listMaxHeight}px` } as CSSProperties}
-        >
-          {options.map((option, index) => {
-            const isSelected = option.value === selectedValue;
-            const isActive = index === activeIndex;
+      {isOpen
+        ? createPortal(
+            <div
+              id={listboxId}
+              aria-activedescendant={getOptionId(activeIndex)}
+              ref={listRef}
+              className={styles["dropdown-list"]}
+              role="listbox"
+              style={
+                {
+                  ...listStyle,
+                  "--dropdown-list-max-height": `${listMaxHeight}px`,
+                } as CSSProperties
+              }
+            >
+              {options.map((option, index) => {
+                const isSelected = option.value === selectedValue;
+                const isActive = index === activeIndex;
 
-            return (
-              <div
-                key={option.value}
-                aria-selected={isSelected}
-                className={styles["dropdown-option"]}
-                data-active={isActive}
-                id={getOptionId(index)}
-                role="option"
-                ref={(element) => {
-                  optionRefs.current[index] = element;
-                }}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  selectValue(option.value);
-                }}
-                onMouseEnter={() => {
-                  setActiveIndex(index);
-                }}
-              >
-                {option.label}
-                {isSelected ? <CheckIcon className={styles["dropdown-option-check"]} /> : null}
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
+                return (
+                  <div
+                    key={option.value}
+                    aria-selected={isSelected}
+                    className={styles["dropdown-option"]}
+                    data-active={isActive}
+                    id={getOptionId(index)}
+                    role="option"
+                    ref={(element) => {
+                      optionRefs.current[index] = element;
+                    }}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      selectValue(option.value);
+                    }}
+                    onMouseEnter={() => {
+                      setActiveIndex(index);
+                    }}
+                  >
+                    {option.label}
+                    {isSelected ? <CheckIcon className={styles["dropdown-option-check"]} /> : null}
+                  </div>
+                );
+              })}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

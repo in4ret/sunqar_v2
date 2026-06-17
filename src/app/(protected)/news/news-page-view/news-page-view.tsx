@@ -20,11 +20,13 @@ import {
 } from "../news-page-search-form/news-page-search-form-storage";
 import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-chart";
 import { NewsPageTable } from "../news-page-table/news-page-table";
+import { NewsReportModal } from "../news-report-modal/news-report-modal";
 
 import styles from "./news-page-view.module.scss";
 
 type NewsPageViewProps = {
   activeTab: NewsTab;
+  aiModels: Array<{ label: string; value: string }>;
   displaySearchFrom: string;
   displaySearchTo: string;
   searchFrom: string;
@@ -66,6 +68,7 @@ function buildNewsTabHref(tab: NewsTab, input: { searchFrom: string; searchQuery
 
 export function NewsPageView({
   activeTab,
+  aiModels,
   displaySearchFrom,
   displaySearchTo,
   searchFrom,
@@ -75,6 +78,8 @@ export function NewsPageView({
 }: NewsPageViewProps) {
   const t = useTranslations();
   const selectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const [primarySelectedRowIds, setPrimarySelectedRowIds] = useState<string[]>([]);
+  const [relatedSelectedRowIds, setRelatedSelectedRowIds] = useState<string[]>([]);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
   const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
@@ -105,6 +110,10 @@ export function NewsPageView({
     : effectiveSearchFromEpochSeconds;
   const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
   const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
+  const reportIds = useMemo(
+    () => Array.from(new Set([...primarySelectedRowIds, ...relatedSelectedRowIds])),
+    [primarySelectedRowIds, relatedSelectedRowIds],
+  );
   const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
   const tabs = useMemo(
     () => [
@@ -199,12 +208,15 @@ export function NewsPageView({
         >
           <NewsPageTable
             hasLoadedStoredSources={selectedSources !== null && isSearchReady}
+            onPrimarySelectedRowIdsChange={setPrimarySelectedRowIds}
+            onRelatedSelectedRowIdsChange={setRelatedSelectedRowIds}
             searchFrom={submittedSearchFrom}
             searchQuery={submittedSearchQuery}
             searchTo={submittedSearchTo}
             searchTrigger={searchTrigger}
             selectedSources={validatedSelectedSources}
           />
+          <NewsReportModal aiModels={aiModels} ids={reportIds} keyWords={submittedSearchQuery} />
         </div>
       )}
     </section>

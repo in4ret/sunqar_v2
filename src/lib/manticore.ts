@@ -93,7 +93,14 @@ async function executeManticoreSql<T = unknown>(
   }
 
   if (json.hits?.hits) {
-    return json.hits.hits.map((hit) => (hit._source ?? {}) as T);
+    return json.hits.hits.map((hit) => {
+      const source = hit._source ?? {};
+
+      return {
+        ...source,
+        id: source.id ?? hit._id,
+      } as T;
+    });
   }
 
   return [];

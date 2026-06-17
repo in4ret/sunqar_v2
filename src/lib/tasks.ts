@@ -13,6 +13,7 @@ export type HeaderTaskItem = {
   doneAt: string | null;
   downloadUrl: string | null;
   error: string | null;
+  prompt: string | null;
   read: boolean;
   reportTitle: string | null;
   reportDescription: string | null;
@@ -32,12 +33,13 @@ export async function listTasksByUserId(userId: string): Promise<HeaderTaskItem[
       doneAt: tasks.doneAt,
       downloadUrl: tasks.downloadUrl,
       error: tasks.error,
+      prompt: tasks.prompt,
       read: tasks.read,
       reportTitle: reports.title,
       reportDescription: reports.description,
     })
     .from(tasks)
-    .innerJoin(reports, eq(tasks.reportId, reports.id))
+    .leftJoin(reports, eq(tasks.reportId, reports.id))
     .where(eq(tasks.userId, userId))
     .orderBy(desc(tasks.createdAt))
     .all()
@@ -48,6 +50,7 @@ export async function listTasksByUserId(userId: string): Promise<HeaderTaskItem[
       doneAt: task.doneAt?.toISOString() ?? null,
       downloadUrl: task.downloadUrl,
       error: task.error,
+      prompt: task.prompt,
       read: task.read,
       reportTitle: task.reportTitle,
       reportDescription: task.reportDescription,

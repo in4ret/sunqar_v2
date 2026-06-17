@@ -164,20 +164,21 @@ export function TaskNotifications() {
                 const taskDate =
                   task.status === "pending" || !task.doneAt ? task.createdAt : task.doneAt;
                 const formattedTaskDate = dateTimeFormatter.format(new Date(taskDate));
-                const hasReportDetails = Boolean(task.reportTitle);
-                const reportDetails = hasReportDetails ? (
+                const taskTitle = task.reportTitle || task.prompt || t("header.tasks.news-title");
+                const hasReportDescription = Boolean(task.reportDescription);
+                const taskDetails = (
                   <>
-                    <p className={styles["task-notifications-report-title"]}>{task.reportTitle}</p>
-                    {task.reportDescription ? (
-                      <p
-                        className={styles["task-notifications-report-description"]}
-                        title={task.reportDescription}
-                      >
-                        {task.reportDescription}
-                      </p>
-                    ) : null}
+                    <p className={styles["task-notifications-report-title"]}>{taskTitle}</p>
+	                    {hasReportDescription ? (
+	                      <p
+	                        className={styles["task-notifications-report-description"]}
+	                        title={task.reportDescription ?? undefined}
+	                      >
+	                        {task.reportDescription}
+	                      </p>
+	                    ) : null}
                   </>
-                ) : null;
+                );
 
                 return (
                   <article
@@ -188,26 +189,12 @@ export function TaskNotifications() {
                     data-status={task.status}
                   >
                     <div className={styles["task-notifications-item-top"]}>
-                      {hasReportDetails ? (
-                        task.downloadUrl ? (
-                          <a
-                            className={styles["task-notifications-report-link"]}
-                            href={getTaskDownloadRoute(task.taskId)}
-                            rel="noreferrer"
-                          >
-                            <div className={styles["task-notifications-report"]}>
-                              {isUnreadTask ? (
-                                <span
-                                  aria-hidden="true"
-                                  className={styles["task-notifications-unread-indicator"]}
-                                />
-                              ) : null}
-                              <div className={styles["task-notifications-report-content"]}>
-                                {reportDetails}
-                              </div>
-                            </div>
-                          </a>
-                        ) : (
+                      {task.downloadUrl ? (
+                        <a
+                          className={styles["task-notifications-report-link"]}
+                          href={getTaskDownloadRoute(task.taskId)}
+                          rel="noreferrer"
+                        >
                           <div className={styles["task-notifications-report"]}>
                             {isUnreadTask ? (
                               <span
@@ -216,12 +203,22 @@ export function TaskNotifications() {
                               />
                             ) : null}
                             <div className={styles["task-notifications-report-content"]}>
-                              {reportDetails}
+                              {taskDetails}
                             </div>
                           </div>
-                        )
+                        </a>
                       ) : (
-                        <div className={styles["task-notifications-report"]} />
+                        <div className={styles["task-notifications-report"]}>
+                          {isUnreadTask ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles["task-notifications-unread-indicator"]}
+                            />
+                          ) : null}
+                          <div className={styles["task-notifications-report-content"]}>
+                            {taskDetails}
+                          </div>
+                        </div>
                       )}
                       <div className={styles["task-notifications-meta"]}>
                         <span

@@ -2,6 +2,8 @@
 
 import {
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -19,6 +21,10 @@ import {
 import {
   ArrowDownNarrowWideIcon,
   ArrowUpWideNarrowIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
   FunnelIcon,
 } from "../icon/icon";
 
@@ -64,10 +70,12 @@ export type DataTableLabels = {
 };
 
 type DataTableProps<TData> = {
+  activeRowId?: string | null;
   columns: Array<DataTableColumn<TData>>;
   data: TData[];
   getRowId: (row: TData) => string;
   labels: DataTableLabels;
+  onActiveRowIdChange?: (rowId: string) => void;
   onPageChange: (pageIndex: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   onSelectedRowIdsChange: (selectedRowIds: Set<string>) => void;
@@ -83,6 +91,33 @@ type DataTableProps<TData> = {
 };
 
 type StoredColumnSizing = Record<string, number>;
+
+const INTERACTIVE_ROW_TARGET_SELECTOR = [
+  "a",
+  "button",
+  "input",
+  "textarea",
+  "select",
+  "[role='button']",
+  "[role='checkbox']",
+  "[role='link']",
+  "[role='menuitem']",
+  "[role='option']",
+  "[role='switch']",
+  "[role='textbox']",
+].join(",");
+
+const ARROW_NAVIGATION_NATIVE_TARGET_SELECTOR = [
+  "textarea",
+  "select",
+  "input:not([type='checkbox']):not([type='radio'])",
+  "[contenteditable='true']",
+  "[role='combobox']",
+  "[role='listbox']",
+  "[role='slider']",
+  "[role='spinbutton']",
+  "[role='textbox']",
+].join(",");
 
 function getDefaultColumnSizing<TData>(columns: Array<DataTableColumn<TData>>) {
   return Object.fromEntries(columns.map((column) => [column.id, column.size]));
@@ -146,11 +181,33 @@ function readStoredColumnSizing(storageKey: string | undefined): StoredColumnSiz
   }
 }
 
+function isInteractiveRowTarget(target: EventTarget | null, rowElement: HTMLElement) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  const interactiveElement = target.closest(INTERACTIVE_ROW_TARGET_SELECTOR);
+
+  return interactiveElement !== null && rowElement.contains(interactiveElement);
+}
+
+function isNativeArrowNavigationTarget(target: EventTarget | null, tableElement: HTMLElement) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  const nativeNavigationElement = target.closest(ARROW_NAVIGATION_NATIVE_TARGET_SELECTOR);
+
+  return nativeNavigationElement !== null && tableElement.contains(nativeNavigationElement);
+}
+
 export function DataTable<TData>({
+  activeRowId,
   columns,
   data,
   getRowId,
   labels,
+  onActiveRowIdChange,
   onPageChange,
   onPageSizeChange,
   onSelectedRowIdsChange,
@@ -184,6 +241,7 @@ export function DataTable<TData>({
     .join(" ");
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const filterRootRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -279,6 +337,9 @@ export function DataTable<TData>({
     },
   });
   const rows = table.getRowModel().rows;
+  const activeVisibleRowIndex = rows.findIndex((row) => row.id === activeRowId);
+  const rovingTabIndexRowId =
+    activeVisibleRowIndex >= 0 ? rows[activeVisibleRowIndex]?.id : rows[0]?.id;
   const columnsById = new Map(columns.map((column) => [column.id, column]));
   const columnSizeVars = table.getFlatHeaders().reduce<Record<string, string>>((vars, header) => {
     const column = columnsById.get(header.column.id);
@@ -314,24 +375,171 @@ export function DataTable<TData>({
     onSelectedRowIdsChange(nextSelection);
   }
 
+  function activateRow(rowId: string) {
+    if (isInteractiveRows) {
+      onActiveRowIdChange?.(rowId);
+    }
+  }
+
+  function focusRow(rowId: string) {
+    window.requestAnimationFrame(() => {
+      rowRefs.current[rowId]?.focus();
+    });
+  }
+
+  function handleTableKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
+    if (
+      event.defaultPrevented ||
+      !onActiveRowIdChange ||
+      !isInteractiveRows ||
+      (event.key !== "ArrowDown" && event.key !== "ArrowUp") ||
+      isNativeArrowNavigationTarget(event.target, event.currentTarget)
+    ) {
+      return;
+    }
+
+    const focusedRowElement =
+      event.target instanceof Element ? event.target.closest("[data-row-navigation-row='true']") : null;
+    const focusedRowIndex =
+      focusedRowElement instanceof HTMLElement
+        ? rows.findIndex((row) => rowRefs.current[row.id] === focusedRowElement)
+        : -1;
+    const nextRowIndex =
+      focusedRowIndex >= 0
+        ? event.key === "ArrowDown"
+          ? Math.min(focusedRowIndex + 1, rows.length - 1)
+          : Math.max(focusedRowIndex - 1, 0)
+        : activeVisibleRowIndex >= 0
+          ? activeVisibleRowIndex
+          : 0;
+    const nextRowId = rows[nextRowIndex]?.id;
+
+    if (!nextRowId) {
+      return;
+    }
+
+    event.preventDefault();
+    activateRow(nextRowId);
+    focusRow(nextRowId);
+  }
+
+  function handleRowClick(event: ReactMouseEvent<HTMLDivElement>, rowId: string) {
+    if (
+      !onActiveRowIdChange ||
+      !isInteractiveRows ||
+      isInteractiveRowTarget(event.target, event.currentTarget)
+    ) {
+      return;
+    }
+
+    activateRow(rowId);
+    event.currentTarget.focus();
+  }
+
+  function handleRowKeyDown(
+    event: ReactKeyboardEvent<HTMLDivElement>,
+    rowIndex: number,
+    rowId: string,
+  ) {
+    if (
+      !onActiveRowIdChange ||
+      !isInteractiveRows ||
+      isInteractiveRowTarget(event.target, event.currentTarget)
+    ) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      activateRow(rowId);
+      return;
+    }
+
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+      return;
+    }
+
+    event.preventDefault();
+
+    const nextRowIndex =
+      event.key === "ArrowDown"
+        ? Math.min(rowIndex + 1, rows.length - 1)
+        : Math.max(rowIndex - 1, 0);
+    const nextRowId = rows[nextRowIndex]?.id;
+
+    if (!nextRowId) {
+      return;
+    }
+
+    activateRow(nextRowId);
+    focusRow(nextRowId);
+  }
+
   return (
-    <section className={styles["data-table-shell"]} style={tableStyle}>
+    <section className={styles["data-table-shell"]} style={tableStyle} onKeyDown={handleTableKeyDown}>
       <div className={styles["data-table-toolbar"]}>
-        <span className={styles["selected-count"]}>{labels.selectedRows(selectedRowIds.size)}</span>
-        <label className={styles["page-size-label"]}>
-          <span>{labels.pageSize}</span>
-          <select
-            className={styles["page-size-select"]}
-            value={pageSize}
-            onChange={(event) => onPageSizeChange(Number(event.target.value))}
-          >
-            {pageSizeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className={styles["data-table-toolbar-group"]}>
+          <span className={styles["selected-count"]}>{labels.selectedRows(selectedRowIds.size)}</span>
+        </div>
+        <div className={styles["data-table-toolbar-group"]}>
+          <label className={styles["page-size-label"]}>
+            <span>{labels.pageSize}</span>
+            <select
+              className={styles["page-size-select"]}
+              value={pageSize}
+              onChange={(event) => onPageSizeChange(Number(event.target.value))}
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className={styles["pagination"]}>
+            <button
+              aria-label={labels.firstPage}
+              className={styles["page-button"]}
+              disabled={pageIndex === 0}
+              title={labels.firstPage}
+              type="button"
+              onClick={() => onPageChange(0)}
+            >
+              <ChevronsLeftIcon className={styles["page-button-icon"]} />
+            </button>
+            <button
+              aria-label={labels.previousPage}
+              className={styles["page-button"]}
+              disabled={pageIndex === 0}
+              title={labels.previousPage}
+              type="button"
+              onClick={() => onPageChange(Math.max(pageIndex - 1, 0))}
+            >
+              <ChevronLeftIcon className={styles["page-button-icon"]} />
+            </button>
+            <span className={styles["page-status"]}>{labels.page(currentPage, totalPages)}</span>
+            <button
+              aria-label={labels.nextPage}
+              className={styles["page-button"]}
+              disabled={pageIndex >= totalPages - 1}
+              title={labels.nextPage}
+              type="button"
+              onClick={() => onPageChange(Math.min(pageIndex + 1, totalPages - 1))}
+            >
+              <ChevronRightIcon className={styles["page-button-icon"]} />
+            </button>
+            <button
+              aria-label={labels.lastPage}
+              className={styles["page-button"]}
+              disabled={pageIndex >= totalPages - 1}
+              title={labels.lastPage}
+              type="button"
+              onClick={() => onPageChange(totalPages - 1)}
+            >
+              <ChevronsRightIcon className={styles["page-button-icon"]} />
+            </button>
+          </div>
+        </div>
       </div>
       <div className={styles["data-table-scroll"]}>
         <div className={styles["data-table"]} role="table">
@@ -441,15 +649,27 @@ export function DataTable<TData>({
               <div className={styles["state-row"]}>{labels.empty}</div>
             ) : null}
             {hasRows ? (
-              rows.map((row) => {
+              rows.map((row, rowIndex) => {
                 const rowId = row.id;
 
                 return (
                   <div
+                    ref={(element) => {
+                      rowRefs.current[rowId] = element;
+                    }}
                     className={styles["data-table-row"]}
+                    data-active={activeRowId === rowId}
+                    data-row-navigation-row="true"
                     data-selected={selectedRowIds.has(rowId)}
                     key={rowId}
                     role="row"
+                    tabIndex={
+                      onActiveRowIdChange && isInteractiveRows && rovingTabIndexRowId === rowId
+                        ? 0
+                        : -1
+                    }
+                    onClick={(event) => handleRowClick(event, rowId)}
+                    onKeyDown={(event) => handleRowKeyDown(event, rowIndex, rowId)}
                   >
                     {row.getVisibleCells().map((cell, index) => (
                       <div className={styles["data-table-cell"]} key={cell.id} role="cell">
@@ -487,41 +707,6 @@ export function DataTable<TData>({
             ) : null}
           </div>
         </div>
-      </div>
-      <div className={styles["pagination"]}>
-        <button
-          className={styles["page-button"]}
-          disabled={pageIndex === 0}
-          type="button"
-          onClick={() => onPageChange(0)}
-        >
-          {labels.firstPage}
-        </button>
-        <button
-          className={styles["page-button"]}
-          disabled={pageIndex === 0}
-          type="button"
-          onClick={() => onPageChange(Math.max(pageIndex - 1, 0))}
-        >
-          {labels.previousPage}
-        </button>
-        <span className={styles["page-status"]}>{labels.page(currentPage, totalPages)}</span>
-        <button
-          className={styles["page-button"]}
-          disabled={pageIndex >= totalPages - 1}
-          type="button"
-          onClick={() => onPageChange(Math.min(pageIndex + 1, totalPages - 1))}
-        >
-          {labels.nextPage}
-        </button>
-        <button
-          className={styles["page-button"]}
-          disabled={pageIndex >= totalPages - 1}
-          type="button"
-          onClick={() => onPageChange(totalPages - 1)}
-        >
-          {labels.lastPage}
-        </button>
       </div>
     </section>
   );

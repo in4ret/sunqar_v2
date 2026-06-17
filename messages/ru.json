@@ -32,6 +32,7 @@
     "tasks": {
       "toggle": "Открыть список задач",
       "title": "Задачи",
+      "news-title": "Отчет по новостям",
       "loading": "Загрузка задач...",
       "load-error": "Не удалось загрузить задачи.",
       "empty": "У вас пока нет задач.",
@@ -251,6 +252,17 @@
       "chart": "Динамика",
       "text": "Статьи"
     },
+    "report-modal": {
+      "open-button": "Отчет",
+      "title": "Отчет",
+      "close": "Закрыть",
+      "model-label": "Модель",
+      "model-placeholder": "Выберите модель",
+      "no-models": "Нет доступных моделей",
+      "prompt-label": "Промпт",
+      "submit": "Сформировать",
+      "submit-error": "Не удалось запустить формирование отчета."
+    },
     "chart-title": "Распределение новостей по времени",
     "chart-loading": "Загружаем распределение по источникам...",
     "chart-error": "Не удалось загрузить график новостей.",
@@ -269,7 +281,6 @@
       "month": "За выбранный период новостей не найдено."
     },
     "table": {
-      "heading": "Список новостей",
       "select": "Выбор",
       "title": "Статья",
       "published-at": "Дата публикации",
@@ -291,6 +302,23 @@
       "sort-ascending": "Сортировка по возрастанию",
       "sort-descending": "Сортировка по убыванию",
       "sort-cleared": "Без сортировки"
+    },
+    "related-table": {
+      "title": "Похожие статьи",
+      "select": "Выбор",
+      "type": "Тип",
+      "published-at": "Дата публикации",
+      "source": "Источник",
+      "article": "Статья",
+      "similarity": "Сходство",
+      "type-filter-placeholder": "Фильтр по типу",
+      "source-filter-placeholder": "Фильтр по источнику",
+      "title-filter-placeholder": "Фильтр по статье",
+      "similarity-from-filter-placeholder": "От",
+      "similarity-to-filter-placeholder": "До",
+      "loading": "Загружаем похожие статьи...",
+      "error": "Не удалось загрузить похожие статьи.",
+      "empty": "Похожие статьи не найдены."
     }
   },
   "users": {

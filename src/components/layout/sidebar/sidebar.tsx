@@ -245,7 +245,7 @@ const DRAWER_ANIMATION_MS = 220;
 const LAST_NEWS_TAB_STORAGE_KEY = "sunqar:last-news-tab";
 const LAST_NEWS_TAB_STORAGE_EVENT = "sunqar:last-news-tab-change";
 const MOBILE_BREAKPOINT_PX = "768px";
-const NEWS_TAB_HREFS = new Set([routes.newsChart, routes.newsText]);
+const NEWS_TAB_HREFS: ReadonlySet<string> = new Set([routes.newsChart, routes.newsText]);
 
 function getStoredLastNewsTabHref() {
   if (typeof window === "undefined") {

@@ -10,6 +10,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   CircleCheck,
   CircleX,
   Database,
@@ -90,6 +92,14 @@ export function ChevronLeftIcon(props: SharedIconProps) {
 
 export function ChevronRightIcon(props: SharedIconProps) {
   return <AppIcon icon={ChevronRight} {...props} />;
+}
+
+export function ChevronsLeftIcon(props: SharedIconProps) {
+  return <AppIcon icon={ChevronsLeft} {...props} />;
+}
+
+export function ChevronsRightIcon(props: SharedIconProps) {
+  return <AppIcon icon={ChevronsRight} {...props} />;
 }
 
 export function CircleCheckIcon(props: SharedIconProps) {

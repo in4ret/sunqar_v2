@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { listAiModels } from "@/lib/ai-models/ai-models";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import { listSources } from "@/lib/sources/sources";
 import {
@@ -64,11 +65,18 @@ export default async function NewsTabPage({
     redirect(buildNewsChartRedirectUrl({ searchFrom, searchQuery, searchTo }));
   }
 
-  const sources = await listSources();
+  const [aiModels, sources] = await Promise.all([listAiModels(), listSources()]);
+  const activeAiModels = aiModels
+    .filter((aiModel) => aiModel.isActive)
+    .map((aiModel) => ({
+      label: aiModel.displayName,
+      value: aiModel.modelId,
+    }));
 
   return (
     <NewsPageView
       activeTab={tab}
+      aiModels={activeAiModels}
       displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
       displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
       searchFrom={searchFrom}
