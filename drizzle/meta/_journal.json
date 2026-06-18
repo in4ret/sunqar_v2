@@ -85,6 +85,13 @@
       "when": 1781719825808,
       "tag": "0011_calm_marten_broadcloak",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1781784000000,
+      "tag": "0012_brisk_hawkeye",
+      "breakpoints": true
     }
   ]
 }

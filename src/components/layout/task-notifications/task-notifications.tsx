@@ -164,19 +164,20 @@ export function TaskNotifications() {
                 const taskDate =
                   task.status === "pending" || !task.doneAt ? task.createdAt : task.doneAt;
                 const formattedTaskDate = dateTimeFormatter.format(new Date(taskDate));
-                const taskTitle = task.reportTitle || task.prompt || t("header.tasks.news-title");
+                const taskTitle =
+                  task.reportTitle || task.keyWords || t("header.tasks.report-title");
                 const hasReportDescription = Boolean(task.reportDescription);
                 const taskDetails = (
                   <>
                     <p className={styles["task-notifications-report-title"]}>{taskTitle}</p>
-	                    {hasReportDescription ? (
-	                      <p
-	                        className={styles["task-notifications-report-description"]}
-	                        title={task.reportDescription ?? undefined}
-	                      >
-	                        {task.reportDescription}
-	                      </p>
-	                    ) : null}
+                    {hasReportDescription ? (
+                      <p
+                        className={styles["task-notifications-report-description"]}
+                        title={task.reportDescription ?? undefined}
+                      >
+                        {task.reportDescription}
+                      </p>
+                    ) : null}
                   </>
                 );
 

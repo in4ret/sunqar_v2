@@ -457,7 +457,7 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
         doneAt: null,
         downloadUrl: null,
         error: null,
-        prompt: null,
+        keyWords: null,
         read: false,
         reportId: report.id,
         status: "pending",

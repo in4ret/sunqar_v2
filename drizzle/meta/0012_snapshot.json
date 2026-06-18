@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3209c351-f5fe-4434-afc1-bd19b63096e3",
-  "prevId": "818abe7e-2147-4450-8e6a-f7f8df372647",
+  "id": "1555e7c6-9a64-43f0-b247-33400358b87c",
+  "prevId": "3209c351-f5fe-4434-afc1-bd19b63096e3",
   "tables": {
     "ai_models": {
       "name": "ai_models",
@@ -348,8 +348,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "prompt": {
-          "name": "prompt",
+        "key_words": {
+          "name": "key_words",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

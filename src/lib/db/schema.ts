@@ -78,7 +78,7 @@ export const tasks = sqliteTable(
   {
     taskId: text("task_id").primaryKey(),
     reportId: text("report_id"),
-    prompt: text("prompt"),
+    keyWords: text("key_words"),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

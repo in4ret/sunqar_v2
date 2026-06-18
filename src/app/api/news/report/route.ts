@@ -123,7 +123,7 @@ export async function POST(request: Request) {
         doneAt: null,
         downloadUrl: null,
         error: null,
-        prompt: body.prompt.trim(),
+        keyWords: body.keyWords.trim(),
         read: false,
         reportId: null,
         status: "pending",
