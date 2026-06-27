@@ -1,0 +1,94 @@
+@use "../../../styles/breakpoints" as *;
+
+.comments-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.eyebrow,
+.title,
+.description {
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 0.25rem;
+}
+
+.description {
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.comment-card,
+.empty-state {
+  padding: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.empty-state-copy {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.comments-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.comment-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.comment-line {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.comment-label {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.comment-value {
+  color: var(--text-primary);
+}
+
+.empty-state {
+  text-align: center;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .comment-card,
+  .empty-state {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+}

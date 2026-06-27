@@ -73,6 +73,32 @@ export const reports = sqliteTable("reports", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+export const posts = sqliteTable(
+  "posts",
+  {
+    id: text("id").primaryKey(),
+    source: text("source").notNull(),
+    channel: text("channel").notNull(),
+    channelName: text("channel_name"),
+    contentId: text("content_id").notNull(),
+    contentTitle: text("content_title"),
+  },
+  (table) => [
+    uniqueIndex("posts_source_channel_content_id_unique").on(
+      table.source,
+      table.channel,
+      table.contentId,
+    ),
+  ],
+);
+
+export const youtube = sqliteTable("youtube", {
+  contentId: text("content_id").primaryKey(),
+  channelId: text("channel_id"),
+  contentTitle: text("content_title"),
+  channelTitle: text("channel_title"),
+});
+
 export const tasks = sqliteTable(
   "tasks",
   {
@@ -121,6 +147,10 @@ export type Source = typeof sources.$inferSelect;
 export type NewSource = typeof sources.$inferInsert;
 export type Report = typeof reports.$inferSelect;
 export type NewReport = typeof reports.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
+export type Youtube = typeof youtube.$inferSelect;
+export type NewYoutube = typeof youtube.$inferInsert;
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
 export type Session = typeof sessions.$inferSelect;

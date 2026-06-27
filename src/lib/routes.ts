@@ -1,6 +1,7 @@
 export const routes = {
   account: "/account",
   aiModels: "/ai_models",
+  comments: "/comments",
   home: "/",
   login: "/login",
   news: "/news",

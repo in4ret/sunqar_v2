@@ -467,8 +467,6 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
       .run();
 
     await publishTaskSnapshotInvalidation(report.authorId);
-
-    // console.log("###", data);
   } catch (error) {
     console.error(`Generate report request failed for report ${report.id}.`, error);
 

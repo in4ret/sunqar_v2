@@ -47,6 +47,11 @@ export function AppShellView({
       label: t("header.reports"),
     },
     {
+      href: routes.comments,
+      icon: TextIcon,
+      label: t("header.comments"),
+    },
+    {
       children: [
         {
           href: routes.newsChart,

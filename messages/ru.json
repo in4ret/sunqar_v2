@@ -21,6 +21,7 @@
     "open-menu": "Открыть меню",
     "primary-navigation": "Основная навигация",
     "reports": "Отчёты",
+    "comments": "Комментарии",
     "news": "Новости",
     "account": "Личный кабинет",
     "sign-in": "Войти",
@@ -171,6 +172,23 @@
     "reports-table-sources-show-all": "Показать все {count} источников",
     "reports-table-sources-modal-title": "Источники",
     "reports-table-sources-modal-close": "Закрыть"
+  },
+  "comments": {
+    "eyebrow": "Синхронизация posts",
+    "title": "Комментарии",
+    "description": "Загрузите уникальные source, channel и content ID из таблицы comments в sqlite-таблицу posts.",
+    "empty": "В таблице posts пока нет записей.",
+    "sync": {
+      "submit": "Загрузить посты",
+      "submitting": "Загрузка..."
+    },
+    "fields": {
+      "source": "Источник",
+      "channel": "Канал",
+      "channel-name": "Название канала",
+      "content-id": "Content ID",
+      "content-title": "Заголовок контента"
+    }
   },
   "reports": {
     "title": "Отчёты",
@@ -502,7 +520,8 @@
     "report-run-request-failed": "Не удалось отправить отчёт в сервис генерации.",
     "source-fields-required": "Название источника обязательно.",
     "source-name-exists": "Источник с таким названием уже существует.",
-    "source-not-found": "Источник не найден."
+    "source-not-found": "Источник не найден.",
+    "posts-sync-failed": "Не удалось загрузить посты из comments."
   },
   "messages": {
     "user-created": "Пользователь успешно создан.",
@@ -517,6 +536,7 @@
     "report-deleted": "Отчёт «{title}» успешно удалён.",
     "source-created": "Источник «{name}» успешно добавлен.",
     "source-updated": "Источник «{name}» успешно обновлён.",
-    "source-deleted": "Источник «{name}» успешно удалён."
+    "source-deleted": "Источник «{name}» успешно удалён.",
+    "posts-synced": "Посты успешно загружены: {count}."
   }
 }

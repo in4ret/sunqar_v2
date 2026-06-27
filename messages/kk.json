@@ -21,6 +21,7 @@
     "open-menu": "Мәзірді ашу",
     "primary-navigation": "Негізгі навигация",
     "reports": "Есептер",
+    "comments": "Пікірлер",
     "news": "Жаңалықтар",
     "account": "Жеке кабинет",
     "sign-in": "Кіру",
@@ -171,6 +172,23 @@
     "reports-table-sources-show-all": "Барлық {count} дереккөзді көрсету",
     "reports-table-sources-modal-title": "Дереккөздер",
     "reports-table-sources-modal-close": "Жабу"
+  },
+  "comments": {
+    "eyebrow": "posts синхрондау",
+    "title": "Пікірлер",
+    "description": "comments кестесіндегі бірегей source, channel және content ID мәндерін sqlite-тегі posts кестесіне жүктеңіз.",
+    "empty": "posts кестесінде әзірге жазба жоқ.",
+    "sync": {
+      "submit": "Посттарды жүктеу",
+      "submitting": "Жүктелуде..."
+    },
+    "fields": {
+      "source": "Дереккөз",
+      "channel": "Арна",
+      "channel-name": "Арна атауы",
+      "content-id": "Content ID",
+      "content-title": "Контент тақырыбы"
+    }
   },
   "reports": {
     "title": "Есептер",
@@ -502,7 +520,8 @@
     "report-run-request-failed": "Есепті генерация сервисіне жіберу мүмкін болмады.",
     "source-fields-required": "Дереккөз атауы міндетті.",
     "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
-    "source-not-found": "Дереккөз табылмады."
+    "source-not-found": "Дереккөз табылмады.",
+    "posts-sync-failed": "comments кестесінен посттарды жүктеу мүмкін болмады."
   },
   "messages": {
     "user-created": "Пайдаланушы сәтті құрылды.",
@@ -517,6 +536,7 @@
     "report-deleted": "«{title}» есебі сәтті жойылды.",
     "source-created": "«{name}» дереккөзі сәтті қосылды.",
     "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",
-    "source-deleted": "«{name}» дереккөзі сәтті жойылды."
+    "source-deleted": "«{name}» дереккөзі сәтті жойылды.",
+    "posts-synced": "Посттар сәтті жүктелді: {count}."
   }
 }
