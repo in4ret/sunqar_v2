@@ -1,0 +1,1 @@
+ALTER TABLE `youtube` ADD `published_at` text;

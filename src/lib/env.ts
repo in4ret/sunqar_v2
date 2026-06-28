@@ -17,4 +17,5 @@ export const env = {
   authSecret: resolveAuthSecret(),
   databasePath: process.env.DATABASE_PATH ?? DEFAULT_DATABASE_PATH,
   isProduction: process.env.NODE_ENV === "production",
+  youtubeApiKey: process.env.YOUTUBE_API_KEY?.trim() ?? "",
 };

@@ -71,6 +71,11 @@ export function AppShellView({
   ];
   const adminNavigationItems = [
     {
+      href: routes.posts,
+      icon: TextIcon,
+      label: t("header.posts"),
+    },
+    {
       href: routes.users,
       icon: UsersIcon,
       label: t("header.users"),

@@ -1,36 +1,71 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
-import { posts, youtube } from "@/lib/db/schema";
+import { type NewPost, posts, youtube } from "@/lib/db/schema";
+import { env } from "@/lib/env";
 import { manticoreSql } from "@/lib/manticore";
-
-type RawYoutubeRow = {
-  content_id?: string | null;
-};
+import {
+  enrichCommentPostRows,
+  type EnrichedCommentPostRow,
+} from "@/lib/posts/posts-content-title";
+import {
+  mapCommentRowToPost,
+  mapYoutubeRowToPost,
+  type RawCommentPostRow,
+  syncPostsWithDependencies,
+} from "@/lib/posts/posts-sync";
+import { chunkValues, type RawYoutubeRow, type YoutubeMetadataUpdate, type YoutubeRow } from "@/lib/posts/posts-youtube";
 
 const SYNC_POSTS_TIMER_LABEL = "syncPosts";
 const INSERT_POSTS_CHUNK_SIZE = 500;
 
-function normalizeYoutubeRow(row: RawYoutubeRow) {
-  const contentId = row.content_id?.trim() ?? "";
+function replaceYoutubeRowsInDatabase(rows: YoutubeRow[]) {
+  db.transaction((tx) => {
+    tx.delete(youtube).run();
 
-  if (!contentId) {
-    return null;
-  }
-
-  return {
-    contentId,
-  };
+    for (const chunk of chunkValues(rows, INSERT_POSTS_CHUNK_SIZE)) {
+      tx.insert(youtube).values(chunk).run();
+    }
+  });
 }
 
-function chunkValues<T>(values: T[], size: number) {
-  const chunks: T[][] = [];
+function applyYoutubeUpdatesInDatabase(updates: YoutubeMetadataUpdate[]) {
+  db.transaction((tx) => {
+    for (const update of updates) {
+      tx.update(youtube)
+        .set({
+          channelId: update.channelId,
+          channelTitle: update.channelTitle,
+          publishedAt: update.publishedAt,
+          contentTitle: update.contentTitle,
+          status: update.status,
+        })
+        .where(eq(youtube.contentId, update.contentId))
+        .run();
+    }
+  });
+}
 
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size));
-  }
+function rebuildPostsInDatabase(commentRows: EnrichedCommentPostRow[]) {
+  const commentPostRows = commentRows
+    .map(mapCommentRowToPost)
+    .filter((row): row is NewPost => row !== null);
+  const youtubePostRows = db
+    .select()
+    .from(youtube)
+    .where(eq(youtube.status, "ok"))
+    .all()
+    .map(mapYoutubeRowToPost)
+    .filter((row): row is NewPost => row !== null);
+  const postRows = [...commentPostRows, ...youtubePostRows];
 
-  return chunks;
+  db.transaction((tx) => {
+    tx.delete(posts).run();
+
+    for (const chunk of chunkValues(postRows, INSERT_POSTS_CHUNK_SIZE)) {
+      tx.insert(posts).values(chunk).run();
+    }
+  });
 }
 
 export async function listPosts() {
@@ -52,26 +87,22 @@ export async function syncPosts() {
   console.time(SYNC_POSTS_TIMER_LABEL);
 
   try {
-    const rows = await manticoreSql<RawYoutubeRow>(
-      `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=300000`,
-    );
-    const uniqueYoutubeRows = Array.from(
-      new Map(
-        rows
-          .map(normalizeYoutubeRow)
-          .filter((row): row is NonNullable<typeof row> => row !== null)
-          .map((row) => [row.contentId, row]),
-      ).values(),
-    );
-    db.transaction((tx) => {
-      tx.delete(youtube).run();
-
-      for (const chunk of chunkValues(uniqueYoutubeRows, INSERT_POSTS_CHUNK_SIZE)) {
-        tx.insert(youtube).values(chunk).run();
-      }
+    return await syncPostsWithDependencies({
+      applyYoutubeUpdates: applyYoutubeUpdatesInDatabase,
+      enrichCommentPostRows: (rows) => enrichCommentPostRows(rows, fetch),
+      fetchImpl: fetch,
+      loadCommentPostRows: () =>
+        manticoreSql<RawCommentPostRow>(
+          `SELECT source, channel, content_id FROM comments WHERE source IN ('ig', 'tiktok') GROUP BY source, channel, content_id LIMIT 1000000 OPTION max_matches=10000`,
+        ),
+      loadYoutubeRows: () =>
+        manticoreSql<RawYoutubeRow>(
+          `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=300000`,
+        ),
+      rebuildPosts: rebuildPostsInDatabase,
+      replaceYoutubeRows: replaceYoutubeRowsInDatabase,
+      youtubeApiKey: env.youtubeApiKey,
     });
-
-    return { insertedCount: uniqueYoutubeRows.length };
   } finally {
     console.timeEnd(SYNC_POSTS_TIMER_LABEL);
   }

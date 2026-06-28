@@ -22,6 +22,7 @@
     "primary-navigation": "Негізгі навигация",
     "reports": "Есептер",
     "comments": "Пікірлер",
+    "posts": "Жарияланымдар",
     "news": "Жаңалықтар",
     "account": "Жеке кабинет",
     "sign-in": "Кіру",
@@ -174,13 +175,27 @@
     "reports-table-sources-modal-close": "Жабу"
   },
   "comments": {
-    "eyebrow": "posts синхрондау",
-    "title": "Пікірлер",
-    "description": "comments кестесіндегі бірегей source, channel және content ID мәндерін sqlite-тегі posts кестесіне жүктеңіз.",
+    "empty": "",
+    "search-label": "Іздеу сұрауы",
+    "from-label": "Кезеңнің басы",
+    "to-label": "Кезеңнің соңы",
+    "posts-label": "Жарияланымдар",
+    "posts-placeholder": "Жарияланымдарды таңдаңыз",
+    "posts-empty": "Барлық жарияланым таңдалған немесе тізім бос",
+    "show-all-selected-posts": "Барлық {count} жарияланымды көрсету",
+    "selected-posts-modal-title": "Жарияланымдар",
+    "selected-posts-modal-close": "Жабу",
+    "remove-selected-post": "«{post}» жарияланымын алып тастау",
+    "count-label": "Табылған пікірлер саны",
+    "count-loading": "Санап жатырмыз...",
+    "count-error": "Пікірлер санын жүктеу мүмкін болмады."
+  },
+  "posts": {
+    "title": "Жарияланымдар",
     "empty": "posts кестесінде әзірге жазба жоқ.",
     "sync": {
-      "submit": "Посттарды жүктеу",
-      "submitting": "Жүктелуде..."
+      "submit": "Жаңарту",
+      "submitting": "Жаңартылуда..."
     },
     "fields": {
       "source": "Дереккөз",

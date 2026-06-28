@@ -97,6 +97,8 @@ export const youtube = sqliteTable("youtube", {
   channelId: text("channel_id"),
   contentTitle: text("content_title"),
   channelTitle: text("channel_title"),
+  publishedAt: text("published_at"),
+  status: text("status", { enum: ["ok", "not_found", "private", "deleted", "error"] }),
 });
 
 export const tasks = sqliteTable(

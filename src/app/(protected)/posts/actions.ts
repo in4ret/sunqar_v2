@@ -16,12 +16,12 @@ export async function submitSyncPosts(
   previousState: SyncPostsState,
 ): Promise<SyncPostsState> {
   void previousState;
-  await requireRole(["admin", "user"]);
+  await requireRole("admin");
 
   try {
     const result = await syncPosts();
 
-    revalidatePath(routes.comments);
+    revalidatePath(routes.posts);
 
     return {
       error: null,

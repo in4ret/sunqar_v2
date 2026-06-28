@@ -2,7 +2,7 @@
 
 import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
@@ -47,6 +47,7 @@ export function NewsPageSearchForm({
   sources,
 }: NewsPageSearchFormProps) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [fromValue, setFromValue] = useState(searchFrom);
   const [toValue, setToValue] = useState(searchTo);
@@ -54,11 +55,12 @@ export function NewsPageSearchForm({
   const sourceOptions = useMemo(
     () =>
       buildSourceOptions({
+        locale,
         sources,
         withoutCountryLabel: t("reports.form.sources-without-country"),
         withoutTypeLabel: t("reports.form.sources-without-type"),
       }),
-    [sources, t],
+    [locale, sources, t],
   );
   const availableSourceValues = useMemo(
     () => new Set(sources.map((source) => source.name)),

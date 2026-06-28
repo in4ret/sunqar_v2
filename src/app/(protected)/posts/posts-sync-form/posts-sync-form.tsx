@@ -4,18 +4,18 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { submitSyncPosts, type SyncPostsState } from "@/app/(protected)/comments/actions";
+import { submitSyncPosts, type SyncPostsState } from "@/app/(protected)/posts/actions";
 import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useToast } from "@/ui";
 
-import styles from "./comments-sync-form.module.scss";
+import styles from "./posts-sync-form.module.scss";
 
 const initialState: SyncPostsState = {
   error: null,
   success: null,
 };
 
-export function CommentsSyncForm() {
+export function PostsSyncForm() {
   const [state, formAction, isPending] = useActionState(submitSyncPosts, initialState);
   const router = useRouter();
   const t = useTranslations();
@@ -45,7 +45,7 @@ export function CommentsSyncForm() {
   return (
     <form action={formAction}>
       <button className={styles["submit-button"]} disabled={isPending} type="submit">
-        {isPending ? t("comments.sync.submitting") : t("comments.sync.submit")}
+        {isPending ? t("posts.sync.submitting") : t("posts.sync.submit")}
       </button>
     </form>
   );

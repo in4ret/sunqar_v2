@@ -22,6 +22,7 @@
     "primary-navigation": "Основная навигация",
     "reports": "Отчёты",
     "comments": "Комментарии",
+    "posts": "Публикации",
     "news": "Новости",
     "account": "Личный кабинет",
     "sign-in": "Войти",
@@ -174,13 +175,27 @@
     "reports-table-sources-modal-close": "Закрыть"
   },
   "comments": {
-    "eyebrow": "Синхронизация posts",
-    "title": "Комментарии",
-    "description": "Загрузите уникальные source, channel и content ID из таблицы comments в sqlite-таблицу posts.",
+    "empty": "",
+    "search-label": "Поисковый запрос",
+    "from-label": "Начало периода",
+    "to-label": "Конец периода",
+    "posts-label": "Публикации",
+    "posts-placeholder": "Выберите публикации",
+    "posts-empty": "Все публикации уже выбраны или список пуст",
+    "show-all-selected-posts": "Показать все {count} публикаций",
+    "selected-posts-modal-title": "Публикации",
+    "selected-posts-modal-close": "Закрыть",
+    "remove-selected-post": "Убрать публикацию «{post}»",
+    "count-label": "Найдено комментариев",
+    "count-loading": "Считаем...",
+    "count-error": "Не удалось загрузить количество комментариев."
+  },
+  "posts": {
+    "title": "Публикации",
     "empty": "В таблице posts пока нет записей.",
     "sync": {
-      "submit": "Загрузить посты",
-      "submitting": "Загрузка..."
+      "submit": "Обновить",
+      "submitting": "Обновление..."
     },
     "fields": {
       "source": "Источник",

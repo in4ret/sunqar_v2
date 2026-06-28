@@ -1,0 +1,1 @@
+ALTER TABLE `youtube` ADD `status` text;

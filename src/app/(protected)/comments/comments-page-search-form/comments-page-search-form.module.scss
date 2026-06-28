@@ -1,0 +1,104 @@
+@use "@/styles/breakpoints.scss" as breakpoints;
+
+.comments-page-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-areas:
+    "search search posts submit"
+    "from to posts submit";
+  gap: 1rem;
+  align-items: start;
+}
+
+.comments-page-search-field,
+.comments-page-date-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.comments-page-search-field {
+  grid-area: search;
+}
+
+.comments-page-date-field:nth-of-type(2) {
+  grid-area: from;
+}
+
+.comments-page-date-field:nth-of-type(3) {
+  grid-area: to;
+}
+
+.comments-page-date-input {
+  min-width: 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  background: var(--bg-surface);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.comments-page-date-input:focus {
+  outline: none;
+}
+
+.comments-page-date-input:focus-visible {
+  border-color: var(--button-primary-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--button-primary-bg) 18%, transparent);
+}
+
+.comments-page-field-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.comments-page-posts-field {
+  grid-area: posts;
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.comments-page-search-submit {
+  grid-area: submit;
+  justify-self: end;
+  margin-top: 1.6rem;
+  padding: 0.95rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 6rem;
+}
+
+.comments-page-search-submit:hover,
+.comments-page-search-submit:focus-visible {
+  background: var(--button-primary-bg-hover);
+  color: var(--button-primary-text-hover);
+}
+
+.comments-page-search-submit:active {
+  background: var(--button-primary-bg-active);
+  color: var(--button-primary-text-active);
+}
+
+@media (max-width: breakpoints.$breakpoint-mobile) {
+  .comments-page-search-form {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "from"
+      "to"
+      "posts"
+      "submit";
+  }
+
+  .comments-page-search-submit {
+    margin-top: 0;
+    width: 100%;
+  }
+}

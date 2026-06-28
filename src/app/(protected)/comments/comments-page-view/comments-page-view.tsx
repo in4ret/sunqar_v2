@@ -1,70 +1,120 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useState, useSyncExternalStore } from "react";
 
-import { CommentsSyncForm } from "../comments-sync-form/comments-sync-form";
+import {
+  formatDateTimeLocalValueToEpochSeconds,
+  getDefaultNewsPageSearchFromValue,
+} from "@/lib/utils";
 
-import styles from "../page.module.scss";
+import { CommentsPageCount } from "../comments-page-count/comments-page-count";
+import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
+import {
+  COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
+  setStoredCommentsPagePosts,
+  useStoredCommentsPagePosts,
+} from "../comments-page-search-form/comments-page-search-form-storage";
 
-type PostView = {
+import styles from "./comments-page-view.module.scss";
+
+type CommentPostView = {
   channel: string;
   channelName: string | null;
   contentId: string;
   contentTitle: string | null;
-  id: string;
   source: string;
 };
 
 type CommentsPageViewProps = {
-  allPosts: PostView[];
+  displaySearchFrom: string;
+  displaySearchTo: string;
+  posts: CommentPostView[];
+  searchFrom: string;
+  searchQuery: string;
+  searchTo: string;
 };
 
-export function CommentsPageView({ allPosts }: CommentsPageViewProps) {
-  const t = useTranslations();
-  const emptyValue = "—";
+type PendingSearchState = {
+  nextSearchFrom: string;
+  nextSearchQuery: string;
+  nextSearchTo: string;
+  previousSearchFrom: string;
+  previousSearchQuery: string;
+  previousSearchTo: string;
+} | null;
+
+function subscribeToDefaultSearchFrom() {
+  return () => {};
+}
+
+export function CommentsPageView({
+  displaySearchFrom,
+  displaySearchTo,
+  posts,
+  searchFrom,
+  searchQuery,
+  searchTo,
+}: CommentsPageViewProps) {
+  const selectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
+  const [searchTrigger, setSearchTrigger] = useState(0);
+  const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
+  const defaultSearchFrom = useSyncExternalStore(
+    subscribeToDefaultSearchFrom,
+    () => (shouldUseDefaultSearchFrom ? getDefaultNewsPageSearchFromValue() : ""),
+    () => "",
+  );
+  const hasPendingSearchState =
+    pendingSearchState &&
+    pendingSearchState.previousSearchFrom === searchFrom &&
+    pendingSearchState.previousSearchQuery === searchQuery &&
+    pendingSearchState.previousSearchTo === searchTo;
+  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom ? defaultSearchFrom : displaySearchFrom;
+  const effectiveSearchFromEpochSeconds = shouldUseDefaultSearchFrom
+    ? formatDateTimeLocalValueToEpochSeconds(defaultSearchFrom)
+    : searchFrom;
+  const submittedSearchFrom = hasPendingSearchState
+    ? pendingSearchState.nextSearchFrom
+    : effectiveSearchFromEpochSeconds;
+  const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
+  const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
+  const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
+  const hasLoadedStoredPosts = selectedPosts !== null && isSearchReady;
 
   return (
     <section className={styles["comments-page"]}>
-      <div className={styles["page-header"]}>
-        <div>
-          <p className={styles["eyebrow"]}>{t("comments.eyebrow")}</p>
-          <h1 className={styles["title"]}>{t("comments.title")}</h1>
-          <p className={styles["description"]}>{t("comments.description")}</p>
-        </div>
-        <CommentsSyncForm />
+      <CommentsPageSearchForm
+        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, displaySearchTo])}
+        onSearchSubmit={({ searchFrom: nextSearchFrom, searchQuery: nextSearchQuery, searchTo: nextSearchTo }) => {
+          setPendingSearchState({
+            nextSearchFrom,
+            nextSearchQuery: nextSearchQuery,
+            nextSearchTo,
+            previousSearchFrom: searchFrom,
+            previousSearchQuery: searchQuery,
+            previousSearchTo: searchTo,
+          });
+          setSearchTrigger((currentValue) => currentValue + 1);
+        }}
+        posts={posts}
+        searchFrom={effectiveDisplaySearchFrom}
+        searchQuery={searchQuery}
+        searchTo={displaySearchTo}
+        selectedPosts={selectedPosts ?? []}
+        setSelectedPosts={(nextPosts) => {
+          setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, nextPosts);
+        }}
+      />
+      <div className={styles["comments-page-toolbar"]}>
+        <CommentsPageCount
+          hasLoadedStoredPosts={hasLoadedStoredPosts}
+          searchFrom={submittedSearchFrom}
+          searchQuery={submittedSearchQuery}
+          searchTo={submittedSearchTo}
+          searchTrigger={searchTrigger}
+          selectedPosts={selectedPosts ?? []}
+        />
       </div>
-      {allPosts.length > 0 ? (
-        <div className={styles["comments-list"]}>
-          {allPosts.map((post) => (
-            <article className={styles["comment-card"]} key={post.id}>
-              <p className={styles["comment-line"]}>
-                <span className={styles["comment-label"]}>{t("comments.fields.source")}:</span>{" "}
-                <span className={styles["comment-value"]}>{post.source}</span>
-              </p>
-              <p className={styles["comment-line"]}>
-                <span className={styles["comment-label"]}>{t("comments.fields.channel")}:</span>{" "}
-                <span className={styles["comment-value"]}>{post.channel}</span>
-              </p>
-              <p className={styles["comment-line"]}>
-                <span className={styles["comment-label"]}>{t("comments.fields.channel-name")}:</span>{" "}
-                <span className={styles["comment-value"]}>{post.channelName?.trim() || emptyValue}</span>
-              </p>
-              <p className={styles["comment-line"]}>
-                <span className={styles["comment-label"]}>{t("comments.fields.content-id")}:</span>{" "}
-                <span className={styles["comment-value"]}>{post.contentId}</span>
-              </p>
-              <p className={styles["comment-line"]}>
-                <span className={styles["comment-label"]}>{t("comments.fields.content-title")}:</span>{" "}
-                <span className={styles["comment-value"]}>{post.contentTitle?.trim() || emptyValue}</span>
-              </p>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <section className={styles["empty-state"]}>
-          <p className={styles["empty-state-copy"]}>{t("comments.empty")}</p>
-        </section>
-      )}
     </section>
   );
 }

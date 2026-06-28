@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   type ReportMutationState,
@@ -155,6 +155,7 @@ export function CreateReportForm({
     initialValues?.period ?? defaultRecurrenceValue,
   );
   const { backToPreviousPathnameOrReplace } = useNavigationHistory();
+  const locale = useLocale();
   const t = useTranslations();
   const errorMessage = translateActionMessage(t, state.error);
   const titleValue = initialValues?.title ?? "";
@@ -169,13 +170,14 @@ export function CreateReportForm({
   const sourceOptions = useMemo(
     () =>
       buildSourceOptions({
+        locale,
         missingSourceNames,
         sources,
         unavailableLabel: t("reports.form.sources-unavailable"),
         withoutCountryLabel: t("reports.form.sources-without-country"),
         withoutTypeLabel: t("reports.form.sources-without-type"),
       }),
-    [missingSourceNames, sources, t],
+    [locale, missingSourceNames, sources, t],
   );
 
   function updateBlock(

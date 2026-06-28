@@ -1,0 +1,21 @@
+@use "../../../../styles/breakpoints" as *;
+
+.comments-page {
+  display: grid;
+  width: 100%;
+}
+
+.comments-page > :first-child {
+  margin-bottom: 1.5rem;
+}
+
+.comments-page-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .comments-page-toolbar {
+    display: grid;
+  }
+}
