@@ -14,8 +14,10 @@ dist/
 
 # Environment variables
 .env
+.env.prod
 .env*.local
 !.env.example
+!.env.prod.example
 
 # Logs
 npm-debug.log*
@@ -42,3 +44,4 @@ Thumbs.db
 
 
 next-env.d.ts
+*.sh

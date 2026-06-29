@@ -22,6 +22,8 @@ GENERATE_REPORT_PASSWORD=
 - `DATABASE_PATH` по умолчанию указывает на `data/sunqar.db`
 - `GENERATE_REPORT_USERNAME` и `GENERATE_REPORT_PASSWORD` опциональны и нужны, если `download_url` файлов защищен `Basic Auth`
 
+Для Docker production-сценария используйте локальный `.env.prod` на основе [.env.prod.example](/home/rushad/work/sunqar/.env.prod.example).
+
 ## Install
 
 ```bash
@@ -55,6 +57,56 @@ npm run dev
 ```
 
 После этого вход выполняется на `/login`.
+
+## Docker
+
+Production-запуск в контейнерах использует `docker compose`, локальный `.env.prod` и bind mount локальной папки `./data` в `/app/data`.
+
+1. Создайте production env-файл:
+
+```bash
+cp .env.prod.example .env.prod
+```
+
+2. Проверьте значения в `.env.prod`:
+
+```env
+NODE_ENV=production
+AUTH_SECRET=change-me-in-production
+DATABASE_PATH=/app/data/sunqar.db
+```
+
+3. Поднимите стек:
+
+```bash
+docker compose up --build -d
+```
+
+Сервисы:
+- `migrate` применяет миграции к SQLite базе
+- `web` запускает приложение на порту `3000`
+- `scheduler` запускает фоновый планировщик `npm run start:scheduler`
+
+4. При первом запуске создайте администратора:
+
+```bash
+docker compose run --rm web npm run db:seed-admin -- admin password123 "Administrator"
+```
+
+Полезные команды:
+
+```bash
+docker compose logs -f web
+docker compose logs -f scheduler
+docker compose down
+```
+
+Важно:
+- реальный `.env.prod` не коммитится в репозиторий
+- Docker использует локальную папку `./data`, поэтому контейнеры и локальный запуск работают с одной и той же SQLite базой
+- файлы `sunqar.db`, `sunqar.db-wal` и `sunqar.db-shm` видны на хосте в папке `data/` и сохраняются между перезапусками контейнеров
+- `REDIS_CONNECTION` и `MANTICORE_URL` можно оставить пустыми, если эти интеграции не нужны для текущего запуска
+- если они нужны, значения должны указывать на внешние доступные сервисы; они не входят в этот compose-файл
 
 ## Database Commands
 

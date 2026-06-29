@@ -97,7 +97,7 @@ export async function syncPosts() {
         ),
       loadYoutubeRows: () =>
         manticoreSql<RawYoutubeRow>(
-          `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=300000`,
+          `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=20000`,
         ),
       rebuildPosts: rebuildPostsInDatabase,
       replaceYoutubeRows: replaceYoutubeRowsInDatabase,

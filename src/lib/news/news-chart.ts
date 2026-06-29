@@ -461,7 +461,7 @@ async function getBucketSourceTotals(
     `SELECT source, COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to, [
       `publishedat >= ${bucketStartEpochSeconds}`,
       `publishedat < ${bucketEndExclusiveEpochSeconds}`,
-    ])} GROUP BY source ORDER BY total DESC LIMIT 100000 OPTION max_matches=100000`,
+    ])} GROUP BY source ORDER BY total DESC LIMIT 100000 OPTION max_matches=10000`,
   );
   const sourceTotals = new Map<string, number>();
 
