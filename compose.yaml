@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      network: host
     command: ["npm", "run", "db:migrate"]
     env_file:
       - .env.prod
@@ -14,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      network: host
     command: ["npm", "run", "start"]
     env_file:
       - .env.prod
@@ -30,6 +32,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      network: host
     command: ["npm", "run", "start:scheduler"]
     env_file:
       - .env.prod
