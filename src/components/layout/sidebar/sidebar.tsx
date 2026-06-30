@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { type MouseEvent as ReactMouseEvent, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { MOBILE_MEDIA_QUERY } from "@/lib/mobile-breakpoint";
 import { routes } from "@/lib/routes";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   LogOutIcon,
+  UserRoundCogIcon,
   UserRoundIcon,
   XIcon,
 } from "@/ui";
@@ -130,8 +132,26 @@ export function Sidebar({
   }, [isOpen]);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+
+    function handleViewportChange(event: MediaQueryListEvent) {
+      if (event.matches || !isOpen) {
+        return;
+      }
+
+      closeDrawer();
+    }
+
+    mediaQuery.addEventListener("change", handleViewportChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleViewportChange);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     function handleToggleRequest() {
-      if (window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX})`).matches) {
+      if (window.matchMedia(MOBILE_MEDIA_QUERY).matches) {
         if (isOpen) {
           closeDrawer();
           return;
@@ -244,7 +264,6 @@ export function Sidebar({
 const DRAWER_ANIMATION_MS = 220;
 const LAST_NEWS_TAB_STORAGE_KEY = "sunqar:last-news-tab";
 const LAST_NEWS_TAB_STORAGE_EVENT = "sunqar:last-news-tab-change";
-const MOBILE_BREAKPOINT_PX = "768px";
 const NEWS_TAB_HREFS: ReadonlySet<string> = new Set([routes.newsChart, routes.newsText]);
 
 function getStoredLastNewsTabHref() {
@@ -429,36 +448,105 @@ function UserPanel({
   pathname: string;
   user: SidebarUser;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const popoverId = useId();
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      if (shellRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      setIsOpen(false);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [isOpen]);
+
+  function closePanel() {
+    setIsOpen(false);
+  }
+
+  function handleTriggerClick() {
+    setIsOpen((currentValue) => !currentValue);
+  }
+
+  function handleContentClick(event: ReactMouseEvent<HTMLElement>) {
+    event.stopPropagation();
+  }
+
   return (
-    <div
-      className={`${styles["user-panel"]} ${user.isAdmin ? styles["user-panel-admin"] : ""}`}
-    >
-      <div className={styles["user-details"]}>
-        <span className={styles["user-name"]}>{user.displayName}</span>
-        <span className={styles["user-login"]}>{user.login}</span>
-        <span className={styles["user-role"]}>{user.roleLabel}</span>
-      </div>
-      <div className={styles["user-actions"]}>
-        <Link
-          aria-current={pathname === user.accountHref ? "page" : undefined}
-          className={styles["account-link"]}
-          data-active={pathname === user.accountHref ? "true" : undefined}
-          href={user.accountHref}
-          onClick={onNavigate}
-        >
-          <UserRoundIcon className={styles["user-action-icon"]} />
-          <span className={styles["account-label"]}>{user.accountLabel}</span>
-        </Link>
-        <form action={user.logoutAction}>
-          <button
-            aria-label={user.logoutLabel}
-            className={styles["logout-button"]}
-            type="submit"
+    <div className={styles["user-menu-shell"]} ref={shellRef}>
+      <button
+        aria-controls={popoverId}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={user.displayName}
+        className={`${styles["user-menu-trigger"]} ${user.isAdmin ? styles["user-menu-trigger-admin"] : ""}`}
+        type="button"
+        onClick={handleTriggerClick}
+      >
+        <UserRoundCogIcon className={styles["user-menu-trigger-icon"]} />
+        <span className={styles["user-menu-trigger-label"]}>{user.displayName}</span>
+      </button>
+      <div
+        aria-label={user.displayName}
+        className={`${styles["user-panel"]} ${user.isAdmin ? styles["user-panel-admin"] : ""}`}
+        id={popoverId}
+        role="dialog"
+        data-open={isOpen ? "true" : "false"}
+        onClick={handleContentClick}
+      >
+        <div className={styles["user-details"]}>
+          <span className={styles["user-name"]}>{user.displayName}</span>
+          <span className={styles["user-login"]}>{user.login}</span>
+          <span className={styles["user-role"]}>{user.roleLabel}</span>
+        </div>
+        <div className={styles["user-actions"]}>
+          <Link
+            aria-current={pathname === user.accountHref ? "page" : undefined}
+            className={styles["account-link"]}
+            data-active={pathname === user.accountHref ? "true" : undefined}
+            href={user.accountHref}
+            onClick={() => {
+              closePanel();
+              onNavigate?.();
+            }}
           >
-            <LogOutIcon className={styles["user-action-icon"]} />
-            <span className={styles["logout-label"]}>{user.logoutLabel}</span>
-          </button>
-        </form>
+            <UserRoundIcon className={styles["user-action-icon"]} />
+            <span className={styles["account-label"]}>{user.accountLabel}</span>
+          </Link>
+          <form action={user.logoutAction}>
+            <button
+              aria-label={user.logoutLabel}
+              className={styles["logout-button"]}
+              type="submit"
+              onClick={closePanel}
+            >
+              <LogOutIcon className={styles["user-action-icon"]} />
+              <span className={styles["logout-label"]}>{user.logoutLabel}</span>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

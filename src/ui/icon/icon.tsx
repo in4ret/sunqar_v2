@@ -17,6 +17,7 @@ import {
   Database,
   FileText,
   Funnel,
+  House,
   LoaderCircle,
   LogOut,
   type LucideIcon,
@@ -29,6 +30,7 @@ import {
   Text,
   Trash2,
   UserRound,
+  UserRoundCog,
   Users,
   X,
 } from "lucide-react";
@@ -122,6 +124,10 @@ export function FunnelIcon(props: SharedIconProps) {
   return <AppIcon icon={Funnel} {...props} />;
 }
 
+export function HouseIcon(props: SharedIconProps) {
+  return <AppIcon icon={House} {...props} />;
+}
+
 export function LoaderCircleIcon(props: SharedIconProps) {
   return <AppIcon icon={LoaderCircle} {...props} />;
 }
@@ -160,6 +166,10 @@ export function TrashIcon(props: SharedIconProps) {
 
 export function UserRoundIcon(props: SharedIconProps) {
   return <AppIcon icon={UserRound} {...props} />;
+}
+
+export function UserRoundCogIcon(props: SharedIconProps) {
+  return <AppIcon icon={UserRoundCog} {...props} />;
 }
 
 export function UsersIcon(props: SharedIconProps) {

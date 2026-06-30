@@ -82,6 +82,7 @@ export const posts = sqliteTable(
     channelName: text("channel_name"),
     contentId: text("content_id").notNull(),
     contentTitle: text("content_title"),
+    publishedAt: text("published_at"),
   },
   (table) => [
     uniqueIndex("posts_source_channel_content_id_unique").on(

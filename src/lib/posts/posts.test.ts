@@ -280,6 +280,7 @@ test("mapYoutubeRowToPost maps ok youtube rows into post rows", () => {
       contentId: "video-1",
       contentTitle: "2026-06-28 14:05 Video 1",
       id: "youtube:channel-1:video-1",
+      publishedAt: "2026-06-28T09:05:00Z",
       source: "youtube",
     },
   );
@@ -463,6 +464,7 @@ test("mapCommentRowToPost maps resolved instagram channel", () => {
       contentId: "https://www.instagram.com/p/example/",
       contentTitle: "Instagram post snippet",
       id: "ig:budarov_anton:https://www.instagram.com/p/example/",
+      publishedAt: null,
       source: "ig",
     },
   );
@@ -483,6 +485,7 @@ test("mapCommentRowToPost uses tiktok channel as channelName", () => {
       contentId: "video-1",
       contentTitle: "TikTok post snippet",
       id: "tiktok:pkzsk.news:video-1",
+      publishedAt: null,
       source: "tiktok",
     },
   );
@@ -503,6 +506,7 @@ test("mapCommentRowToPost falls back to channel value for other sources", () => 
       contentId: "post-1",
       contentTitle: "Fallback snippet",
       id: "ig:news-channel:post-1",
+      publishedAt: null,
       source: "ig",
     },
   );
@@ -657,6 +661,7 @@ test("syncPostsWithDependencies rebuilds posts from comment rows and ok youtube 
       contentId: "https://www.instagram.com/p/example/",
       contentTitle: "Instagram snippet",
       id: "ig:budarov_anton:https://www.instagram.com/p/example/",
+      publishedAt: null,
       source: "ig",
     },
     {
@@ -665,6 +670,7 @@ test("syncPostsWithDependencies rebuilds posts from comment rows and ok youtube 
       contentId: "video-77",
       contentTitle: "video-77",
       id: "tiktok:pkzsk.news:video-77",
+      publishedAt: null,
       source: "tiktok",
     },
     {
@@ -673,6 +679,7 @@ test("syncPostsWithDependencies rebuilds posts from comment rows and ok youtube 
       contentId: "video-88",
       contentTitle: "video-88",
       id: "tiktok:other-channel:video-88",
+      publishedAt: null,
       source: "tiktok",
     },
     {
@@ -681,6 +688,7 @@ test("syncPostsWithDependencies rebuilds posts from comment rows and ok youtube 
       contentId: "video-1",
       contentTitle: "2026-06-01 14:05 Title for video-1",
       id: "youtube:channel-for-video-1:video-1",
+      publishedAt: "2026-06-01T09:05:00Z",
       source: "youtube",
     },
   ]);
@@ -741,6 +749,7 @@ test("syncPostsWithDependencies keeps comment-based posts when no youtube rows a
       contentId: "https://www.instagram.com/p/example/",
       contentTitle: "https://www.instagram.com/p/example/",
       id: "ig:channel:https://www.instagram.com/p/example/",
+      publishedAt: null,
       source: "ig",
     },
   ]);

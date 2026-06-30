@@ -210,7 +210,6 @@ async function fetchYoutubeMetadata(
 ) {
   const updates: YoutubeMetadataUpdate[] = [];
 
-  let i = 0;
   for (const chunk of chunkValues(contentIds, YOUTUBE_API_CHUNK_SIZE)) {
     try {
       const batchUpdates = await fetchYoutubeMetadataBatch(chunk, youtubeApiKey, fetchImpl);
@@ -219,7 +218,6 @@ async function fetchYoutubeMetadata(
     } catch {
       updates.push(...createYoutubeErrorUpdates(chunk));
     }
-    console.log("### Chunk #:", ++i);
   }
 
   return updates;

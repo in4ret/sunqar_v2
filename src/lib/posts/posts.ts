@@ -76,6 +76,7 @@ export async function listPosts() {
       contentId: posts.contentId,
       contentTitle: posts.contentTitle,
       id: posts.id,
+      publishedAt: posts.publishedAt,
       source: posts.source,
     })
     .from(posts)

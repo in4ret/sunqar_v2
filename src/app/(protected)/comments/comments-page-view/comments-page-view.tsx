@@ -6,6 +6,7 @@ import {
   formatDateTimeLocalValueToEpochSeconds,
   getDefaultNewsPageSearchFromValue,
 } from "@/lib/utils";
+import type { MultiSelectOption } from "@/ui";
 
 import { CommentsPageCount } from "../comments-page-count/comments-page-count";
 import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
@@ -17,18 +18,11 @@ import {
 
 import styles from "./comments-page-view.module.scss";
 
-type CommentPostView = {
-  channel: string;
-  channelName: string | null;
-  contentId: string;
-  contentTitle: string | null;
-  source: string;
-};
-
 type CommentsPageViewProps = {
+  availablePostValues: string[];
   displaySearchFrom: string;
   displaySearchTo: string;
-  posts: CommentPostView[];
+  postOptions: MultiSelectOption[];
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
@@ -48,9 +42,10 @@ function subscribeToDefaultSearchFrom() {
 }
 
 export function CommentsPageView({
+  availablePostValues,
   displaySearchFrom,
   displaySearchTo,
-  posts,
+  postOptions,
   searchFrom,
   searchQuery,
   searchTo,
@@ -96,7 +91,8 @@ export function CommentsPageView({
           });
           setSearchTrigger((currentValue) => currentValue + 1);
         }}
-        posts={posts}
+        availablePostValues={availablePostValues}
+        postOptions={postOptions}
         searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
         searchTo={displaySearchTo}

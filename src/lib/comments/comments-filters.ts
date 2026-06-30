@@ -135,16 +135,18 @@ export function normalizeCommentsDateRange(from: string, to: string): CommentsDa
   };
 }
 
-function buildPostCondition(post: CommentPostFilter) {
-  const sourceValue = `'${escapeSqlStringValue(post.source)}'`;
-  const channelValue = `'${escapeSqlStringValue(post.channel)}'`;
-  const contentIdValue = `'${escapeSqlStringValue(post.contentId)}'`;
+function buildPostsCondition(posts: CommentPostFilter[]) {
+  const contentIdValues = [...new Set(
+    posts
+      .map((post) => post.contentId.trim())
+      .filter(Boolean),
+  )].map((contentId) => `'${escapeSqlStringValue(contentId)}'`);
 
-  if (post.source === "youtube") {
-    return `(source = ${sourceValue} AND content_id = ${contentIdValue})`;
+  if (contentIdValues.length === 0) {
+    return null;
   }
 
-  return `(source = ${sourceValue} AND channel = ${channelValue} AND content_id = ${contentIdValue})`;
+  return `content_id IN (${contentIdValues.join(", ")})`;
 }
 
 export function buildCommentsWhereClause(
@@ -164,13 +166,13 @@ export function buildCommentsWhereClause(
   }
 
   if (normalizedPosts.length > 0) {
-    const postConditions = normalizedPosts
+    const decodedPosts = normalizedPosts
       .map((value) => decodeCommentPostFilterValue(value))
-      .filter((post): post is CommentPostFilter => post !== null)
-      .map(buildPostCondition);
+      .filter((post): post is CommentPostFilter => post !== null);
+    const postsCondition = buildPostsCondition(decodedPosts);
 
-    if (postConditions.length > 0) {
-      conditions.push(`(${postConditions.join(" OR ")})`);
+    if (postsCondition) {
+      conditions.push(`(${postsCondition})`);
     }
   }
 

@@ -44,6 +44,7 @@ export function mapCommentRowToPost(row: EnrichedCommentPostRow): NewPost | null
     contentId,
     contentTitle,
     id: createPostId(source, channel, contentId),
+    publishedAt: null,
     source,
   };
 }
@@ -59,6 +60,7 @@ export function mapYoutubeRowToPost(row: Youtube): NewPost | null {
     contentId: row.contentId,
     contentTitle: row.contentTitle,
     id: createPostId("youtube", row.channelId, row.contentId),
+    publishedAt: row.publishedAt,
     source: "youtube",
   };
 }

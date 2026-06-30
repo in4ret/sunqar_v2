@@ -1,4 +1,4 @@
-import { listPosts } from "@/lib/posts/posts";
+import { getCommentsPostOptions } from "@/lib/comments";
 import {
   formatEpochSecondsToDateTimeLocalValue,
   normalizeEpochSecondsParam,
@@ -18,16 +18,20 @@ export default async function CommentsPage({
 }: {
   searchParams: CommentsPageSearchParams;
 }) {
-  const [{ from, q, to }, posts] = await Promise.all([searchParams, listPosts()]);
+  const [{ from, q, to }, commentsPostOptions] = await Promise.all([
+    searchParams,
+    getCommentsPostOptions(),
+  ]);
   const searchFrom = normalizeEpochSecondsParam(from);
   const searchQuery = normalizeSearchQueryParam(q);
   const searchTo = normalizeEpochSecondsParam(to);
 
   return (
     <CommentsPageView
+      availablePostValues={commentsPostOptions.availablePostValues}
       displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
       displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
-      posts={posts}
+      postOptions={commentsPostOptions.postOptions}
       searchFrom={searchFrom}
       searchQuery={searchQuery}
       searchTo={searchTo}

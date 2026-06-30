@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 import { requireRole } from "@/lib/auth/auth";
+import { COMMENTS_POST_OPTIONS_TAG } from "@/lib/comments";
 import { type ActionMessage, createActionMessage } from "@/lib/i18n/action-messages";
 import { syncPosts } from "@/lib/posts/posts";
 import { routes } from "@/lib/routes";
@@ -22,6 +23,7 @@ export async function submitSyncPosts(
     const result = await syncPosts();
 
     revalidatePath(routes.posts);
+    updateTag(COMMENTS_POST_OPTIONS_TAG);
 
     return {
       error: null,

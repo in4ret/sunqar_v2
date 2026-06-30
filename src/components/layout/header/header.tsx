@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
+import { MOBILE_MEDIA_QUERY } from "@/lib/mobile-breakpoint";
 import { routes } from "@/lib/routes";
 import { MenuIcon } from "@/ui";
 
@@ -58,7 +59,7 @@ export function Header({
       return;
     }
 
-    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
     const updateViewportState = () => {
       setIsMobileViewport(mediaQuery.matches);
     };

@@ -4,14 +4,13 @@ import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { buildCommentPostOptions } from "@/lib/comments/comments-post-options";
 import { routes } from "@/lib/routes";
 import {
   formatDateTimeLocalValueToEpochSeconds,
   normalizeDateTimeLocalValue,
   normalizeSearchQuery,
 } from "@/lib/utils";
-import { MultiSelect, SearchInput } from "@/ui";
+import { MultiSelect, type MultiSelectOption, SearchInput } from "@/ui";
 
 import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
@@ -20,17 +19,10 @@ import {
 
 import styles from "./comments-page-search-form.module.scss";
 
-type CommentPostOptionItem = {
-  channel: string;
-  channelName: string | null;
-  contentId: string;
-  contentTitle: string | null;
-  source: string;
-};
-
 type CommentsPageSearchFormProps = {
+  availablePostValues: string[];
   onSearchSubmit: (input: { searchFrom: string; searchQuery: string; searchTo: string }) => void;
-  posts: CommentPostOptionItem[];
+  postOptions: MultiSelectOption[];
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
@@ -44,8 +36,9 @@ const COMMENTS_PAGE_SEARCH_INPUT_NAME = "sunqar-comments-search-query";
 const COMMENTS_PAGE_TO_INPUT_NAME = "sunqar-comments-to";
 
 export function CommentsPageSearchForm({
+  availablePostValues,
   onSearchSubmit,
-  posts,
+  postOptions,
   searchFrom,
   searchQuery,
   searchTo,
@@ -57,35 +50,10 @@ export function CommentsPageSearchForm({
   const [fromValue, setFromValue] = useState(searchFrom);
   const [toValue, setToValue] = useState(searchTo);
   const [value, setValue] = useState(searchQuery);
-  const postOptions = useMemo(
-    () =>
-      buildCommentPostOptions({
-        emptyValue: "—",
-        posts,
-      }),
-    [posts],
-  );
-  const availablePostValues = useMemo(() => {
-    const values = new Set<string>();
-
-    function collectValues(options: ReturnType<typeof buildCommentPostOptions>) {
-      for (const option of options) {
-        if (option.children && option.children.length > 0) {
-          collectValues(option.children);
-          continue;
-        }
-
-        values.add(option.value);
-      }
-    }
-
-    collectValues(postOptions);
-
-    return values;
-  }, [postOptions]);
+  const availablePostValuesSet = useMemo(() => new Set(availablePostValues), [availablePostValues]);
   const validatedSelectedPosts = useMemo(
-    () => selectedPosts.filter((post) => availablePostValues.has(post)),
-    [availablePostValues, selectedPosts],
+    () => selectedPosts.filter((post) => availablePostValuesSet.has(post)),
+    [availablePostValuesSet, selectedPosts],
   );
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

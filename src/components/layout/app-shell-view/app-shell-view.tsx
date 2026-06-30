@@ -9,6 +9,7 @@ import {
   ChartPieIcon,
   DatabaseIcon,
   FileTextIcon,
+  HouseIcon,
   NewspaperIcon,
   TextIcon,
   UsersIcon,
@@ -41,6 +42,11 @@ export function AppShellView({
   const userRoleLabel =
     user?.role === "admin" ? t("common.roles.admin") : t("common.roles.user");
   const userNavigationItems = [
+    {
+      href: routes.home,
+      icon: HouseIcon,
+      label: t("header.home"),
+    },
     {
       href: routes.reports,
       icon: FileTextIcon,

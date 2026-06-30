@@ -66,7 +66,6 @@
   flex: 1;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem 1rem 1rem;
 }
 
 .brand-link {
@@ -128,6 +127,7 @@
 .nav-sections {
   display: grid;
   gap: 1rem;
+  padding: 0.5rem 0;
 }
 
 .nav-section {
@@ -137,7 +137,7 @@
 
 .nav-section-eyebrow {
   margin: 0;
-  padding: 1rem 0 0;
+  padding: 1rem 1rem 0;
   border-top: 1px solid color-mix(in srgb, var(--border-default) 82%, white);
   color: color-mix(in srgb, var(--text-secondary) 68%, white);
   font-size: 0.72rem;
@@ -150,7 +150,7 @@
   display: grid;
   gap: 0.45rem;
   margin: 0;
-  padding: 0;
+  padding: 0 1rem;
   list-style: none;
 }
 
@@ -242,16 +242,93 @@
   color: var(--color-primary-700);
 }
 
-.user-panel {
-  display: grid;
-  gap: 0.85rem;
+.user-menu-shell {
+  position: relative;
   min-width: 0;
   margin-top: auto;
+}
+
+.user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-default);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0.8rem 1.8rem rgba(8, 55, 89, 0.08);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.user-menu-trigger-admin {
+  border-color: color-mix(in srgb, var(--color-error-500) 30%, transparent);
+  background: color-mix(in srgb, var(--color-error-100) 74%, white);
+}
+
+.user-menu-trigger:hover,
+.user-menu-trigger[aria-expanded="true"] {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.user-menu-trigger-admin:hover,
+.user-menu-trigger-admin[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--color-error-500) 44%, transparent);
+  background: color-mix(in srgb, var(--color-error-100) 90%, white);
+  color: var(--text-primary);
+}
+
+.user-menu-trigger-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.user-menu-trigger-label {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-panel {
+  position: absolute;
+  right: 1rem;
+  bottom: calc(100% + 0.75rem);
+  display: grid;
+  gap: 0.85rem;
+  width: calc(100% - 2rem);
+  min-width: 0;
   padding: 0.9rem;
   border: 1px solid var(--border-default);
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 0.8rem 1.8rem rgba(8, 55, 89, 0.08);
+  opacity: 1;
+  transform: translateY(0);
+  transform-origin: bottom right;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.user-panel[data-open="false"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.5rem);
 }
 
 .user-panel-admin {
@@ -388,6 +465,7 @@
 .drawer-backdrop:focus-visible,
 .nav-link:focus-visible,
 .nav-sub-link:focus-visible,
+.user-menu-trigger:focus-visible,
 .account-link:focus-visible,
 .logout-button:focus-visible {
   outline: 2px solid var(--color-info-500);
@@ -481,5 +559,9 @@
 
   .drawer .sidebar-body {
     padding: 1.25rem 1rem 1rem;
+  }
+
+  .user-menu-shell {
+    padding: 0;
   }
 }
