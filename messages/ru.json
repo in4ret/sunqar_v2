@@ -17,8 +17,10 @@
   },
   "header": {
     "close-menu": "Закрыть меню",
+    "collapse-section": "Свернуть раздел меню",
     "menu": "Меню",
     "open-menu": "Открыть меню",
+    "expand-section": "Раскрыть раздел меню",
     "primary-navigation": "Основная навигация",
     "home": "Главная",
     "reports": "Отчёты",
@@ -174,6 +176,12 @@
   },
   "comments": {
     "empty": "",
+    "tabs": {
+      "label": "Разделы комментариев",
+      "chart": "Распределение",
+      "text": "Тексты",
+      "upload": "Загрузка"
+    },
     "search-label": "Поисковый запрос",
     "from-label": "Начало периода",
     "to-label": "Конец периода",

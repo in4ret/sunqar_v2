@@ -53,6 +53,23 @@ export function AppShellView({
       label: t("header.reports"),
     },
     {
+      children: [
+        {
+          href: routes.commentsChart,
+          icon: ChartPieIcon,
+          label: t("comments.tabs.chart"),
+        },
+        {
+          href: routes.commentsText,
+          icon: TextIcon,
+          label: t("comments.tabs.text"),
+        },
+        {
+          href: routes.commentsUpload,
+          icon: TextIcon,
+          label: t("comments.tabs.upload"),
+        },
+      ],
       href: routes.comments,
       icon: TextIcon,
       label: t("header.comments"),
@@ -128,6 +145,8 @@ export function AppShellView({
           <Sidebar
             brandHref={homeHref}
             closeLabel={t("header.close-menu")}
+            collapseSectionLabel={t("header.collapse-section")}
+            expandSectionLabel={t("header.expand-section")}
             navigationLabel={t("header.primary-navigation")}
             openLabel={t("header.open-menu")}
             sections={navigationSections}

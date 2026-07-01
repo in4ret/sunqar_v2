@@ -17,8 +17,10 @@
   },
   "header": {
     "close-menu": "Мәзірді жабу",
+    "collapse-section": "Мәзір бөлімін жинау",
     "menu": "Мәзір",
     "open-menu": "Мәзірді ашу",
+    "expand-section": "Мәзір бөлімін ашу",
     "primary-navigation": "Негізгі навигация",
     "home": "Басты бет",
     "reports": "Есептер",
@@ -174,6 +176,12 @@
   },
   "comments": {
     "empty": "",
+    "tabs": {
+      "label": "Пікірлер бөлімдері",
+      "chart": "Бөлініс",
+      "text": "Мәтіндер",
+      "upload": "Жүктеу"
+    },
     "search-label": "Іздеу сұрауы",
     "from-label": "Кезеңнің басы",
     "to-label": "Кезеңнің соңы",

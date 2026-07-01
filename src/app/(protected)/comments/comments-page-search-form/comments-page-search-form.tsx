@@ -4,7 +4,8 @@ import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { routes } from "@/lib/routes";
+import type { CommentsTab } from "@/lib/routes";
+import { getCommentsTabRoute } from "@/lib/routes";
 import {
   formatDateTimeLocalValueToEpochSeconds,
   normalizeDateTimeLocalValue,
@@ -20,6 +21,7 @@ import {
 import styles from "./comments-page-search-form.module.scss";
 
 type CommentsPageSearchFormProps = {
+  activeTab: CommentsTab;
   availablePostValues: string[];
   onSearchSubmit: (input: { searchFrom: string; searchQuery: string; searchTo: string }) => void;
   postOptions: MultiSelectOption[];
@@ -36,6 +38,7 @@ const COMMENTS_PAGE_SEARCH_INPUT_NAME = "sunqar-comments-search-query";
 const COMMENTS_PAGE_TO_INPUT_NAME = "sunqar-comments-to";
 
 export function CommentsPageSearchForm({
+  activeTab,
   availablePostValues,
   onSearchSubmit,
   postOptions,
@@ -70,7 +73,7 @@ export function CommentsPageSearchForm({
     const nextSearchTo = normalizeDateTimeLocalValue(typeof formToValue === "string" ? formToValue : "");
     const nextSearchFromEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchFrom);
     const nextSearchToEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchTo);
-    const nextUrl = new URL(routes.comments, window.location.origin);
+    const nextUrl = new URL(getCommentsTabRoute(activeTab), window.location.origin);
 
     if (nextSearchFromEpochSeconds) {
       nextUrl.searchParams.set("from", nextSearchFromEpochSeconds);
@@ -96,7 +99,7 @@ export function CommentsPageSearchForm({
 
   return (
     <form
-      action={routes.comments}
+      action={getCommentsTabRoute(activeTab)}
       className={styles["comments-page-search-form"]}
       method="get"
       onSubmit={handleSubmit}

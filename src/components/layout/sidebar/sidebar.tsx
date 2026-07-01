@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { MOBILE_MEDIA_QUERY } from "@/lib/mobile-breakpoint";
 import { routes } from "@/lib/routes";
 import {
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   LogOutIcon,
@@ -49,6 +50,8 @@ type SidebarUser = {
 type SidebarProps = {
   brandHref?: string;
   closeLabel: string;
+  collapseSectionLabel: string;
+  expandSectionLabel: string;
   navigationLabel: string;
   openLabel: string;
   sections: SidebarSection[];
@@ -58,6 +61,8 @@ type SidebarProps = {
 export function Sidebar({
   brandHref = routes.home,
   closeLabel,
+  collapseSectionLabel,
+  expandSectionLabel,
   navigationLabel,
   openLabel,
   sections,
@@ -194,6 +199,9 @@ export function Sidebar({
       >
         <SidebarContent
           brandHref={brandHref}
+          collapseSectionLabel={collapseSectionLabel}
+          expandSectionLabel={expandSectionLabel}
+          isSidebarCollapsed={isCollapsed}
           navigationLabel={navigationLabel}
           pathname={pathname}
           sections={sections}
@@ -247,6 +255,8 @@ export function Sidebar({
             </div>
             <SidebarContent
               brandHref={brandHref}
+              collapseSectionLabel={collapseSectionLabel}
+              expandSectionLabel={expandSectionLabel}
               navigationLabel={navigationLabel}
               onNavigate={closeDrawer}
               pathname={pathname}
@@ -262,9 +272,49 @@ export function Sidebar({
 }
 
 const DRAWER_ANIMATION_MS = 220;
+const LAST_COMMENTS_TAB_STORAGE_KEY = "sunqar:last-comments-tab";
+const LAST_COMMENTS_TAB_STORAGE_EVENT = "sunqar:last-comments-tab-change";
 const LAST_NEWS_TAB_STORAGE_KEY = "sunqar:last-news-tab";
 const LAST_NEWS_TAB_STORAGE_EVENT = "sunqar:last-news-tab-change";
+const COMMENTS_TAB_HREFS: ReadonlySet<string> = new Set([
+  routes.commentsChart,
+  routes.commentsText,
+  routes.commentsUpload,
+]);
 const NEWS_TAB_HREFS: ReadonlySet<string> = new Set([routes.newsChart, routes.newsText]);
+
+function getStoredLastCommentsTabHref() {
+  if (typeof window === "undefined") {
+    return routes.commentsChart;
+  }
+
+  const storedValue = window.localStorage.getItem(LAST_COMMENTS_TAB_STORAGE_KEY);
+
+  if (storedValue === "text") {
+    return routes.commentsText;
+  }
+
+  if (storedValue === "upload") {
+    return routes.commentsUpload;
+  }
+
+  return routes.commentsChart;
+}
+
+function subscribeToLastCommentsTab(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(LAST_COMMENTS_TAB_STORAGE_EVENT, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(LAST_COMMENTS_TAB_STORAGE_EVENT, callback);
+  };
+}
+
+function setStoredLastCommentsTab(tab: "chart" | "text" | "upload") {
+  window.localStorage.setItem(LAST_COMMENTS_TAB_STORAGE_KEY, tab);
+  window.dispatchEvent(new CustomEvent(LAST_COMMENTS_TAB_STORAGE_EVENT));
+}
 
 function getStoredLastNewsTabHref() {
   if (typeof window === "undefined") {
@@ -293,6 +343,9 @@ function setStoredLastNewsTab(tab: "chart" | "text") {
 
 type SidebarContentProps = {
   brandHref?: string;
+  collapseSectionLabel: string;
+  expandSectionLabel: string;
+  isSidebarCollapsed?: boolean;
   navigationLabel: string;
   onNavigate?: () => void;
   pathname: string;
@@ -304,6 +357,9 @@ type SidebarContentProps = {
 
 function SidebarContent({
   brandHref = routes.home,
+  collapseSectionLabel,
+  expandSectionLabel,
+  isSidebarCollapsed = false,
   navigationLabel,
   onNavigate,
   pathname,
@@ -312,6 +368,11 @@ function SidebarContent({
   toggleButton,
   user,
 }: SidebarContentProps) {
+  const lastCommentsTabHref = useSyncExternalStore(
+    subscribeToLastCommentsTab,
+    getStoredLastCommentsTabHref,
+    () => routes.commentsChart,
+  );
   const lastNewsTabHref = useSyncExternalStore(
     subscribeToLastNewsTab,
     getStoredLastNewsTabHref,
@@ -319,6 +380,21 @@ function SidebarContent({
   );
 
   useEffect(() => {
+    if (pathname === routes.commentsChart) {
+      setStoredLastCommentsTab("chart");
+      return;
+    }
+
+    if (pathname === routes.commentsText) {
+      setStoredLastCommentsTab("text");
+      return;
+    }
+
+    if (pathname === routes.commentsUpload) {
+      setStoredLastCommentsTab("upload");
+      return;
+    }
+
     if (pathname === routes.newsChart) {
       setStoredLastNewsTab("chart");
       return;
@@ -330,6 +406,10 @@ function SidebarContent({
   }, [pathname]);
 
   function getItemHref(item: SidebarItem) {
+    if (item.href === routes.comments) {
+      return lastCommentsTabHref;
+    }
+
     if (item.href === routes.news) {
       return lastNewsTabHref;
     }
@@ -338,11 +418,22 @@ function SidebarContent({
   }
 
   function getIsItemActive(item: SidebarItem) {
+    if (
+      item.href === routes.comments &&
+      (pathname === routes.comments || COMMENTS_TAB_HREFS.has(pathname))
+    ) {
+      return true;
+    }
+
     if (item.href === routes.news && (pathname === routes.news || NEWS_TAB_HREFS.has(pathname))) {
       return true;
     }
 
     return pathname === item.href || Boolean(item.children?.some((childItem) => pathname === childItem.href));
+  }
+
+  function getHasActiveChild(item: SidebarItem) {
+    return Boolean(item.children?.some((childItem) => pathname === childItem.href));
   }
 
   return (
@@ -366,45 +457,19 @@ function SidebarContent({
                 ) : null}
                 <ul className={styles["nav-list"]}>
                   {section.items.map((item) => {
-                    const isActive = getIsItemActive(item);
-                    const Icon = item.icon;
-
                     return (
-                      <li key={item.href}>
-                        <Link
-                          aria-current={pathname === item.href ? "page" : undefined}
-                          className={styles["nav-link"]}
-                          data-active={isActive ? "true" : undefined}
-                          href={getItemHref(item)}
-                          onClick={onNavigate}
-                        >
-                          <Icon className={styles["nav-icon"]} />
-                          <span className={styles["nav-label"]}>{item.label}</span>
-                        </Link>
-                        {item.children && item.children.length > 0 ? (
-                          <ul className={styles["nav-sub-list"]}>
-                            {item.children.map((childItem) => {
-                              const isChildActive = pathname === childItem.href;
-                              const ChildIcon = childItem.icon;
-
-                              return (
-                                <li key={childItem.href}>
-                                  <Link
-                                    aria-current={isChildActive ? "page" : undefined}
-                                    className={styles["nav-sub-link"]}
-                                    data-active={isChildActive ? "true" : undefined}
-                                    href={childItem.href}
-                                    onClick={onNavigate}
-                                  >
-                                    <ChildIcon className={styles["nav-sub-icon"]} />
-                                    <span className={styles["nav-sub-label"]}>{childItem.label}</span>
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        ) : null}
-                      </li>
+                      <SidebarNavItem
+                        collapseSectionLabel={collapseSectionLabel}
+                        expandSectionLabel={expandSectionLabel}
+                        getHasActiveChild={getHasActiveChild}
+                        getIsItemActive={getIsItemActive}
+                        getItemHref={getItemHref}
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        item={item}
+                        key={`${item.href}:${pathname}`}
+                        onNavigate={onNavigate}
+                        pathname={pathname}
+                      />
                     );
                   })}
                 </ul>
@@ -415,6 +480,111 @@ function SidebarContent({
         <UserPanel onNavigate={onNavigate} pathname={pathname} user={user} />
       </div>
     </div>
+  );
+}
+
+function SidebarNavItem({
+  collapseSectionLabel,
+  expandSectionLabel,
+  getHasActiveChild,
+  getIsItemActive,
+  getItemHref,
+  isSidebarCollapsed = false,
+  item,
+  onNavigate,
+  pathname,
+}: {
+  collapseSectionLabel: string;
+  expandSectionLabel: string;
+  getHasActiveChild: (item: SidebarItem) => boolean;
+  getIsItemActive: (item: SidebarItem) => boolean;
+  getItemHref: (item: SidebarItem) => string;
+  isSidebarCollapsed?: boolean;
+  item: SidebarItem;
+  onNavigate?: () => void;
+  pathname: string;
+}) {
+  const hasChildren = Boolean(item.children && item.children.length > 0);
+  const shouldRenderAsExpandableItem = hasChildren && !isSidebarCollapsed;
+  const hasActiveChild = getHasActiveChild(item);
+  const [isExpanded, setIsExpanded] = useState(hasActiveChild);
+  const subListId = useId();
+  const isActive = getIsItemActive(item);
+  const Icon = item.icon;
+
+  return (
+    <li className={styles["nav-item"]}>
+      {shouldRenderAsExpandableItem ? (
+        <div
+          className={styles["nav-link-shell"]}
+          data-active={isActive ? "true" : undefined}
+        >
+          <Link
+            aria-current={pathname === item.href ? "page" : undefined}
+            className={styles["nav-link"]}
+            href={getItemHref(item)}
+            onClick={onNavigate}
+          >
+            <Icon className={styles["nav-icon"]} />
+            <span className={styles["nav-label"]}>{item.label}</span>
+          </Link>
+          <button
+            aria-controls={subListId}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? collapseSectionLabel : expandSectionLabel}
+            className={styles["nav-toggle-button"]}
+            type="button"
+            onClick={() => {
+              setIsExpanded((currentValue) => !currentValue);
+            }}
+          >
+            <ChevronDownIcon
+              className={styles["nav-toggle-icon"]}
+              data-expanded={isExpanded ? "true" : undefined}
+            />
+          </button>
+        </div>
+      ) : (
+        <Link
+          aria-current={pathname === item.href ? "page" : undefined}
+          className={styles["nav-link"]}
+          data-active={isActive ? "true" : undefined}
+          href={getItemHref(item)}
+          onClick={onNavigate}
+        >
+          <Icon className={styles["nav-icon"]} />
+          <span className={styles["nav-label"]}>{item.label}</span>
+        </Link>
+      )}
+      {shouldRenderAsExpandableItem ? (
+        <ul
+          className={styles["nav-sub-list"]}
+          data-expanded={isExpanded ? "true" : "false"}
+          id={subListId}
+          hidden={!isExpanded}
+        >
+          {item.children?.map((childItem) => {
+            const isChildActive = pathname === childItem.href;
+            const ChildIcon = childItem.icon;
+
+            return (
+              <li key={childItem.href}>
+                <Link
+                  aria-current={isChildActive ? "page" : undefined}
+                  className={styles["nav-sub-link"]}
+                  data-active={isChildActive ? "true" : undefined}
+                  href={childItem.href}
+                  onClick={onNavigate}
+                >
+                  <ChildIcon className={styles["nav-sub-icon"]} />
+                  <span className={styles["nav-sub-label"]}>{childItem.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </li>
   );
 }
 
