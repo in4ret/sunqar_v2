@@ -17,6 +17,8 @@ import {
   Database,
   FileText,
   Funnel,
+  FunnelPlus,
+  FunnelX,
   House,
   LoaderCircle,
   LogOut,
@@ -122,6 +124,14 @@ export function FileTextIcon(props: SharedIconProps) {
 
 export function FunnelIcon(props: SharedIconProps) {
   return <AppIcon icon={Funnel} {...props} />;
+}
+
+export function FunnelPlusIcon(props: SharedIconProps) {
+  return <AppIcon icon={FunnelPlus} {...props} />;
+}
+
+export function FunnelXIcon(props: SharedIconProps) {
+  return <AppIcon icon={FunnelX} {...props} />;
 }
 
 export function HouseIcon(props: SharedIconProps) {

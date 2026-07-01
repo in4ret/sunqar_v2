@@ -3,6 +3,7 @@ export {
   DataTable,
   type DataTableColumn,
   type DataTableLabels,
+  type DataTableSelectionMode,
   type DataTableSort,
 } from "./data-table/data-table";
 export { Dropdown } from "./dropdown/dropdown";

@@ -135,13 +135,13 @@
   font-size: 0.925rem;
 }
 
-.data-table-header-cell:first-child,
-.data-table-cell:first-child {
+.data-table-header-cell[data-selection-cell="true"],
+.data-table-cell[data-selection-cell="true"] {
   border-right: 1px solid var(--border-strong);
   justify-content: center;
 }
 
-.data-table-header-cell:first-child .header-content {
+.data-table-header-cell[data-selection-cell="true"] .header-content {
   padding-right: 0;
   justify-content: center;
 }
@@ -150,7 +150,6 @@
   display: flex;
   width: 100%;
   min-width: 0;
-  padding-right: 0.55rem;
   align-items: center;
   justify-content: space-between;
   gap: 0.45rem;

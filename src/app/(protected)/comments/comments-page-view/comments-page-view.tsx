@@ -19,6 +19,7 @@ import {
   setStoredCommentsPagePosts,
   useStoredCommentsPagePosts,
 } from "../comments-page-search-form/comments-page-search-form-storage";
+import { CommentsPageTable } from "../comments-page-table/comments-page-table";
 
 import styles from "./comments-page-view.module.scss";
 
@@ -191,7 +192,18 @@ export function CommentsPageView({
         className={styles["comments-page-tab-panel"]}
         id={activeTabPanelId}
         role="tabpanel"
-      />
+      >
+        {activeTab === "text" ? (
+          <CommentsPageTable
+            hasLoadedStoredPosts={selectedPosts !== null && isSearchReady}
+            searchFrom={submittedSearchFrom}
+            searchQuery={submittedSearchQuery}
+            searchTo={submittedSearchTo}
+            searchTrigger={searchTrigger}
+            selectedPosts={validatedSelectedPosts}
+          />
+        ) : null}
+      </div>
     </section>
   );
 }

@@ -9,6 +9,17 @@ import {
   normalizeCommentsQueryInput,
 } from "@/lib/comments/comments-filters";
 import { buildCommentPostOptions } from "@/lib/comments/comments-post-options";
+import {
+  buildCommentsTableFilterConditions,
+  normalizeCommentsTableFilters,
+} from "@/lib/comments/comments-table";
+import type { CommentsTableSort } from "@/lib/comments/comments-table.types";
+import {
+  buildCommentsTableOrderClause,
+  normalizeCommentsTablePageSize,
+  normalizeCommentsTableRow,
+  normalizeCommentsTableSort,
+} from "@/lib/comments/comments-table-shared";
 
 test("encode and decode comment post filter values round-trip a post identity", () => {
   const encodedValue = encodeCommentPostFilterValue({
@@ -144,6 +155,235 @@ test("buildCommentsWhereClause ignores invalid post values", () => {
 
 test("buildCommentsWhereClause drops invalid reversed date range like news filters", () => {
   assert.equal(buildCommentsWhereClause("", [], "300", "200"), "");
+});
+
+test("normalizeCommentsTableFilters trims and fills defaults", () => {
+  assert.deepEqual(
+    normalizeCommentsTableFilters({
+      callToActionFrom: " 0.1 ",
+      comment: " hello ",
+      likesTo: " 4 ",
+      username: " alice ",
+    }),
+    {
+      callToActionFrom: "0.1",
+      callToActionTo: "",
+      comment: "hello",
+      likesFrom: "",
+      likesTo: "4",
+      threatFrom: "",
+      threatTo: "",
+      toxicFrom: "",
+      toxicTo: "",
+      username: "alice",
+    },
+  );
+});
+
+test("buildCommentsTableFilterConditions returns an empty list for empty filters", () => {
+  assert.deepEqual(
+    buildCommentsTableFilterConditions(
+      normalizeCommentsTableFilters({}),
+    ),
+    [],
+  );
+});
+
+test("buildCommentsTableFilterConditions builds text filters for comment and username", () => {
+  const whereClause = buildCommentsWhereClause(
+    '@comment "*hello*" @username "*Alice*"',
+    [],
+    "",
+    "",
+    buildCommentsTableFilterConditions(
+      normalizeCommentsTableFilters({
+        username: "Alice",
+      }),
+    ),
+  );
+
+  assert.equal(whereClause, ` WHERE MATCH('@comment "*hello*" @username "*Alice*"')`);
+});
+
+test("buildCommentsTableFilterConditions builds numeric ranges", () => {
+  assert.deepEqual(
+    buildCommentsTableFilterConditions(
+      normalizeCommentsTableFilters({
+        callToActionFrom: "0.1",
+        callToActionTo: "0.9",
+        likesFrom: "1",
+        likesTo: "10",
+        threatFrom: "0.2",
+        threatTo: "0.8",
+        toxicFrom: "0.3",
+        toxicTo: "0.7",
+      }),
+    ),
+    [
+      "likes >= 1",
+      "likes <= 10",
+      "toxic >= 0.3",
+      "toxic <= 0.7",
+      "threat >= 0.2",
+      "threat <= 0.8",
+      "call_to_action >= 0.1",
+      "call_to_action <= 0.9",
+    ],
+  );
+});
+
+test("buildCommentsTableFilterConditions ignores invalid numeric values", () => {
+  assert.deepEqual(
+    buildCommentsTableFilterConditions(
+      normalizeCommentsTableFilters({
+        likesFrom: "bad",
+        likesTo: "10x",
+        toxicFrom: "",
+      }),
+    ),
+    [],
+  );
+});
+
+test("buildCommentsTableFilterConditions drops reversed numeric ranges", () => {
+  assert.deepEqual(
+    buildCommentsTableFilterConditions(
+      normalizeCommentsTableFilters({
+        likesFrom: "10",
+        likesTo: "1",
+        toxicFrom: "0.9",
+        toxicTo: "0.1",
+      }),
+    ),
+    [],
+  );
+});
+
+test("normalizeCommentsTablePageSize falls back to the default for unsupported values", () => {
+  assert.equal(normalizeCommentsTablePageSize(10), 10);
+  assert.equal(normalizeCommentsTablePageSize(999), 10);
+});
+
+test("normalizeCommentsTableSort accepts supported sort fields and rejects unsupported ones", () => {
+  const validSort: CommentsTableSort = {
+    direction: "asc",
+    field: "publishedat",
+  };
+
+  assert.deepEqual(normalizeCommentsTableSort(validSort), validSort);
+  assert.equal(
+    normalizeCommentsTableSort({
+      direction: "desc",
+      field: "comment" as never,
+    }),
+    null,
+  );
+});
+
+test("buildCommentsTableOrderClause falls back to publishedat desc when sort is invalid", () => {
+  assert.equal(buildCommentsTableOrderClause(null), " ORDER BY publishedat DESC, id DESC");
+  assert.equal(
+    buildCommentsTableOrderClause({
+      direction: "asc",
+      field: "comment" as never,
+    }),
+    " ORDER BY publishedat DESC, id DESC",
+  );
+  assert.equal(
+    buildCommentsTableOrderClause({
+      direction: "desc",
+      field: "content_id",
+    }),
+    " ORDER BY content_id DESC, id DESC",
+  );
+  assert.equal(
+    buildCommentsTableOrderClause({
+      direction: "desc",
+      field: "likes",
+    }),
+    " ORDER BY likes DESC, id DESC",
+  );
+});
+
+test("normalizeCommentsTableRow normalizes mixed Manticore value types", () => {
+  assert.deepEqual(
+    normalizeCommentsTableRow({
+      call_to_action: "0",
+      comment: "Comment text",
+      comment_id: "comment-7",
+      content_id: "post-42",
+      likes: "4",
+      publishedat: "1710000000",
+      row_id: 123,
+      source: "youtube",
+      threat: 1,
+      toxic: "2",
+      username: "alice",
+    }),
+    {
+      call_to_action: 0,
+      comment: "Comment text",
+      comment_id: "comment-7",
+      content_id: "post-42",
+      id: "123",
+      likes: 4,
+      publishedat: 1710000000,
+      source: "youtube",
+      threat: 1,
+      toxic: 2,
+      username: "alice",
+    },
+  );
+});
+
+test("normalizeCommentsTableRow returns null when required numeric values are invalid", () => {
+  assert.equal(
+    normalizeCommentsTableRow({
+      call_to_action: "bad",
+      comment: "Comment text",
+      comment_id: "comment-7",
+      content_id: "post-42",
+      likes: "4",
+      publishedat: "1710000000",
+      row_id: 123,
+      source: "youtube",
+      threat: 1,
+      toxic: "2",
+      username: "alice",
+    }),
+    null,
+  );
+});
+
+test("normalizeCommentsTableRow falls back to an empty content_id string", () => {
+  assert.deepEqual(
+    normalizeCommentsTableRow({
+      call_to_action: 0,
+      comment: "Comment text",
+      comment_id: null,
+      content_id: null,
+      likes: 4,
+      publishedat: 1710000000,
+      row_id: 123,
+      source: null,
+      threat: 1,
+      toxic: 2,
+      username: "alice",
+    }),
+    {
+      call_to_action: 0,
+      comment: "Comment text",
+      comment_id: "",
+      content_id: "",
+      id: "123",
+      likes: 4,
+      publishedat: 1710000000,
+      source: "",
+      threat: 1,
+      toxic: 2,
+      username: "alice",
+    },
+  );
 });
 
 test("buildCommentPostOptions limits youtube posts per channel to the latest 20", () => {

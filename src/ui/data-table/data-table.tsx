@@ -69,6 +69,8 @@ export type DataTableLabels = {
   selectedRows: (count: number) => string;
 };
 
+export type DataTableSelectionMode = "multiple" | "none";
+
 type DataTableProps<TData> = {
   activeRowId?: string | null;
   columns: Array<DataTableColumn<TData>>;
@@ -78,12 +80,13 @@ type DataTableProps<TData> = {
   onActiveRowIdChange?: (rowId: string) => void;
   onPageChange: (pageIndex: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  onSelectedRowIdsChange: (selectedRowIds: Set<string>) => void;
+  onSelectedRowIdsChange?: (selectedRowIds: Set<string>) => void;
   onSortChange: (sort: DataTableSort) => void;
   pageIndex: number;
   pageSize: number;
   pageSizeOptions: readonly number[];
-  selectedRowIds: Set<string>;
+  selectedRowIds?: Set<string>;
+  selectionMode?: DataTableSelectionMode;
   sort: DataTableSort;
   status: "error" | "loading" | "success";
   storageKey?: string;
@@ -91,6 +94,8 @@ type DataTableProps<TData> = {
 };
 
 type StoredColumnSizing = Record<string, number>;
+const SELECTION_COLUMN_ID = "select";
+const EMPTY_SELECTED_ROW_IDS = new Set<string>();
 
 const INTERACTIVE_ROW_TARGET_SELECTOR = [
   "a",
@@ -215,7 +220,8 @@ export function DataTable<TData>({
   pageIndex,
   pageSize,
   pageSizeOptions,
-  selectedRowIds,
+  selectedRowIds = EMPTY_SELECTED_ROW_IDS,
+  selectionMode = "multiple",
   sort,
   status,
   storageKey,
@@ -230,9 +236,15 @@ export function DataTable<TData>({
   const hasRows = data.length > 0;
   const isInteractiveRows = status === "success";
   const showStatusOverlay = (status === "loading" || status === "error") && hasRows;
+  const isSelectionEnabled = selectionMode === "multiple";
+  const resolvedSelectedRowIds = isSelectionEnabled ? selectedRowIds : new Set<string>();
   const isEveryVisibleRowSelected =
-    hasRows && isInteractiveRows && data.every((row) => selectedRowIds.has(getRowId(row)));
-  const isSomeVisibleRowSelected = data.some((row) => selectedRowIds.has(getRowId(row)));
+    hasRows &&
+    isInteractiveRows &&
+    isSelectionEnabled &&
+    data.every((row) => resolvedSelectedRowIds.has(getRowId(row)));
+  const isSomeVisibleRowSelected =
+    isSelectionEnabled && data.some((row) => resolvedSelectedRowIds.has(getRowId(row)));
   const bodyClassName = [
     styles["data-table-body"],
     showStatusOverlay ? styles["data-table-body-stale"] : "",
@@ -271,10 +283,10 @@ export function DataTable<TData>({
   }, [columnSizing, loadedColumnSizingStorageKey, storageKey]);
 
   useEffect(() => {
-    if (headerCheckboxRef.current) {
+    if (isSelectionEnabled && headerCheckboxRef.current) {
       headerCheckboxRef.current.indeterminate = isSomeVisibleRowSelected && !isEveryVisibleRowSelected;
     }
-  }, [isEveryVisibleRowSelected, isSomeVisibleRowSelected]);
+  }, [isEveryVisibleRowSelected, isSelectionEnabled, isSomeVisibleRowSelected]);
 
   useEffect(() => {
     if (!openFilterColumnId) {
@@ -359,6 +371,10 @@ export function DataTable<TData>({
   } as CSSProperties & Record<string, string>;
 
   function handleVisibleRowsSelectionChange(checked: boolean) {
+    if (!isSelectionEnabled) {
+      return;
+    }
+
     const nextSelection = new Set(selectedRowIds);
 
     for (const row of data) {
@@ -372,7 +388,7 @@ export function DataTable<TData>({
       nextSelection.delete(rowId);
     }
 
-    onSelectedRowIdsChange(nextSelection);
+    onSelectedRowIdsChange?.(nextSelection);
   }
 
   function activateRow(rowId: string) {
@@ -478,9 +494,11 @@ export function DataTable<TData>({
   return (
     <section className={styles["data-table-shell"]} style={tableStyle} onKeyDown={handleTableKeyDown}>
       <div className={styles["data-table-toolbar"]}>
-        <div className={styles["data-table-toolbar-group"]}>
-          <span className={styles["selected-count"]}>{labels.selectedRows(selectedRowIds.size)}</span>
-        </div>
+        {isSelectionEnabled ? (
+          <div className={styles["data-table-toolbar-group"]}>
+            <span className={styles["selected-count"]}>{labels.selectedRows(resolvedSelectedRowIds.size)}</span>
+          </div>
+        ) : null}
         <div className={styles["data-table-toolbar-group"]}>
           <label className={styles["page-size-label"]}>
             <span>{labels.pageSize}</span>
@@ -548,6 +566,7 @@ export function DataTable<TData>({
               <div className={styles["data-table-row"]} key={headerGroup.id} role="row">
                 {headerGroup.headers.map((header, index) => {
                   const column = columns[index];
+                  const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
                   const canSort = column?.enableSorting ?? false;
                   const filterPopoverId = `data-table-filter-${header.id}`;
                   const isFilterOpen = openFilterColumnId === header.column.id;
@@ -559,9 +578,14 @@ export function DataTable<TData>({
                     .join(" ");
 
                   return (
-                    <div className={styles["data-table-header-cell"]} key={header.id} role="columnheader">
+                    <div
+                      className={styles["data-table-header-cell"]}
+                      data-selection-cell={isSelectionColumn ? "true" : undefined}
+                      key={header.id}
+                      role="columnheader"
+                    >
                       <div className={styles["header-content"]}>
-                        {index === 0 ? (
+                        {isSelectionColumn ? (
                           <label className={styles["checkbox-label"]}>
                             <input
                               ref={headerCheckboxRef}
@@ -660,7 +684,7 @@ export function DataTable<TData>({
                     className={styles["data-table-row"]}
                     data-active={activeRowId === rowId}
                     data-row-navigation-row="true"
-                    data-selected={selectedRowIds.has(rowId)}
+                    data-selected={isSelectionEnabled && resolvedSelectedRowIds.has(rowId)}
                     key={rowId}
                     role="row"
                     tabIndex={
@@ -671,31 +695,41 @@ export function DataTable<TData>({
                     onClick={(event) => handleRowClick(event, rowId)}
                     onKeyDown={(event) => handleRowKeyDown(event, rowIndex, rowId)}
                   >
-                    {row.getVisibleCells().map((cell, index) => (
-                      <div className={styles["data-table-cell"]} key={cell.id} role="cell">
-                        {index === 0 ? (
-                          <input
-                            checked={selectedRowIds.has(rowId)}
-                            className={styles["checkbox"]}
-                            disabled={!isInteractiveRows}
-                            type="checkbox"
-                            onChange={(event) => {
-                              const nextSelection = new Set(selectedRowIds);
+                    {row.getVisibleCells().map((cell, index) => {
+                      const column = columns[index];
+                      const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
 
-                              if (event.target.checked) {
-                                nextSelection.add(rowId);
-                              } else {
-                                nextSelection.delete(rowId);
-                              }
+                      return (
+                        <div
+                          className={styles["data-table-cell"]}
+                          data-selection-cell={isSelectionColumn ? "true" : undefined}
+                          key={cell.id}
+                          role="cell"
+                        >
+                          {isSelectionColumn ? (
+                            <input
+                              checked={resolvedSelectedRowIds.has(rowId)}
+                              className={styles["checkbox"]}
+                              disabled={!isInteractiveRows}
+                              type="checkbox"
+                              onChange={(event) => {
+                                const nextSelection = new Set(selectedRowIds);
 
-                              onSelectedRowIdsChange(nextSelection);
-                            }}
-                          />
-                        ) : (
-                          flexRender(cell.column.columnDef.cell, cell.getContext())
-                        )}
-                      </div>
-                    ))}
+                                if (event.target.checked) {
+                                  nextSelection.add(rowId);
+                                } else {
+                                  nextSelection.delete(rowId);
+                                }
+
+                                onSelectedRowIdsChange?.(nextSelection);
+                              }}
+                            />
+                          ) : (
+                            flexRender(cell.column.columnDef.cell, cell.getContext())
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })
