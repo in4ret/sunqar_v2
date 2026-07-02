@@ -14,13 +14,12 @@
 ```env
 AUTH_SECRET=change-me-in-production
 DATABASE_PATH=./data/sunqar.db
-GENERATE_REPORT_USERNAME=
-GENERATE_REPORT_PASSWORD=
+API_GATEWAY_URL=http://localhost:8000
 ```
 
 - `AUTH_SECRET` обязателен в production
 - `DATABASE_PATH` по умолчанию указывает на `data/sunqar.db`
-- `GENERATE_REPORT_USERNAME` и `GENERATE_REPORT_PASSWORD` опциональны и нужны, если `download_url` файлов защищен `Basic Auth`
+- `API_GATEWAY_URL` указывает на единый API gateway для генерации и скачивания отчётов
 
 Для Docker production-сценария используйте локальный `.env.prod` на основе [.env.prod.example](/home/rushad/work/sunqar/.env.prod.example).
 
@@ -74,6 +73,7 @@ cp .env.prod.example .env.prod
 NODE_ENV=production
 AUTH_SECRET=change-me-in-production
 DATABASE_PATH=/app/data/sunqar.db
+API_GATEWAY_URL=http://172.17.0.1:8000
 ```
 
 3. Поднимите стек:

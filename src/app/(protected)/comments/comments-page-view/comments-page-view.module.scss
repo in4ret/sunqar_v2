@@ -37,8 +37,16 @@
 
 .comments-page-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+}
+
+.comments-page-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
 }
 
@@ -92,10 +100,34 @@
   min-height: 1px;
 }
 
+.report-open-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.report-open-button:hover,
+.report-open-button:focus-visible {
+  background: var(--bg-soft);
+}
+
 @media (max-width: $breakpoint-mobile) {
-  .comments-page-toolbar {
-    display: grid;
-    align-items: stretch;
+  .comments-page-toolbar-actions {
+    justify-content: space-evenly;
+    width: 100%;
   }
 
   .comments-page-tabs {
@@ -107,5 +139,10 @@
   .comments-page-tab {
     min-width: 0;
     padding-inline: 0.75rem;
+  }
+
+  .report-open-button {
+    width: 100%;
+    max-width: 10rem;
   }
 }

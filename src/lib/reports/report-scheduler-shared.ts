@@ -2,6 +2,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/lib/db/database";
 import { aiModels, reports, tasks, users } from "@/lib/db/schema";
+import { env } from "@/lib/env";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 import { extractTaskId } from "@/lib/tasks/extract-task-id";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
@@ -382,11 +383,11 @@ export async function getReportRunItemById(id: string): Promise<ReportRunItem | 
 export async function triggerReportGeneration(report: ReportRunItem): Promise<{
   error: ReportRunErrorCode | null;
 }> {
-  const generateReportUrl = process.env.GENERATE_REPORT_URL?.trim();
-
-  if (!generateReportUrl) {
+  if (!env.apiGatewayUrl) {
     return { error: "report-run-url-missing" };
   }
+
+  const generateReportUrl = new URL("/generate_report/", env.apiGatewayUrl);
 
   const requestBody = {
     id: report.id,
@@ -435,9 +436,7 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     if (!response.ok) {
       const responseText = await response.text();
 
-      console.error(
-        `Generate report request failed for report ${report.id} with status ${response.status}: ${responseText}`,
-      );
+      console.error(`Generate report request failed for report ${report.id} with status ${response.status}: ${responseText}`);
 
       return { error: "report-run-request-failed" };
     }

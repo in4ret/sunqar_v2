@@ -56,6 +56,7 @@ type PageState = {
 
 const COMMENTS_TABLE_COLUMN_WIDTHS_STORAGE_KEY = "sunqar-comments-table-column-widths";
 const FILTER_DEBOUNCE_MS = 350;
+const MAX_COMMENT_LENGTH = 500;
 const SORT_FIELDS = new Set<CommentsTableSortField>([
   "call_to_action",
   "content_id",
@@ -436,6 +437,9 @@ export function CommentsPageTable({
         cell: (row) => {
           const youtubeCommentHref =
             row.source === "youtube" ? buildYoutubeCommentHref(row.content_id, row.comment_id) : null;
+          const comment = row.comment.length > MAX_COMMENT_LENGTH
+            ? row.comment.slice(0, MAX_COMMENT_LENGTH) + '…'
+            : row.comment;
 
           return (
             <div className={styles["comment-cell"]}>
@@ -446,7 +450,7 @@ export function CommentsPageTable({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  {row.comment}
+                  {comment}
                 </a>
               ) : (
                 <span className={styles["cell-text"]}>{row.comment}</span>
@@ -537,7 +541,7 @@ export function CommentsPageTable({
         size: 160,
       },
       {
-        cell: (row) => <span className={styles["cell-text"]}>{row.likes}</span>,
+        cell: (row) => <span className={`${styles["cell-text"]} ${styles["likes-cell"]}`}>{row.likes}</span>,
         enableSorting: true,
         filterRenderer: (
           <div className={styles["range-filter-grid"]}>

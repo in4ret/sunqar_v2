@@ -6,6 +6,7 @@ import {
   Bell,
   Bot,
   ChartPie,
+  ChartScatter,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -14,6 +15,7 @@ import {
   ChevronsRight,
   CircleCheck,
   CircleX,
+  CloudUpload,
   Database,
   FileText,
   Funnel,
@@ -86,6 +88,10 @@ export function ChartPieIcon(props: SharedIconProps) {
   return <AppIcon icon={ChartPie} {...props} />;
 }
 
+export function ChartScatterIcon(props: SharedIconProps) {
+  return <AppIcon icon={ChartScatter} {...props} />;
+}
+
 export function ChevronDownIcon(props: SharedIconProps) {
   return <AppIcon icon={ChevronDown} {...props} />;
 }
@@ -112,6 +118,10 @@ export function CircleCheckIcon(props: SharedIconProps) {
 
 export function CircleXIcon(props: SharedIconProps) {
   return <AppIcon icon={CircleX} {...props} />;
+}
+
+export function CloudUploadIcon(props: SharedIconProps) {
+  return <AppIcon icon={CloudUpload} {...props} />;
 }
 
 export function DatabaseIcon(props: SharedIconProps) {

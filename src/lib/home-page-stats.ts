@@ -799,9 +799,9 @@ async function getCommentsToneAverageStats(searchQuery: string): Promise<HomePag
   const startOfNextDay = startOfToday + 24 * 60 * 60;
 
   const [totalRow, todayRow] = await Promise.all([
-    manticoreSql<AverageRow>(`SELECT AVG(tone) AS average FROM comments${getWhereClause(searchQuery)}`),
+    manticoreSql<AverageRow>(`SELECT AVG(toxic) AS average FROM comments${getWhereClause(searchQuery)}`),
     manticoreSql<AverageRow>(
-      `SELECT AVG(tone) AS average FROM comments${getWhereClause(searchQuery, [
+      `SELECT AVG(toxic) AS average FROM comments${getWhereClause(searchQuery, [
         `publishedat >= ${startOfToday}`,
         `publishedat < ${startOfNextDay}`,
       ])}`

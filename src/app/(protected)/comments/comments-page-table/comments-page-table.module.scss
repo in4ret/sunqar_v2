@@ -24,8 +24,9 @@
   min-height: calc(2.75rem + 0.9rem);
   margin: -0.45rem -0.55rem;
   padding: 0.45rem 2.05rem 0.45rem 0.55rem;
-  align-items: flex-start;
+  align-items: center;
   align-self: stretch;
+  justify-content: center;
   min-width: 0;
 }
 
@@ -140,6 +141,7 @@
   padding: 0.45rem 0.55rem;
   align-items: center;
   align-self: stretch;
+  justify-content: center;
   background: linear-gradient(
     to bottom right,
     var(--score-cell-background-start),
@@ -147,4 +149,9 @@
   );
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+}
+
+.likes-cell {
+  width: 100%;
+  text-align: center;
 }

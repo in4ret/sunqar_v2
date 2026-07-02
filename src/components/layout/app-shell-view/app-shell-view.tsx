@@ -7,6 +7,8 @@ import { routes } from "@/lib/routes";
 import {
   BotIcon,
   ChartPieIcon,
+  ChartScatterIcon,
+  CloudUploadIcon,
   DatabaseIcon,
   FileTextIcon,
   HouseIcon,
@@ -56,7 +58,7 @@ export function AppShellView({
       children: [
         {
           href: routes.commentsChart,
-          icon: ChartPieIcon,
+          icon: ChartScatterIcon,
           label: t("comments.tabs.chart"),
         },
         {
@@ -66,7 +68,7 @@ export function AppShellView({
         },
         {
           href: routes.commentsUpload,
-          icon: TextIcon,
+          icon: CloudUploadIcon,
           label: t("comments.tabs.upload"),
         },
       ],

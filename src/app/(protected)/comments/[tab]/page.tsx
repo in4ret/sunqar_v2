@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { listAiModels } from "@/lib/ai-models/ai-models";
 import { getCommentsPostOptions } from "@/lib/comments";
 import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
@@ -56,14 +57,21 @@ export default async function CommentsTabPage({
   params: CommentsPageParams;
   searchParams: CommentsPageSearchParams;
 }) {
-  const [{ tab }, { from, q, to }, commentsPostOptions] = await Promise.all([
+  const [{ tab }, { from, q, to }, aiModels, commentsPostOptions] = await Promise.all([
     params,
     searchParams,
+    listAiModels(),
     getCommentsPostOptions(),
   ]);
   const searchFrom = normalizeEpochSecondsParam(from);
   const searchQuery = normalizeSearchQueryParam(q);
   const searchTo = normalizeEpochSecondsParam(to);
+  const activeAiModels = aiModels
+    .filter((aiModel) => aiModel.isActive)
+    .map((aiModel) => ({
+      label: aiModel.displayName,
+      value: aiModel.modelId,
+    }));
 
   if (!isCommentsTab(tab)) {
     redirect(buildCommentsChartRedirectUrl({ searchFrom, searchQuery, searchTo }));
@@ -72,6 +80,7 @@ export default async function CommentsTabPage({
   return (
     <CommentsPageView
       activeTab={tab}
+      aiModels={activeAiModels}
       availablePostValues={commentsPostOptions.availablePostValues}
       displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
       displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}

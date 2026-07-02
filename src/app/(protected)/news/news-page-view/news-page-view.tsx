@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { ReportModal } from "@/components/reports";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import type { SourceOptionItem } from "@/lib/sources/source-options";
 import {
   formatDateTimeLocalValueToEpochSeconds,
   getDefaultNewsPageSearchFromValue,
 } from "@/lib/utils";
+import { useToast } from "@/ui";
 
 import { NewsPageCount } from "../news-page-count/news-page-count";
 import { NewsPageSearchForm } from "../news-page-search-form/news-page-search-form";
@@ -22,7 +24,6 @@ import {
 } from "../news-page-search-form/news-page-search-form-storage";
 import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-chart";
 import { NewsPageTable } from "../news-page-table/news-page-table";
-import { NewsReportModal } from "../news-report-modal/news-report-modal";
 
 import styles from "./news-page-view.module.scss";
 
@@ -80,6 +81,7 @@ export function NewsPageView({
 }: NewsPageViewProps) {
   const t = useTranslations();
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const hasSearchParams = searchParams.has("from") || searchParams.has("q") || searchParams.has("to");
   const storedSearchState = hasSearchParams
@@ -93,6 +95,8 @@ export function NewsPageView({
       storedSearchState?.searchTo
     );
   const storedSelectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [primarySelectedRowIds, setPrimarySelectedRowIds] = useState<string[]>([]);
   const [relatedSelectedRowIds, setRelatedSelectedRowIds] = useState<string[]>([]);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
@@ -182,6 +186,51 @@ export function NewsPageView({
     router.replace(`${nextUrl.pathname}${nextUrl.search}`);
   }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
 
+  async function handleReportSubmit({ model, prompt }: { model: string; prompt: string }) {
+    setIsReportSubmitting(true);
+
+    try {
+      const response = await fetch("/api/news/report", {
+        body: JSON.stringify({
+          ids: reportIds,
+          keyWords: submittedSearchQuery,
+          model,
+          prompt,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        let errorMessage = t("report-modal.submit-error");
+
+        try {
+          const responseData = (await response.json()) as { error?: string };
+
+          if (typeof responseData.error === "string" && responseData.error.trim()) {
+            errorMessage = responseData.error.trim();
+          }
+        } catch {
+          errorMessage = t("report-modal.submit-error");
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      setIsReportModalOpen(false);
+    } catch (error) {
+      console.error("Failed to submit news report request.", error);
+      showToast({
+        message: error instanceof Error ? error.message : t("report-modal.submit-error"),
+        status: "error",
+      });
+    } finally {
+      setIsReportSubmitting(false);
+    }
+  }
+
   return (
     <section className={styles["news-page"]}>
       <NewsPageSearchForm
@@ -270,7 +319,27 @@ export function NewsPageView({
               searchTrigger={searchTrigger}
               selectedSources={validatedAppliedSelectedSources}
             />
-            <NewsReportModal aiModels={aiModels} ids={reportIds} keyWords={submittedSearchQuery} />
+            <div className={styles["report-action-bar"]}>
+              <button
+                className={styles["report-open-button"]}
+                disabled={reportIds.length === 0}
+                type="button"
+                onClick={() => {
+                  setIsReportModalOpen(true);
+                }}
+              >
+                {t("report-modal.open-button")}
+              </button>
+            </div>
+            <ReportModal
+              aiModels={aiModels}
+              isOpen={isReportModalOpen}
+              isSubmitting={isReportSubmitting}
+              onClose={() => {
+                setIsReportModalOpen(false);
+              }}
+              onSubmit={handleReportSubmit}
+            />
           </div>
         )}
       </div>

@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { ReportModal } from "@/components/reports";
 import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
 import {
   formatDateTimeLocalValueToEpochSeconds,
   getDefaultNewsPageSearchFromValue,
 } from "@/lib/utils";
-import type { MultiSelectOption } from "@/ui";
+import { type MultiSelectOption, useToast } from "@/ui";
 
 import { CommentsPageCount } from "../comments-page-count/comments-page-count";
 import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
@@ -27,6 +28,7 @@ import styles from "./comments-page-view.module.scss";
 
 type CommentsPageViewProps = {
   activeTab: CommentsTab;
+  aiModels: Array<{ label: string; value: string }>;
   availablePostValues: string[];
   displaySearchFrom: string;
   displaySearchTo: string;
@@ -72,6 +74,7 @@ function buildCommentsTabHref(
 
 export function CommentsPageView({
   activeTab,
+  aiModels,
   availablePostValues,
   displaySearchFrom,
   displaySearchTo,
@@ -82,6 +85,7 @@ export function CommentsPageView({
 }: CommentsPageViewProps) {
   const t = useTranslations();
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const hasSearchParams = searchParams.has("from") || searchParams.has("q") || searchParams.has("to");
   const storedSearchState = hasSearchParams
@@ -95,6 +99,8 @@ export function CommentsPageView({
       storedSearchState?.searchTo
     );
   const storedSelectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [submittedSelectedPosts, setSubmittedSelectedPosts] = useState<string[] | null>(null);
@@ -185,6 +191,53 @@ export function CommentsPageView({
     router.replace(`${nextUrl.pathname}${nextUrl.search}`);
   }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
 
+  async function handleReportSubmit({ model, prompt }: { model: string; prompt: string }) {
+    setIsReportSubmitting(true);
+
+    try {
+      const response = await fetch("/api/comments/report", {
+        body: JSON.stringify({
+          from: submittedSearchFrom,
+          model,
+          posts: validatedAppliedSelectedPosts,
+          prompt,
+          query: submittedSearchQuery,
+          to: submittedSearchTo,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        let errorMessage = t("report-modal.submit-error");
+
+        try {
+          const responseData = (await response.json()) as { error?: string };
+
+          if (typeof responseData.error === "string" && responseData.error.trim()) {
+            errorMessage = responseData.error.trim();
+          }
+        } catch {
+          errorMessage = t("report-modal.submit-error");
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      setIsReportModalOpen(false);
+    } catch (error) {
+      console.error("Failed to submit comments report request.", error);
+      showToast({
+        message: error instanceof Error ? error.message : t("report-modal.submit-error"),
+        status: "error",
+      });
+    } finally {
+      setIsReportSubmitting(false);
+    }
+  }
+
   return (
     <section className={styles["comments-page"]}>
       <CommentsPageSearchForm
@@ -232,14 +285,25 @@ export function CommentsPageView({
               </Link>
             ))}
           </div>
-          <CommentsPageCount
-            hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
-            selectedPosts={validatedAppliedSelectedPosts}
-            searchFrom={submittedSearchFrom}
-            searchQuery={submittedSearchQuery}
-            searchTo={submittedSearchTo}
-            searchTrigger={searchTrigger}
-          />
+          <div className={styles["comments-page-toolbar-actions"]}>
+            <button
+              className={styles["report-open-button"]}
+              type="button"
+              onClick={() => {
+                setIsReportModalOpen(true);
+              }}
+            >
+              {t("report-modal.open-button")}
+            </button>
+            <CommentsPageCount
+              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              selectedPosts={validatedAppliedSelectedPosts}
+              searchFrom={submittedSearchFrom}
+              searchQuery={submittedSearchQuery}
+              searchTo={submittedSearchTo}
+              searchTrigger={searchTrigger}
+            />
+          </div>
         </div>
         <div
           aria-labelledby={`comments-${activeTab}-tab`}
@@ -258,6 +322,15 @@ export function CommentsPageView({
             />
           ) : null}
         </div>
+        <ReportModal
+          aiModels={aiModels}
+          isOpen={isReportModalOpen}
+          isSubmitting={isReportSubmitting}
+          onClose={() => {
+            setIsReportModalOpen(false);
+          }}
+          onSubmit={handleReportSubmit}
+        />
       </div>
     </section>
   );

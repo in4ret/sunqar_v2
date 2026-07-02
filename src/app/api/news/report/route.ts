@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth/auth";
 import { db } from "@/lib/db/client";
 import { tasks } from "@/lib/db/schema";
+import { env } from "@/lib/env";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 import { extractTaskId } from "@/lib/tasks/extract-task-id";
 
@@ -10,10 +11,6 @@ type NewsReportRequestBody = {
   model: string;
   prompt: string;
 };
-
-const DOWNLOAD_REPORT_DOC_URL = process.env.DOWNLOAD_REPORT_DOC_URL?.trim();
-const DOWNLOAD_REPORT_DOC_PASSWORD = process.env.DOWNLOAD_REPORT_DOC_PASSWORD?.trim();
-const DOWNLOAD_REPORT_DOC_USERNAME = process.env.DOWNLOAD_REPORT_DOC_USERNAME?.trim();
 
 function buildJsonResponse(payload: object, status: number) {
   return Response.json(payload, {
@@ -67,21 +64,17 @@ export async function POST(request: Request) {
     prompt: body.prompt.trim(),
   };
 
-  if (!DOWNLOAD_REPORT_DOC_URL) {
-    return buildJsonResponse({ error: "DOWNLOAD_REPORT_DOC_URL is not configured." }, 500);
+  if (!env.apiGatewayUrl) {
+    return buildJsonResponse({ error: "API_GATEWAY_URL is not configured." }, 500);
   }
 
-  if (!DOWNLOAD_REPORT_DOC_USERNAME || !DOWNLOAD_REPORT_DOC_PASSWORD) {
-    return buildJsonResponse({ error: "Report download credentials are not configured." }, 500);
-  }
+  const downloadReportDocUrl = new URL("/download_report_doc/", env.apiGatewayUrl);
 
-  const auth = `${DOWNLOAD_REPORT_DOC_USERNAME}:${DOWNLOAD_REPORT_DOC_PASSWORD}`;
   try {
-    const response = await fetch(DOWNLOAD_REPORT_DOC_URL, {
+    const response = await fetch(downloadReportDocUrl, {
       body: JSON.stringify(payload),
       cache: "no-store",
       headers: {
-        Authorization: `Basic ${Buffer.from(auth).toString("base64")}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -136,8 +129,8 @@ export async function POST(request: Request) {
 
     return buildJsonResponse({ ok: true, taskId }, 200);
   } catch (error) {
-    console.error("Failed to submit news report request to report document API.", error);
+    console.error("Failed to submit news report request to API gateway download_report_doc endpoint.", error);
 
-    return buildJsonResponse({ error: "Failed to reach report document API." }, 502);
+    return buildJsonResponse({ error: "Failed to reach API gateway." }, 502);
   }
 }

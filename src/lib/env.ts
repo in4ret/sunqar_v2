@@ -13,7 +13,14 @@ function resolveAuthSecret() {
   return DEFAULT_AUTH_SECRET;
 }
 
+function resolveOptionalApiGatewayUrl() {
+  const value = process.env.API_GATEWAY_URL?.trim();
+
+  return value ? value : null;
+}
+
 export const env = {
+  apiGatewayUrl: resolveOptionalApiGatewayUrl(),
   authSecret: resolveAuthSecret(),
   databasePath: process.env.DATABASE_PATH ?? DEFAULT_DATABASE_PATH,
   isProduction: process.env.NODE_ENV === "production",

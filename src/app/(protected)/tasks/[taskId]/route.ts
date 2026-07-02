@@ -218,12 +218,5 @@ function getBasicAuthValue(url: URL) {
     return `Basic ${Buffer.from(`${url.username}:${url.password}`).toString("base64")}`;
   }
 
-  const username = process.env.GENERATE_REPORT_USERNAME?.trim();
-  const password = process.env.GENERATE_REPORT_PASSWORD?.trim();
-
-  if (!username || !password) {
-    return null;
-  }
-
-  return `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
+  return null;
 }
