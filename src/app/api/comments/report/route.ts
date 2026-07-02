@@ -33,7 +33,6 @@ export const POST = createCommentsReportPostHandler({
 
     const downloadCommentsUrl = new URL("/download_comments", env.apiGatewayUrl);
 
-    console.log("###", JSON.stringify(payload, null, 2));
     return fetch(downloadCommentsUrl, {
       body: JSON.stringify(payload),
       cache: "no-store",
