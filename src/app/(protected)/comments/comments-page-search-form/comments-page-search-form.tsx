@@ -15,7 +15,9 @@ import { MultiSelect, type MultiSelectOption, SearchInput } from "@/ui";
 
 import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
+  COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG,
   setStoredCommentsPagePosts,
+  setStoredCommentsPageSearchState,
 } from "./comments-page-search-form-storage";
 
 import styles from "./comments-page-search-form.module.scss";
@@ -106,6 +108,12 @@ export function CommentsPageSearchForm({
       nextUrl.searchParams.set("to", nextSearchToEpochSeconds);
     }
 
+    setStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG, {
+      searchFrom: nextSearchFromEpochSeconds,
+      searchQuery: nextSearchQuery,
+      searchTo: nextSearchToEpochSeconds,
+      selectedPosts: validatedSelectedPosts,
+    });
     setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedPosts);
     onSearchChangeStateChange(false);
     onSearchSubmit({

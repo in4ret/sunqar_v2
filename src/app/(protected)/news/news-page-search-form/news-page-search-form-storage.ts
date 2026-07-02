@@ -2,17 +2,39 @@
 
 import { useSyncExternalStore } from "react";
 
+import { normalizeEpochSecondsParam, normalizeSearchQuery } from "@/lib/utils";
+
 type NewsPageSearchFormStorageConfig = {
   changeEventName: string;
   storageKey: string;
 };
 
+export type StoredNewsPageSearchState = {
+  searchFrom: string;
+  searchQuery: string;
+  searchTo: string;
+  selectedSources: string[];
+};
+
 const DEFAULT_STORED_NEWS_PAGE_SOURCES: string[] = [];
+const DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE: StoredNewsPageSearchState = {
+  searchFrom: "",
+  searchQuery: "",
+  searchTo: "",
+  selectedSources: DEFAULT_STORED_NEWS_PAGE_SOURCES,
+};
 const storedNewsPageSourcesCache = new Map<
   string,
   {
     rawValue: string | null;
     sources: string[];
+  }
+>();
+const storedNewsPageSearchStateCache = new Map<
+  string,
+  {
+    rawValue: string | null;
+    searchState: StoredNewsPageSearchState;
   }
 >();
 
@@ -21,8 +43,32 @@ export const NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG: NewsPageSearchFormStorageConf
   storageKey: "sunqar-news-sources",
 };
 
+export const NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG: NewsPageSearchFormStorageConfig = {
+  changeEventName: "sunqar-news-search-state-change",
+  storageKey: "sunqar-news-search-state",
+};
+
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function normalizeStoredNewsPageSearchState(value: unknown): StoredNewsPageSearchState {
+  if (!value || typeof value !== "object") {
+    return DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE;
+  }
+
+  const candidate = value as Partial<Record<keyof StoredNewsPageSearchState, unknown>>;
+  const selectedSources = isStringArray(candidate.selectedSources) ? candidate.selectedSources : [];
+
+  return {
+    searchFrom:
+      typeof candidate.searchFrom === "string" ? normalizeEpochSecondsParam(candidate.searchFrom) : "",
+    searchQuery:
+      typeof candidate.searchQuery === "string" ? normalizeSearchQuery(candidate.searchQuery) : "",
+    searchTo:
+      typeof candidate.searchTo === "string" ? normalizeEpochSecondsParam(candidate.searchTo) : "",
+    selectedSources,
+  };
 }
 
 export function getStoredNewsPageSources(config: NewsPageSearchFormStorageConfig) {
@@ -100,6 +146,58 @@ export function setStoredNewsPageSources(
   sources: string[],
 ) {
   window.localStorage.setItem(config.storageKey, JSON.stringify(sources));
+  window.dispatchEvent(new Event(config.changeEventName));
+}
+
+export function getStoredNewsPageSearchState(config: NewsPageSearchFormStorageConfig) {
+  if (typeof window === "undefined") {
+    return DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE;
+  }
+
+  const storedValue = window.localStorage.getItem(config.storageKey);
+  const cachedValue = storedNewsPageSearchStateCache.get(config.storageKey);
+
+  if (cachedValue?.rawValue === storedValue) {
+    return cachedValue.searchState;
+  }
+
+  if (!storedValue) {
+    storedNewsPageSearchStateCache.set(config.storageKey, {
+      rawValue: null,
+      searchState: DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE,
+    });
+
+    return DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE;
+  }
+
+  try {
+    const parsedValue = JSON.parse(storedValue);
+    const searchState = normalizeStoredNewsPageSearchState(parsedValue);
+
+    storedNewsPageSearchStateCache.set(config.storageKey, {
+      rawValue: storedValue,
+      searchState,
+    });
+
+    return searchState;
+  } catch {
+    storedNewsPageSearchStateCache.set(config.storageKey, {
+      rawValue: storedValue,
+      searchState: DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE,
+    });
+
+    return DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE;
+  }
+}
+
+export function setStoredNewsPageSearchState(
+  config: NewsPageSearchFormStorageConfig,
+  searchState: StoredNewsPageSearchState,
+) {
+  window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify(normalizeStoredNewsPageSearchState(searchState)),
+  );
   window.dispatchEvent(new Event(config.changeEventName));
 }
 

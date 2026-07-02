@@ -15,6 +15,8 @@ import { MultiSelect, SearchInput } from "@/ui";
 
 import {
   NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
+  NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG,
+  setStoredNewsPageSearchState,
   setStoredNewsPageSources,
 } from "./news-page-search-form-storage";
 
@@ -118,6 +120,12 @@ export function NewsPageSearchForm({
       nextUrl.searchParams.set("to", nextSearchToEpochSeconds);
     }
 
+    setStoredNewsPageSearchState(NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG, {
+      searchFrom: nextSearchFromEpochSeconds,
+      searchQuery: nextSearchQuery,
+      searchTo: nextSearchToEpochSeconds,
+      selectedSources: validatedSelectedSources,
+    });
     setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedSources);
     onSearchChangeStateChange(false);
     onSearchSubmit({

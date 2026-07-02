@@ -2,16 +2,38 @@
 
 import { useSyncExternalStore } from "react";
 
+import { normalizeEpochSecondsParam, normalizeSearchQuery } from "@/lib/utils";
+
 type CommentsPageSearchFormStorageConfig = {
   changeEventName: string;
   storageKey: string;
 };
 
+export type StoredCommentsPageSearchState = {
+  searchFrom: string;
+  searchQuery: string;
+  searchTo: string;
+  selectedPosts: string[];
+};
+
 const DEFAULT_STORED_COMMENTS_PAGE_POSTS: string[] = [];
+const DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE: StoredCommentsPageSearchState = {
+  searchFrom: "",
+  searchQuery: "",
+  searchTo: "",
+  selectedPosts: DEFAULT_STORED_COMMENTS_PAGE_POSTS,
+};
 const storedCommentsPagePostsCache = new Map<
   string,
   {
     posts: string[];
+    rawValue: string | null;
+  }
+>();
+const storedCommentsPageSearchStateCache = new Map<
+  string,
+  {
+    posts: StoredCommentsPageSearchState;
     rawValue: string | null;
   }
 >();
@@ -21,8 +43,32 @@ export const COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG: CommentsPageSearchFormSto
   storageKey: "sunqar-comments-posts",
 };
 
+export const COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG: CommentsPageSearchFormStorageConfig = {
+  changeEventName: "sunqar-comments-search-state-change",
+  storageKey: "sunqar-comments-search-state",
+};
+
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function normalizeStoredCommentsPageSearchState(value: unknown): StoredCommentsPageSearchState {
+  if (!value || typeof value !== "object") {
+    return DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE;
+  }
+
+  const candidate = value as Partial<Record<keyof StoredCommentsPageSearchState, unknown>>;
+  const selectedPosts = isStringArray(candidate.selectedPosts) ? candidate.selectedPosts : [];
+
+  return {
+    searchFrom:
+      typeof candidate.searchFrom === "string" ? normalizeEpochSecondsParam(candidate.searchFrom) : "",
+    searchQuery:
+      typeof candidate.searchQuery === "string" ? normalizeSearchQuery(candidate.searchQuery) : "",
+    searchTo:
+      typeof candidate.searchTo === "string" ? normalizeEpochSecondsParam(candidate.searchTo) : "",
+    selectedPosts,
+  };
 }
 
 export function getStoredCommentsPagePosts(config: CommentsPageSearchFormStorageConfig) {
@@ -100,6 +146,58 @@ export function setStoredCommentsPagePosts(
   posts: string[],
 ) {
   window.localStorage.setItem(config.storageKey, JSON.stringify(posts));
+  window.dispatchEvent(new Event(config.changeEventName));
+}
+
+export function getStoredCommentsPageSearchState(config: CommentsPageSearchFormStorageConfig) {
+  if (typeof window === "undefined") {
+    return DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE;
+  }
+
+  const storedValue = window.localStorage.getItem(config.storageKey);
+  const cachedValue = storedCommentsPageSearchStateCache.get(config.storageKey);
+
+  if (cachedValue?.rawValue === storedValue) {
+    return cachedValue.posts;
+  }
+
+  if (!storedValue) {
+    storedCommentsPageSearchStateCache.set(config.storageKey, {
+      posts: DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE,
+      rawValue: null,
+    });
+
+    return DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE;
+  }
+
+  try {
+    const parsedValue = JSON.parse(storedValue);
+    const searchState = normalizeStoredCommentsPageSearchState(parsedValue);
+
+    storedCommentsPageSearchStateCache.set(config.storageKey, {
+      posts: searchState,
+      rawValue: storedValue,
+    });
+
+    return searchState;
+  } catch {
+    storedCommentsPageSearchStateCache.set(config.storageKey, {
+      posts: DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE,
+      rawValue: storedValue,
+    });
+
+    return DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE;
+  }
+}
+
+export function setStoredCommentsPageSearchState(
+  config: CommentsPageSearchFormStorageConfig,
+  searchState: StoredCommentsPageSearchState,
+) {
+  window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify(normalizeStoredCommentsPageSearchState(searchState)),
+  );
   window.dispatchEvent(new Event(config.changeEventName));
 }
 

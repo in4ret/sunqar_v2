@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
@@ -14,7 +15,9 @@ import {
 import { NewsPageCount } from "../news-page-count/news-page-count";
 import { NewsPageSearchForm } from "../news-page-search-form/news-page-search-form";
 import {
+  getStoredNewsPageSearchState,
   NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
+  NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG,
   useStoredNewsPageSources,
 } from "../news-page-search-form/news-page-search-form-storage";
 import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-chart";
@@ -76,6 +79,19 @@ export function NewsPageView({
   sources,
 }: NewsPageViewProps) {
   const t = useTranslations();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasSearchParams = searchParams.has("from") || searchParams.has("q") || searchParams.has("to");
+  const storedSearchState = hasSearchParams
+    ? null
+    : getStoredNewsPageSearchState(NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG);
+  const hasStoredSearchStateToRestore =
+    !hasSearchParams &&
+    !!(
+      storedSearchState?.searchFrom ||
+      storedSearchState?.searchQuery ||
+      storedSearchState?.searchTo
+    );
   const storedSelectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [primarySelectedRowIds, setPrimarySelectedRowIds] = useState<string[]>([]);
   const [relatedSelectedRowIds, setRelatedSelectedRowIds] = useState<string[]>([]);
@@ -83,7 +99,8 @@ export function NewsPageView({
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [submittedSelectedSources, setSubmittedSelectedSources] = useState<string[] | null>(null);
   const [hasPendingSearchChanges, setHasPendingSearchChanges] = useState(false);
-  const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
+  const isSearchStateResolved = hasSearchParams || !hasStoredSearchStateToRestore;
+  const shouldUseDefaultSearchFrom = isSearchStateResolved && searchFrom === "" && searchTo === "";
   const defaultSearchFrom = useSyncExternalStore(
     subscribeToDefaultSearchFrom,
     () => (shouldUseDefaultSearchFrom ? getDefaultNewsPageSearchFromValue() : ""),
@@ -119,7 +136,7 @@ export function NewsPageView({
     () => Array.from(new Set([...primarySelectedRowIds, ...relatedSelectedRowIds])),
     [primarySelectedRowIds, relatedSelectedRowIds],
   );
-  const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
+  const isSearchReady = isSearchStateResolved && (!shouldUseDefaultSearchFrom || defaultSearchFrom !== "");
   const selectedSourcesKey = validatedAppliedSelectedSources.join("\u0000");
   const contentClassName = hasPendingSearchChanges
     ? `${styles["news-page-content"]} ${styles["news-page-content-blurred"]}`
@@ -142,6 +159,28 @@ export function NewsPageView({
     ],
     [searchFrom, searchQuery, searchTo, t],
   );
+
+  useEffect(() => {
+    if (!hasStoredSearchStateToRestore || !storedSearchState) {
+      return;
+    }
+
+    const nextUrl = new URL(getNewsTabRoute(activeTab), window.location.origin);
+
+    if (storedSearchState.searchFrom) {
+      nextUrl.searchParams.set("from", storedSearchState.searchFrom);
+    }
+
+    if (storedSearchState.searchQuery) {
+      nextUrl.searchParams.set("q", storedSearchState.searchQuery);
+    }
+
+    if (storedSearchState.searchTo) {
+      nextUrl.searchParams.set("to", storedSearchState.searchTo);
+    }
+
+    router.replace(`${nextUrl.pathname}${nextUrl.search}`);
+  }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
 
   return (
     <section className={styles["news-page"]}>

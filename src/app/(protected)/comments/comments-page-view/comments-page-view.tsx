@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import type { CommentsTab } from "@/lib/routes";
@@ -16,6 +17,8 @@ import { CommentsPageCount } from "../comments-page-count/comments-page-count";
 import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
 import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
+  COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG,
+  getStoredCommentsPageSearchState,
   useStoredCommentsPagePosts,
 } from "../comments-page-search-form/comments-page-search-form-storage";
 import { CommentsPageTable } from "../comments-page-table/comments-page-table";
@@ -78,12 +81,26 @@ export function CommentsPageView({
   searchTo,
 }: CommentsPageViewProps) {
   const t = useTranslations();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasSearchParams = searchParams.has("from") || searchParams.has("q") || searchParams.has("to");
+  const storedSearchState = hasSearchParams
+    ? null
+    : getStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG);
+  const hasStoredSearchStateToRestore =
+    !hasSearchParams &&
+    !!(
+      storedSearchState?.searchFrom ||
+      storedSearchState?.searchQuery ||
+      storedSearchState?.searchTo
+    );
   const storedSelectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [submittedSelectedPosts, setSubmittedSelectedPosts] = useState<string[] | null>(null);
   const [hasPendingSearchChanges, setHasPendingSearchChanges] = useState(false);
-  const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
+  const isSearchStateResolved = hasSearchParams || !hasStoredSearchStateToRestore;
+  const shouldUseDefaultSearchFrom = isSearchStateResolved && searchFrom === "" && searchTo === "";
   const defaultSearchFrom = useSyncExternalStore(
     subscribeToDefaultSearchFrom,
     () => (shouldUseDefaultSearchFrom ? getDefaultNewsPageSearchFromValue() : ""),
@@ -115,7 +132,7 @@ export function CommentsPageView({
     : effectiveSearchFromEpochSeconds;
   const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
   const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
-  const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
+  const isSearchReady = isSearchStateResolved && (!shouldUseDefaultSearchFrom || defaultSearchFrom !== "");
   const selectedPostsKey = validatedAppliedSelectedPosts.join("\u0000");
 
   const tabs = useMemo(
@@ -145,6 +162,28 @@ export function CommentsPageView({
   const contentClassName = hasPendingSearchChanges
     ? `${styles["comments-page-content"]} ${styles["comments-page-content-blurred"]}`
     : styles["comments-page-content"];
+
+  useEffect(() => {
+    if (!hasStoredSearchStateToRestore || !storedSearchState) {
+      return;
+    }
+
+    const nextUrl = new URL(getCommentsTabRoute(activeTab), window.location.origin);
+
+    if (storedSearchState.searchFrom) {
+      nextUrl.searchParams.set("from", storedSearchState.searchFrom);
+    }
+
+    if (storedSearchState.searchQuery) {
+      nextUrl.searchParams.set("q", storedSearchState.searchQuery);
+    }
+
+    if (storedSearchState.searchTo) {
+      nextUrl.searchParams.set("to", storedSearchState.searchTo);
+    }
+
+    router.replace(`${nextUrl.pathname}${nextUrl.search}`);
+  }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
 
   return (
     <section className={styles["comments-page"]}>

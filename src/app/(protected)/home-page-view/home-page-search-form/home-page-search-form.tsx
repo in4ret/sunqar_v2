@@ -8,6 +8,11 @@ import { routes } from "@/lib/routes";
 import { normalizeSearchQuery } from "@/lib/utils";
 import { SearchInput } from "@/ui";
 
+import {
+  HOME_PAGE_SEARCH_STATE_STORAGE_CONFIG,
+  setStoredHomePageSearchState,
+} from "./home-page-search-form-storage";
+
 import styles from "../../page.module.scss";
 
 type HomePageSearchFormProps = {
@@ -37,6 +42,10 @@ export function HomePageSearchForm({
     const value = formData.get(HOME_PAGE_SEARCH_INPUT_NAME);
     const searchValue = normalizeSearchQuery(typeof value === "string" ? value : "");
     const nextUrl = new URL(routes.home, window.location.origin);
+
+    setStoredHomePageSearchState(HOME_PAGE_SEARCH_STATE_STORAGE_CONFIG, {
+      searchQuery: searchValue,
+    });
 
     if (searchValue) {
       nextUrl.searchParams.set("q", searchValue);
