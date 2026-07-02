@@ -15,7 +15,6 @@ import { NewsPageCount } from "../news-page-count/news-page-count";
 import { NewsPageSearchForm } from "../news-page-search-form/news-page-search-form";
 import {
   NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
-  setStoredNewsPageSources,
   useStoredNewsPageSources,
 } from "../news-page-search-form/news-page-search-form-storage";
 import { NewsPageSourceChart } from "../news-page-source-chart/news-page-source-chart";
@@ -77,11 +76,13 @@ export function NewsPageView({
   sources,
 }: NewsPageViewProps) {
   const t = useTranslations();
-  const selectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const storedSelectedSources = useStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [primarySelectedRowIds, setPrimarySelectedRowIds] = useState<string[]>([]);
   const [relatedSelectedRowIds, setRelatedSelectedRowIds] = useState<string[]>([]);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
+  const [submittedSelectedSources, setSubmittedSelectedSources] = useState<string[] | null>(null);
+  const [hasPendingSearchChanges, setHasPendingSearchChanges] = useState(false);
   const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
   const defaultSearchFrom = useSyncExternalStore(
     subscribeToDefaultSearchFrom,
@@ -93,8 +94,12 @@ export function NewsPageView({
     [sources],
   );
   const validatedSelectedSources = useMemo(
-    () => (selectedSources ?? []).filter((source) => availableSourceValues.has(source)),
-    [availableSourceValues, selectedSources],
+    () => (storedSelectedSources ?? []).filter((source) => availableSourceValues.has(source)),
+    [availableSourceValues, storedSelectedSources],
+  );
+  const validatedAppliedSelectedSources = useMemo(
+    () => (submittedSelectedSources ?? validatedSelectedSources).filter((source) => availableSourceValues.has(source)),
+    [availableSourceValues, submittedSelectedSources, validatedSelectedSources],
   );
   const hasPendingSearchState =
     pendingSearchState &&
@@ -115,6 +120,11 @@ export function NewsPageView({
     [primarySelectedRowIds, relatedSelectedRowIds],
   );
   const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
+  const selectedSourcesKey = validatedAppliedSelectedSources.join("\u0000");
+  const contentClassName = hasPendingSearchChanges
+    ? `${styles["news-page-content"]} ${styles["news-page-content-blurred"]}`
+    : styles["news-page-content"];
+
   const tabs = useMemo(
     () => [
       {
@@ -136,9 +146,16 @@ export function NewsPageView({
   return (
     <section className={styles["news-page"]}>
       <NewsPageSearchForm
-        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, displaySearchTo])}
+        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, displaySearchTo, selectedSourcesKey])}
         activeTab={activeTab}
-        onSearchSubmit={({ searchFrom: nextSearchFrom, searchQuery: nextSearchQuery, searchTo: nextSearchTo }) => {
+        initialSelectedSources={validatedAppliedSelectedSources}
+        onSearchChangeStateChange={setHasPendingSearchChanges}
+        onSearchSubmit={({
+          searchFrom: nextSearchFrom,
+          searchQuery: nextSearchQuery,
+          searchTo: nextSearchTo,
+          selectedSources: nextSelectedSources,
+        }) => {
           setPendingSearchState({
             nextSearchFrom,
             nextSearchQuery,
@@ -147,78 +164,77 @@ export function NewsPageView({
             previousSearchQuery: searchQuery,
             previousSearchTo: searchTo,
           });
+          setSubmittedSelectedSources(nextSelectedSources);
           setSearchTrigger((currentValue) => currentValue + 1);
         }}
         searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
         searchTo={displaySearchTo}
-        selectedSources={validatedSelectedSources}
-        setSelectedSources={(nextSources) => {
-          setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, nextSources);
-        }}
         sources={sources}
       />
-      <div className={styles["news-page-toolbar"]}>
-        <div aria-label={t("news.tabs.label")} className={styles["news-page-tabs"]} role="tablist">
-          {tabs.map((tab) => (
-            <Link
-              aria-controls={tab.panelId}
-              aria-selected={activeTab === tab.id}
-              className={styles["news-page-tab"]}
-              href={tab.href}
-              id={`news-${tab.id}-tab`}
-              key={tab.id}
-              role="tab"
-            >
-              {tab.label}
-            </Link>
-          ))}
+      <div className={contentClassName} inert={hasPendingSearchChanges}>
+        <div className={styles["news-page-toolbar"]}>
+          <div aria-label={t("news.tabs.label")} className={styles["news-page-tabs"]} role="tablist">
+            {tabs.map((tab) => (
+              <Link
+                aria-controls={tab.panelId}
+                aria-selected={activeTab === tab.id}
+                className={styles["news-page-tab"]}
+                href={tab.href}
+                id={`news-${tab.id}-tab`}
+                key={tab.id}
+                role="tab"
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+          <NewsPageCount
+            hasLoadedStoredSources={storedSelectedSources !== null && isSearchReady}
+            selectedSources={validatedAppliedSelectedSources}
+            searchFrom={submittedSearchFrom}
+            searchQuery={submittedSearchQuery}
+            searchTo={submittedSearchTo}
+            searchTrigger={searchTrigger}
+          />
         </div>
-        <NewsPageCount
-          hasLoadedStoredSources={selectedSources !== null && isSearchReady}
-          searchFrom={submittedSearchFrom}
-          searchQuery={submittedSearchQuery}
-          searchTo={submittedSearchTo}
-          searchTrigger={searchTrigger}
-          selectedSources={validatedSelectedSources}
-        />
+        {activeTab === "chart" ? (
+          <div
+            aria-labelledby="news-chart-tab"
+            className={styles["news-page-tab-panel"]}
+            id="news-chart-panel"
+            role="tabpanel"
+          >
+            <NewsPageSourceChart
+              hasLoadedStoredSources={storedSelectedSources !== null && isSearchReady}
+              searchFrom={submittedSearchFrom}
+              searchQuery={submittedSearchQuery}
+              searchTo={submittedSearchTo}
+              searchTrigger={searchTrigger}
+              selectedSources={validatedAppliedSelectedSources}
+            />
+          </div>
+        ) : (
+          <div
+            aria-labelledby="news-text-tab"
+            className={styles["news-page-tab-panel"]}
+            id="news-text-panel"
+            role="tabpanel"
+          >
+            <NewsPageTable
+              hasLoadedStoredSources={storedSelectedSources !== null && isSearchReady}
+              onPrimarySelectedRowIdsChange={setPrimarySelectedRowIds}
+              onRelatedSelectedRowIdsChange={setRelatedSelectedRowIds}
+              searchFrom={submittedSearchFrom}
+              searchQuery={submittedSearchQuery}
+              searchTo={submittedSearchTo}
+              searchTrigger={searchTrigger}
+              selectedSources={validatedAppliedSelectedSources}
+            />
+            <NewsReportModal aiModels={aiModels} ids={reportIds} keyWords={submittedSearchQuery} />
+          </div>
+        )}
       </div>
-      {activeTab === "chart" ? (
-        <div
-          aria-labelledby="news-chart-tab"
-          className={styles["news-page-tab-panel"]}
-          id="news-chart-panel"
-          role="tabpanel"
-        >
-          <NewsPageSourceChart
-            hasLoadedStoredSources={selectedSources !== null && isSearchReady}
-            searchFrom={submittedSearchFrom}
-            searchQuery={submittedSearchQuery}
-            searchTo={submittedSearchTo}
-            searchTrigger={searchTrigger}
-            selectedSources={validatedSelectedSources}
-          />
-        </div>
-      ) : (
-        <div
-          aria-labelledby="news-text-tab"
-          className={styles["news-page-tab-panel"]}
-          id="news-text-panel"
-          role="tabpanel"
-        >
-          <NewsPageTable
-            hasLoadedStoredSources={selectedSources !== null && isSearchReady}
-            onPrimarySelectedRowIdsChange={setPrimarySelectedRowIds}
-            onRelatedSelectedRowIdsChange={setRelatedSelectedRowIds}
-            searchFrom={submittedSearchFrom}
-            searchQuery={submittedSearchQuery}
-            searchTo={submittedSearchTo}
-            searchTrigger={searchTrigger}
-            selectedSources={validatedSelectedSources}
-          />
-          <NewsReportModal aiModels={aiModels} ids={reportIds} keyWords={submittedSearchQuery} />
-        </div>
-      )}
     </section>
   );
 }

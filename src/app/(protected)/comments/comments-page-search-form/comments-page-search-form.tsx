@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -23,13 +23,18 @@ import styles from "./comments-page-search-form.module.scss";
 type CommentsPageSearchFormProps = {
   activeTab: CommentsTab;
   availablePostValues: string[];
-  onSearchSubmit: (input: { searchFrom: string; searchQuery: string; searchTo: string }) => void;
+  onSearchChangeStateChange: (isDirty: boolean) => void;
+  onSearchSubmit: (input: {
+    searchFrom: string;
+    searchQuery: string;
+    searchTo: string;
+    selectedPosts: string[];
+  }) => void;
+  initialSelectedPosts: string[];
   postOptions: MultiSelectOption[];
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
-  selectedPosts: string[];
-  setSelectedPosts: (posts: string[]) => void;
 };
 
 const COMMENTS_PAGE_FROM_INPUT_NAME = "sunqar-comments-from";
@@ -40,24 +45,38 @@ const COMMENTS_PAGE_TO_INPUT_NAME = "sunqar-comments-to";
 export function CommentsPageSearchForm({
   activeTab,
   availablePostValues,
+  onSearchChangeStateChange,
   onSearchSubmit,
+  initialSelectedPosts,
   postOptions,
   searchFrom,
   searchQuery,
   searchTo,
-  selectedPosts,
-  setSelectedPosts,
 }: CommentsPageSearchFormProps) {
   const t = useTranslations();
   const router = useRouter();
   const [fromValue, setFromValue] = useState(searchFrom);
   const [toValue, setToValue] = useState(searchTo);
   const [value, setValue] = useState(searchQuery);
+  const [selectedPosts, setSelectedPosts] = useState(initialSelectedPosts);
   const availablePostValuesSet = useMemo(() => new Set(availablePostValues), [availablePostValues]);
   const validatedSelectedPosts = useMemo(
     () => selectedPosts.filter((post) => availablePostValuesSet.has(post)),
     [availablePostValuesSet, selectedPosts],
   );
+  const normalizedAppliedSelectedPosts = useMemo(
+    () => initialSelectedPosts.filter((post) => availablePostValuesSet.has(post)),
+    [availablePostValuesSet, initialSelectedPosts],
+  );
+  const isDirty =
+    fromValue !== searchFrom ||
+    toValue !== searchTo ||
+    value !== searchQuery ||
+    JSON.stringify(validatedSelectedPosts) !== JSON.stringify(normalizedAppliedSelectedPosts);
+
+  useEffect(() => {
+    onSearchChangeStateChange(isDirty);
+  }, [isDirty, onSearchChangeStateChange]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -88,7 +107,9 @@ export function CommentsPageSearchForm({
     }
 
     setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedPosts);
+    onSearchChangeStateChange(false);
     onSearchSubmit({
+      selectedPosts: validatedSelectedPosts,
       searchFrom: nextSearchFromEpochSeconds,
       searchQuery: nextSearchQuery,
       searchTo: nextSearchToEpochSeconds,
@@ -140,9 +161,7 @@ export function CommentsPageSearchForm({
           aria-label={t("comments.posts-label")}
           emptyLabel={t("comments.posts-empty")}
           name={COMMENTS_PAGE_POSTS_INPUT_NAME}
-          onChange={(nextValue) => {
-            setSelectedPosts(nextValue);
-          }}
+          onChange={setSelectedPosts}
           options={postOptions}
           placeholder={t("comments.posts-placeholder")}
           removeButtonLabel={(label) => t("comments.remove-selected-post", { post: label })}

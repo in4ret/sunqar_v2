@@ -16,7 +16,6 @@ import { CommentsPageCount } from "../comments-page-count/comments-page-count";
 import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
 import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
-  setStoredCommentsPagePosts,
   useStoredCommentsPagePosts,
 } from "../comments-page-search-form/comments-page-search-form-storage";
 import { CommentsPageTable } from "../comments-page-table/comments-page-table";
@@ -79,9 +78,11 @@ export function CommentsPageView({
   searchTo,
 }: CommentsPageViewProps) {
   const t = useTranslations();
-  const selectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const storedSelectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
+  const [submittedSelectedPosts, setSubmittedSelectedPosts] = useState<string[] | null>(null);
+  const [hasPendingSearchChanges, setHasPendingSearchChanges] = useState(false);
   const shouldUseDefaultSearchFrom = searchFrom === "" && searchTo === "";
   const defaultSearchFrom = useSyncExternalStore(
     subscribeToDefaultSearchFrom,
@@ -93,8 +94,12 @@ export function CommentsPageView({
     [availablePostValues],
   );
   const validatedSelectedPosts = useMemo(
-    () => (selectedPosts ?? []).filter((post) => availablePostValuesSet.has(post)),
-    [availablePostValuesSet, selectedPosts],
+    () => (storedSelectedPosts ?? []).filter((post) => availablePostValuesSet.has(post)),
+    [availablePostValuesSet, storedSelectedPosts],
+  );
+  const validatedAppliedSelectedPosts = useMemo(
+    () => (submittedSelectedPosts ?? validatedSelectedPosts).filter((post) => availablePostValuesSet.has(post)),
+    [availablePostValuesSet, submittedSelectedPosts, validatedSelectedPosts],
   );
   const hasPendingSearchState =
     pendingSearchState &&
@@ -111,6 +116,8 @@ export function CommentsPageView({
   const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
   const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
   const isSearchReady = !shouldUseDefaultSearchFrom || defaultSearchFrom !== "";
+  const selectedPostsKey = validatedAppliedSelectedPosts.join("\u0000");
+
   const tabs = useMemo(
     () => [
       {
@@ -135,14 +142,24 @@ export function CommentsPageView({
     [searchFrom, searchQuery, searchTo, t],
   );
   const activeTabPanelId = tabs.find((tab) => tab.id === activeTab)?.panelId ?? "comments-chart-panel";
+  const contentClassName = hasPendingSearchChanges
+    ? `${styles["comments-page-content"]} ${styles["comments-page-content-blurred"]}`
+    : styles["comments-page-content"];
 
   return (
     <section className={styles["comments-page"]}>
       <CommentsPageSearchForm
-        key={JSON.stringify([activeTab, effectiveDisplaySearchFrom, searchQuery, displaySearchTo])}
+        key={JSON.stringify([activeTab, effectiveDisplaySearchFrom, searchQuery, displaySearchTo, selectedPostsKey])}
         activeTab={activeTab}
         availablePostValues={availablePostValues}
-        onSearchSubmit={({ searchFrom: nextSearchFrom, searchQuery: nextSearchQuery, searchTo: nextSearchTo }) => {
+        initialSelectedPosts={validatedAppliedSelectedPosts}
+        onSearchChangeStateChange={setHasPendingSearchChanges}
+        onSearchSubmit={({
+          searchFrom: nextSearchFrom,
+          searchQuery: nextSearchQuery,
+          searchTo: nextSearchTo,
+          selectedPosts: nextSelectedPosts,
+        }) => {
           setPendingSearchState({
             nextSearchFrom,
             nextSearchQuery,
@@ -151,58 +168,57 @@ export function CommentsPageView({
             previousSearchQuery: searchQuery,
             previousSearchTo: searchTo,
           });
+          setSubmittedSelectedPosts(nextSelectedPosts);
           setSearchTrigger((currentValue) => currentValue + 1);
         }}
         postOptions={postOptions}
         searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
         searchTo={displaySearchTo}
-        selectedPosts={selectedPosts ?? []}
-        setSelectedPosts={(nextPosts) => {
-          setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, nextPosts);
-        }}
       />
-      <div className={styles["comments-page-toolbar"]}>
-        <div aria-label={t("comments.tabs.label")} className={styles["comments-page-tabs"]} role="tablist">
-          {tabs.map((tab) => (
-            <Link
-              aria-controls={tab.panelId}
-              aria-selected={activeTab === tab.id}
-              className={styles["comments-page-tab"]}
-              href={tab.href}
-              id={`comments-${tab.id}-tab`}
-              key={tab.id}
-              role="tab"
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </div>
-        <CommentsPageCount
-          hasLoadedStoredPosts={selectedPosts !== null && isSearchReady}
-          searchFrom={submittedSearchFrom}
-          searchQuery={submittedSearchQuery}
-          searchTo={submittedSearchTo}
-          searchTrigger={searchTrigger}
-          selectedPosts={validatedSelectedPosts}
-        />
-      </div>
-      <div
-        aria-labelledby={`comments-${activeTab}-tab`}
-        className={styles["comments-page-tab-panel"]}
-        id={activeTabPanelId}
-        role="tabpanel"
-      >
-        {activeTab === "text" ? (
-          <CommentsPageTable
-            hasLoadedStoredPosts={selectedPosts !== null && isSearchReady}
+      <div className={contentClassName} inert={hasPendingSearchChanges}>
+        <div className={styles["comments-page-toolbar"]}>
+          <div aria-label={t("comments.tabs.label")} className={styles["comments-page-tabs"]} role="tablist">
+            {tabs.map((tab) => (
+              <Link
+                aria-controls={tab.panelId}
+                aria-selected={activeTab === tab.id}
+                className={styles["comments-page-tab"]}
+                href={tab.href}
+                id={`comments-${tab.id}-tab`}
+                key={tab.id}
+                role="tab"
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+          <CommentsPageCount
+            hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+            selectedPosts={validatedAppliedSelectedPosts}
             searchFrom={submittedSearchFrom}
             searchQuery={submittedSearchQuery}
             searchTo={submittedSearchTo}
             searchTrigger={searchTrigger}
-            selectedPosts={validatedSelectedPosts}
           />
-        ) : null}
+        </div>
+        <div
+          aria-labelledby={`comments-${activeTab}-tab`}
+          className={styles["comments-page-tab-panel"]}
+          id={activeTabPanelId}
+          role="tabpanel"
+        >
+          {activeTab === "text" ? (
+            <CommentsPageTable
+              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              searchFrom={submittedSearchFrom}
+              searchQuery={submittedSearchQuery}
+              searchTo={submittedSearchTo}
+              searchTrigger={searchTrigger}
+              selectedPosts={validatedAppliedSelectedPosts}
+            />
+          ) : null}
+        </div>
       </div>
     </section>
   );

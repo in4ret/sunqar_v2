@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -22,12 +22,17 @@ import styles from "./news-page-search-form.module.scss";
 
 type NewsPageSearchFormProps = {
   activeTab: NewsTab;
-  onSearchSubmit: (input: { searchFrom: string; searchQuery: string; searchTo: string }) => void;
+  onSearchSubmit: (input: {
+    searchFrom: string;
+    searchQuery: string;
+    searchTo: string;
+    selectedSources: string[];
+  }) => void;
+  onSearchChangeStateChange: (isDirty: boolean) => void;
+  initialSelectedSources: string[];
   searchFrom: string;
-  selectedSources: string[];
   searchQuery: string;
   searchTo: string;
-  setSelectedSources: (sources: string[]) => void;
   sources: SourceOptionItem[];
 };
 
@@ -38,12 +43,12 @@ const NEWS_PAGE_TO_INPUT_NAME = "sunqar-news-to";
 
 export function NewsPageSearchForm({
   activeTab,
+  onSearchChangeStateChange,
   onSearchSubmit,
+  initialSelectedSources,
   searchFrom,
   searchQuery,
   searchTo,
-  selectedSources,
-  setSelectedSources,
   sources,
 }: NewsPageSearchFormProps) {
   const t = useTranslations();
@@ -52,6 +57,7 @@ export function NewsPageSearchForm({
   const [fromValue, setFromValue] = useState(searchFrom);
   const [toValue, setToValue] = useState(searchTo);
   const [value, setValue] = useState(searchQuery);
+  const [selectedSources, setSelectedSources] = useState(initialSelectedSources);
   const sourceOptions = useMemo(
     () =>
       buildSourceOptions({
@@ -70,6 +76,19 @@ export function NewsPageSearchForm({
     () => selectedSources.filter((source) => availableSourceValues.has(source)),
     [availableSourceValues, selectedSources],
   );
+  const normalizedAppliedSelectedSources = useMemo(
+    () => initialSelectedSources.filter((source) => availableSourceValues.has(source)),
+    [availableSourceValues, initialSelectedSources],
+  );
+  const isDirty =
+    fromValue !== searchFrom ||
+    toValue !== searchTo ||
+    value !== searchQuery ||
+    JSON.stringify(validatedSelectedSources) !== JSON.stringify(normalizedAppliedSelectedSources);
+
+  useEffect(() => {
+    onSearchChangeStateChange(isDirty);
+  }, [isDirty, onSearchChangeStateChange]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,7 +119,9 @@ export function NewsPageSearchForm({
     }
 
     setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedSources);
+    onSearchChangeStateChange(false);
     onSearchSubmit({
+      selectedSources: validatedSelectedSources,
       searchFrom: nextSearchFromEpochSeconds,
       searchQuery: nextSearchQuery,
       searchTo: nextSearchToEpochSeconds,
@@ -152,9 +173,7 @@ export function NewsPageSearchForm({
           aria-label={t("reports.form.block-sources")}
           emptyLabel={t("reports.form.block-sources-empty")}
           name={NEWS_PAGE_SOURCES_INPUT_NAME}
-          onChange={(nextValue) => {
-            setSelectedSources(nextValue);
-          }}
+          onChange={setSelectedSources}
           options={sourceOptions}
           placeholder={t("reports.form.block-sources-placeholder")}
           removeButtonLabel={(label) => t("reports.form.remove-selected-source", { source: label })}
