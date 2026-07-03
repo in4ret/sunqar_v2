@@ -1,38 +1,73 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-function debounce(fn: (entries: ResizeObserverEntry[]) => void, delay: number) {
-  let timer: ReturnType<typeof setTimeout>;
-
-  return (entries: ResizeObserverEntry[]) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(entries), delay);
-  };
-}
+import { useLayoutEffect, useRef, useState } from "react";
 
 export function useSize<T extends HTMLElement>(delay = 100) {
   const ref = useRef<T>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const frameRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (!ref.current) {
+  useLayoutEffect(() => {
+    const element = ref.current;
+
+    if (!element) {
       return;
     }
 
-    const observer = new ResizeObserver(
-      debounce((entries) => {
-        for (const entry of entries) {
-          const { width, height } = entry.contentRect;
-
-          setSize({ height, width });
+    function updateSize(nextWidth: number, nextHeight: number) {
+      setSize((currentSize) => {
+        if (currentSize.width === nextWidth && currentSize.height === nextHeight) {
+          return currentSize;
         }
-      }, delay)
-    );
 
-    observer.observe(ref.current);
+        return {
+          height: nextHeight,
+          width: nextWidth,
+        };
+      });
+    }
 
-    return () => observer.disconnect();
+    function measureElement() {
+      const { height, width } = element!.getBoundingClientRect();
+
+      updateSize(width, height);
+    }
+
+    function scheduleMeasure(entry: ResizeObserverEntry) {
+      const { height, width } = entry.contentRect;
+
+      if (delay <= 0) {
+        updateSize(width, height);
+        return;
+      }
+
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        updateSize(width, height);
+      });
+    }
+
+    measureElement();
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        scheduleMeasure(entry);
+      }
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, [delay]);
 
   return { ref, width: size.width, height: size.height };

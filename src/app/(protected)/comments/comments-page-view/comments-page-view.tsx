@@ -15,6 +15,7 @@ import {
 import { type MultiSelectOption, useToast } from "@/ui";
 
 import { CommentsPageCount } from "../comments-page-count/comments-page-count";
+import { CommentsPageScatterChart } from "../comments-page-scatter-chart/comments-page-scatter-chart";
 import { CommentsPageSearchForm } from "../comments-page-search-form/comments-page-search-form";
 import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
@@ -311,6 +312,16 @@ export function CommentsPageView({
           id={activeTabPanelId}
           role="tabpanel"
         >
+          {activeTab === "chart" ? (
+            <CommentsPageScatterChart
+              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              searchFrom={submittedSearchFrom}
+              searchQuery={submittedSearchQuery}
+              searchTo={submittedSearchTo}
+              searchTrigger={searchTrigger}
+              selectedPosts={validatedAppliedSelectedPosts}
+            />
+          ) : null}
           {activeTab === "text" ? (
             <CommentsPageTable
               hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
