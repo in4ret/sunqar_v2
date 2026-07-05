@@ -652,6 +652,8 @@ test("buildCommentPostOptions does not limit non-youtube posts", () => {
     posts,
   });
 
+  assert.equal(options[0]?.iconSrc, "/assets/instagram.svg");
+  assert.equal(options[0]?.label, "Instagram");
   assert.equal(options[0]?.children?.[0]?.children?.length, 25);
 });
 
@@ -682,7 +684,51 @@ test("buildCommentPostOptions applies youtube limits per channel independently",
 
   const youtubeChannels = options[0]?.children ?? [];
 
+  assert.equal(options[0]?.iconSrc, "/assets/youtube.svg");
+  assert.equal(options[0]?.label, "YouTube");
   assert.equal(youtubeChannels.length, 2);
   assert.equal(youtubeChannels[0]?.children?.length, 20);
   assert.equal(youtubeChannels[1]?.children?.length, 20);
+});
+
+test("buildCommentPostOptions uses display labels for top-level source groups", () => {
+  const options = buildCommentPostOptions({
+    emptyValue: "—",
+    posts: [
+      {
+        channel: "instagram-channel",
+        channelName: "Instagram Channel",
+        contentId: "https://www.instagram.com/p/example/",
+        contentTitle: "Instagram Post",
+        publishedAt: null,
+        source: "ig",
+      },
+      {
+        channel: "tiktok-channel",
+        channelName: "TikTok Channel",
+        contentId: "https://www.tiktok.com/@acct/video/1",
+        contentTitle: "TikTok Post",
+        publishedAt: null,
+        source: "tiktok",
+      },
+      {
+        channel: "youtube-channel",
+        channelName: "YouTube Channel",
+        contentId: "video-1",
+        contentTitle: "YouTube Video",
+        publishedAt: "2026-01-01T00:00:00Z",
+        source: "youtube",
+      },
+    ],
+  });
+
+  assert.deepEqual(
+    options.map((option) => option.label),
+    ["Instagram", "TikTok", "YouTube"],
+  );
+  assert.deepEqual(
+    options.map((option) => option.iconSrc),
+    ["/assets/instagram.svg", "/assets/tiktok.svg", "/assets/youtube.svg"],
+  );
+  assert.equal(options[0]?.children?.[0]?.iconSrc, undefined);
 });

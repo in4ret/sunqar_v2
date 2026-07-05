@@ -54,7 +54,7 @@ async function buildCommentsPostOptionsData(): Promise<CommentsPostOptionsData> 
 
 const getCachedCommentsPostOptions = unstable_cache(
   async () => buildCommentsPostOptionsData(),
-  ["comments-post-options-v1"],
+  ["comments-post-options-v3"],
   {
     tags: [COMMENTS_POST_OPTIONS_TAG],
   },

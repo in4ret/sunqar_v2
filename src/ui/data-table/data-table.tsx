@@ -95,6 +95,11 @@ type DataTableProps<TData> = {
 };
 
 type StoredColumnSizing = Record<string, number>;
+type FilterPopoverPosition = {
+  alignment: "left" | "right";
+  offset: number;
+};
+
 const SELECTION_COLUMN_ID = "select";
 const EMPTY_SELECTED_ROW_IDS = new Set<string>();
 
@@ -207,6 +212,26 @@ function isNativeArrowNavigationTarget(target: EventTarget | null, tableElement:
   return nativeNavigationElement !== null && tableElement.contains(nativeNavigationElement);
 }
 
+function clampFilterPopoverOffset(
+  baseLeft: number,
+  popoverWidth: number,
+  viewportLeft: number,
+  viewportRight: number,
+) {
+  let offset = 0;
+  const baseRight = baseLeft + popoverWidth;
+
+  if (baseLeft < viewportLeft) {
+    offset += viewportLeft - baseLeft;
+  }
+
+  if (baseRight + offset > viewportRight) {
+    offset -= baseRight + offset - viewportRight;
+  }
+
+  return offset;
+}
+
 export function DataTable<TData>({
   activeRowId,
   columns,
@@ -261,11 +286,14 @@ export function DataTable<TData>({
     .join(" ");
   const bodyViewportClassName = [styles["data-table-body-viewport"]].filter(Boolean).join(" ");
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
+  const filterPopoverRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const filterRootRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollViewportRef = useRef<HTMLDivElement | null>(null);
   const syncedBodyViewportRef = useRef<HTMLDivElement | null>(null);
   const syncedHeaderViewportRef = useRef<HTMLDivElement | null>(null);
   const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
+  const [filterPopoverPosition, setFilterPopoverPosition] = useState<FilterPopoverPosition | null>(null);
   const [scrollbarCompensation, setScrollbarCompensation] = useState(0);
 
   useEffect(() => {
@@ -302,7 +330,45 @@ export function DataTable<TData>({
 
   useEffect(() => {
     if (!openFilterColumnId) {
+      setFilterPopoverPosition(null);
       return;
+    }
+
+    function updateFilterPopoverPosition() {
+      const filterColumnId = openFilterColumnId ?? "";
+      const filterRoot = filterRootRefs.current[filterColumnId];
+      const filterPopover = filterPopoverRefs.current[filterColumnId];
+      const viewportElement = stickyHeaderWithScrollableRows
+        ? syncedBodyViewportRef.current
+        : scrollViewportRef.current;
+
+      if (!filterRoot || !filterPopover || !viewportElement) {
+        return;
+      }
+
+      const filterRootRect = filterRoot.getBoundingClientRect();
+      const filterPopoverRect = filterPopover.getBoundingClientRect();
+      const viewportRect = viewportElement.getBoundingClientRect();
+      const shouldAlignLeft = filterRootRect.right - filterPopoverRect.width < viewportRect.left;
+      const alignment = shouldAlignLeft ? "left" : "right";
+      const baseLeft = shouldAlignLeft
+        ? filterRootRect.left
+        : filterRootRect.right - filterPopoverRect.width;
+      const offset = clampFilterPopoverOffset(
+        baseLeft,
+        filterPopoverRect.width,
+        viewportRect.left,
+        viewportRect.right,
+      );
+
+      setFilterPopoverPosition((currentPosition) =>
+        currentPosition?.alignment === alignment && currentPosition.offset === offset
+          ? currentPosition
+          : {
+              alignment,
+              offset,
+            },
+      );
     }
 
     function handlePointerDown(event: PointerEvent) {
@@ -321,14 +387,24 @@ export function DataTable<TData>({
       }
     }
 
+    const viewportElement = stickyHeaderWithScrollableRows
+      ? syncedBodyViewportRef.current
+      : scrollViewportRef.current;
+
+    updateFilterPopoverPosition();
+
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", updateFilterPopoverPosition);
+    viewportElement?.addEventListener("scroll", updateFilterPopoverPosition, { passive: true });
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", updateFilterPopoverPosition);
+      viewportElement?.removeEventListener("scroll", updateFilterPopoverPosition);
     };
-  }, [openFilterColumnId]);
+  }, [openFilterColumnId, stickyHeaderWithScrollableRows]);
 
   useEffect(() => {
     if (!stickyHeaderWithScrollableRows) {
@@ -544,6 +620,12 @@ export function DataTable<TData>({
               const canSort = column?.enableSorting ?? false;
               const filterPopoverId = `data-table-filter-${header.id}`;
               const isFilterOpen = openFilterColumnId === header.column.id;
+              const resolvedFilterPopoverPosition = isFilterOpen
+                ? (filterPopoverPosition ?? {
+                    alignment: "right",
+                    offset: 0,
+                  })
+                : null;
               const filterButtonClassName = [
                 styles["filter-button"],
                 column?.isFilterActive ? styles["filter-button-active"] : "",
@@ -611,9 +693,22 @@ export function DataTable<TData>({
                         </button>
                         {isFilterOpen ? (
                           <div
-                            className={styles["filter-popover"]}
+                            ref={(element) => {
+                              filterPopoverRefs.current[header.column.id] = element;
+                            }}
+                            className={[
+                              styles["filter-popover"],
+                              resolvedFilterPopoverPosition?.alignment === "left"
+                                ? styles["filter-popover-align-left"]
+                                : styles["filter-popover-align-right"],
+                            ].join(" ")}
                             id={filterPopoverId}
                             role="dialog"
+                            style={
+                              {
+                                "--filter-popover-offset": `${resolvedFilterPopoverPosition?.offset ?? 0}px`,
+                              } as CSSProperties
+                            }
                           >
                             {column.filterRenderer}
                           </div>
@@ -812,7 +907,7 @@ export function DataTable<TData>({
           </div>
         </div>
       ) : (
-        <div className={styles["data-table-scroll"]}>
+        <div className={styles["data-table-scroll"]} ref={scrollViewportRef}>
           <div className={styles["data-table"]} role="table">
             {renderHeader()}
             <div className={bodyViewportClassName}>{renderBody()}</div>

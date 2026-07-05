@@ -17,6 +17,42 @@ export function normalizeCommentsChartSource(source: number | string | null | un
   return String(source ?? "").trim().toLowerCase() || "unknown";
 }
 
+export function formatCommentsChartSourceLabel(source: number | string | null | undefined) {
+  const normalizedSource = normalizeCommentsChartSource(source);
+
+  if (normalizedSource === "ig") {
+    return "Instagram";
+  }
+
+  if (normalizedSource === "tiktok") {
+    return "TikTok";
+  }
+
+  if (normalizedSource === "youtube") {
+    return "YouTube";
+  }
+
+  return String(source ?? "").trim() || "unknown";
+}
+
+export function getCommentsSourceIconSrc(source: number | string | null | undefined) {
+  const normalizedSource = normalizeCommentsChartSource(source);
+
+  if (normalizedSource === "ig") {
+    return "/assets/instagram.svg";
+  }
+
+  if (normalizedSource === "tiktok") {
+    return "/assets/tiktok.svg";
+  }
+
+  if (normalizedSource === "youtube") {
+    return "/assets/youtube.svg";
+  }
+
+  return undefined;
+}
+
 export function normalizeCommentsChartSourceTotals(rows: SourceTotalRow[]): CommentsChartSourceTotal[] {
   const totalsBySource = new Map<string, number>();
 

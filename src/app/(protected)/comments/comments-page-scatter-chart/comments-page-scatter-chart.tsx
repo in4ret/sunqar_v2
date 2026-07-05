@@ -12,7 +12,24 @@ import type {
   CommentsChartResult,
   CommentsChartSourceTotal,
 } from "@/lib/comments/comments-chart.types";
-import { getSampledCommentsChartSubtitleValues } from "@/lib/comments/comments-chart-shared";
+import {
+  formatCommentsChartSourceLabel,
+  getCommentsSourceIconSrc,
+  getSampledCommentsChartSubtitleValues,
+  normalizeCommentsChartSource,
+} from "@/lib/comments/comments-chart-shared";
+
+import {
+  areCommentsPageChartSourcesEqual,
+  filterCommentsChartPointsBySources,
+  resolveCommentsPageChartSelectedSources,
+  toggleCommentsPageChartSourceSelection,
+} from "./comments-page-scatter-chart-source-selection";
+import {
+  COMMENTS_PAGE_SCATTER_CHART_STORAGE_CONFIG,
+  setStoredCommentsPageChartSources,
+  useStoredCommentsPageChartSources,
+} from "./comments-page-scatter-chart-storage";
 
 import styles from "./comments-page-scatter-chart.module.scss";
 
@@ -94,32 +111,10 @@ function clampScore(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
-function normalizeSourceValue(source: string) {
-  return source.trim().toLowerCase() || "unknown";
-}
-
 function getSourceColor(source: string) {
-  const normalizedSource = normalizeSourceValue(source);
+  const normalizedSource = normalizeCommentsChartSource(source);
 
   return SOURCE_COLOR_OVERRIDES[normalizedSource] ?? FALLBACK_SOURCE_COLOR;
-}
-
-function formatLegendSourceLabel(source: string) {
-  const normalizedSource = normalizeSourceValue(source);
-
-  if (normalizedSource === "ig") {
-    return "Instagram";
-  }
-
-  if (normalizedSource === "tiktok") {
-    return "TikTok";
-  }
-
-  if (normalizedSource === "youtube") {
-    return "YouTube";
-  }
-
-  return source.trim() || "unknown";
 }
 
 function formatScoreTickLabel(value: number) {
@@ -231,6 +226,9 @@ export function CommentsPageScatterChart({
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const selectedPostsRef = useRef(selectedPosts);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const storedSelectedSources = useStoredCommentsPageChartSources(
+    COMMENTS_PAGE_SCATTER_CHART_STORAGE_CONFIG,
+  );
 
   useEffect(() => {
     selectedPostsRef.current = selectedPosts;
@@ -298,11 +296,32 @@ export function CommentsPageScatterChart({
   const points = useMemo(() => result?.points ?? [], [result]);
   const legendSources = useMemo(() => {
     return (result?.sourceTotals ?? []).map((sourceTotal) => ({
-      label: formatLegendSourceLabel(sourceTotal.source),
+      iconSrc: getCommentsSourceIconSrc(sourceTotal.source),
+      label: formatCommentsChartSourceLabel(sourceTotal.source),
       total: sourceTotal.total,
-      value: normalizeSourceValue(sourceTotal.source),
+      value: normalizeCommentsChartSource(sourceTotal.source),
     }));
   }, [result]);
+  const availableSourceValues = useMemo(
+    () => legendSources.map((source) => source.value),
+    [legendSources],
+  );
+  const effectiveSelectedSources = useMemo(
+    () => resolveCommentsPageChartSelectedSources(availableSourceValues, storedSelectedSources),
+    [availableSourceValues, storedSelectedSources],
+  );
+  const selectedSourceSet = useMemo(
+    () => new Set(effectiveSelectedSources),
+    [effectiveSelectedSources],
+  );
+  const visiblePoints = useMemo(
+    () => filterCommentsChartPointsBySources(points, effectiveSelectedSources),
+    [effectiveSelectedSources, points],
+  );
+  const visiblePointIds = useMemo(
+    () => new Set(visiblePoints.map((point) => point.id)),
+    [visiblePoints],
+  );
   const chartData = useMemo(() => {
     const width = Math.max(containerWidth, 0);
     const height = Math.max(containerHeight, 0);
@@ -353,6 +372,26 @@ export function CommentsPageScatterChart({
   }, [result, t]);
 
   useEffect(() => {
+    if (availableSourceValues.length === 0) {
+      return;
+    }
+
+    const resolvedSelectedSources = resolveCommentsPageChartSelectedSources(
+      availableSourceValues,
+      storedSelectedSources,
+    );
+
+    if (
+      !areCommentsPageChartSourcesEqual(storedSelectedSources, resolvedSelectedSources)
+    ) {
+      setStoredCommentsPageChartSources(
+        COMMENTS_PAGE_SCATTER_CHART_STORAGE_CONFIG,
+        resolvedSelectedSources,
+      );
+    }
+  }, [availableSourceValues, storedSelectedSources]);
+
+  useEffect(() => {
     if (!tooltip || !containerRef.current || !tooltipRef.current) {
       return;
     }
@@ -392,6 +431,15 @@ export function CommentsPageScatterChart({
     }
   }, [containerRef, tooltip]);
 
+  useEffect(() => {
+    if (
+      (activePointId && !visiblePointIds.has(activePointId)) ||
+      (tooltip && !visiblePointIds.has(tooltip.point.id))
+    ) {
+      clearTooltip();
+    }
+  }, [activePointId, tooltip, visiblePointIds]);
+
   function updateTooltip(eventTarget: EventTarget & SVGCircleElement, point: CommentsChartPoint) {
     const container = containerRef.current;
 
@@ -417,6 +465,19 @@ export function CommentsPageScatterChart({
   function clearTooltip() {
     setActivePointId(null);
     setTooltip(null);
+  }
+
+  function handleSourceToggle(sourceValue: string) {
+    const nextSelectedSources = toggleCommentsPageChartSourceSelection(
+      effectiveSelectedSources,
+      sourceValue,
+      availableSourceValues,
+    );
+
+    setStoredCommentsPageChartSources(
+      COMMENTS_PAGE_SCATTER_CHART_STORAGE_CONFIG,
+      nextSelectedSources,
+    );
   }
 
   if (state.status === "error") {
@@ -488,7 +549,7 @@ export function CommentsPageScatterChart({
                 </div>
               </div>
             </div>
-          ) : points.length === 0 ? (
+          ) : visiblePoints.length === 0 ? (
             <div className={styles["comments-page-chart-empty"]}>{t("comments.chart.empty")}</div>
           ) : chartData.chartWidth > 0 && chartData.chartHeight > 0 && chartData.xScale && chartData.yScale ? (
             <>
@@ -579,7 +640,7 @@ export function CommentsPageScatterChart({
                   >
                     {xAxisLabel}
                   </text>
-                  {points.map((point) => {
+                  {visiblePoints.map((point) => {
                     const x = chartData.xScale?.(clampScore(point.toxic)) ?? 0;
                     const y = chartData.yScale?.(clampScore(point.threat)) ?? 0;
                     const isActive = activePointId === point.id;
@@ -705,13 +766,39 @@ export function CommentsPageScatterChart({
             role="list"
           >
             {legendSources.map((source) => (
-              <div className={styles["comments-page-chart-legend-item"]} key={source.value} role="listitem">
-                <span
-                  aria-hidden="true"
-                  className={styles["comments-page-chart-legend-swatch"]}
-                  style={{ backgroundColor: getSourceColor(source.value) }}
-                />
-                <span className={styles["comments-page-chart-legend-text"]}>{`${source.label} (${source.total})`}</span>
+              <div key={source.value} role="listitem">
+                <button
+                  aria-pressed={selectedSourceSet.has(source.value)}
+                  className={[
+                    styles["comments-page-chart-legend-item"],
+                    selectedSourceSet.has(source.value)
+                      ? styles["comments-page-chart-legend-item-selected"]
+                      : styles["comments-page-chart-legend-item-unselected"],
+                  ].join(" ")}
+                  onClick={() => {
+                    handleSourceToggle(source.value);
+                  }}
+                  type="button"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={styles["comments-page-chart-legend-swatch"]}
+                    style={{ backgroundColor: getSourceColor(source.value) }}
+                  />
+                  {source.iconSrc ? (
+                    <Image
+                      alt=""
+                      aria-hidden="true"
+                      className={styles["comments-page-chart-legend-icon"]}
+                      height={16}
+                      src={source.iconSrc}
+                      width={16}
+                    />
+                  ) : null}
+                  <span className={styles["comments-page-chart-legend-text"]}>
+                    {`${source.label} (${source.total})`}
+                  </span>
+                </button>
               </div>
             ))}
           </div>

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  formatCommentsChartSourceLabel,
+  getCommentsSourceIconSrc,
   getSampledCommentsChartSubtitleValues,
   MAX_CHART_POINTS,
   normalizeCommentsChartSource,
@@ -53,6 +55,42 @@ test("normalizeCommentsChartSource collapses empty values into unknown", () => {
 test("normalizeCommentsChartSource lowercases and trims source values", () => {
   assert.equal(normalizeCommentsChartSource(" YouTube "), "youtube");
   assert.equal(normalizeCommentsChartSource(" TikTok "), "tiktok");
+});
+
+test("formatCommentsChartSourceLabel maps known sources to display names", () => {
+  assert.equal(formatCommentsChartSourceLabel("ig"), "Instagram");
+  assert.equal(formatCommentsChartSourceLabel("tiktok"), "TikTok");
+  assert.equal(formatCommentsChartSourceLabel("youtube"), "YouTube");
+});
+
+test("formatCommentsChartSourceLabel normalizes whitespace and casing for known sources", () => {
+  assert.equal(formatCommentsChartSourceLabel("  IG "), "Instagram");
+  assert.equal(formatCommentsChartSourceLabel(" TikTok "), "TikTok");
+  assert.equal(formatCommentsChartSourceLabel(" YouTube "), "YouTube");
+});
+
+test("formatCommentsChartSourceLabel falls back to trimmed source or unknown", () => {
+  assert.equal(formatCommentsChartSourceLabel(" Threads "), "Threads");
+  assert.equal(formatCommentsChartSourceLabel(""), "unknown");
+  assert.equal(formatCommentsChartSourceLabel(null), "unknown");
+});
+
+test("getCommentsSourceIconSrc maps known sources to asset paths", () => {
+  assert.equal(getCommentsSourceIconSrc("ig"), "/assets/instagram.svg");
+  assert.equal(getCommentsSourceIconSrc("tiktok"), "/assets/tiktok.svg");
+  assert.equal(getCommentsSourceIconSrc("youtube"), "/assets/youtube.svg");
+});
+
+test("getCommentsSourceIconSrc normalizes whitespace and casing for known sources", () => {
+  assert.equal(getCommentsSourceIconSrc("  IG "), "/assets/instagram.svg");
+  assert.equal(getCommentsSourceIconSrc(" TikTok "), "/assets/tiktok.svg");
+  assert.equal(getCommentsSourceIconSrc(" YouTube "), "/assets/youtube.svg");
+});
+
+test("getCommentsSourceIconSrc returns undefined for unknown and empty sources", () => {
+  assert.equal(getCommentsSourceIconSrc("threads"), undefined);
+  assert.equal(getCommentsSourceIconSrc(""), undefined);
+  assert.equal(getCommentsSourceIconSrc(null), undefined);
 });
 
 test("normalizeCommentsChartSourceTotals merges totals by normalized source", () => {

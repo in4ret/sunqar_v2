@@ -1,3 +1,7 @@
+import {
+  formatCommentsChartSourceLabel,
+  getCommentsSourceIconSrc,
+} from "@/lib/comments/comments-chart-shared";
 import { encodeCommentPostFilterValue } from "@/lib/comments/comments-filters";
 import type { MultiSelectOption } from "@/ui";
 
@@ -120,7 +124,8 @@ export function buildCommentPostOptions({
           value: channelGroup.value,
         }))
         .sort(compareByLabel),
-      label: source,
+      iconSrc: getCommentsSourceIconSrc(source),
+      label: formatCommentsChartSourceLabel(source),
       value: `source:${encodeURIComponent(source)}`,
     }))
     .sort(compareByLabel);

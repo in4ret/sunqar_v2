@@ -302,7 +302,6 @@
   position: absolute;
   z-index: 5;
   top: calc(100% + 0.4rem);
-  right: 0;
   display: grid;
   width: max-content;
   min-width: min(16rem, calc(100vw - 2rem));
@@ -312,6 +311,15 @@
   border-radius: 0.7rem;
   background: var(--bg-elevated);
   box-shadow: var(--shadow-card);
+  transform: translateX(var(--filter-popover-offset, 0px));
+}
+
+.filter-popover-align-right {
+  right: 0;
+}
+
+.filter-popover-align-left {
+  left: 0;
 }
 
 .checkbox-label {

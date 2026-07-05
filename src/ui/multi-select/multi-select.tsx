@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Image from "next/image";
 
 import { ChevronDownIcon, ChevronRightIcon, XIcon } from "../icon/icon";
 import { Modal } from "../modal/modal";
@@ -19,6 +20,7 @@ import styles from "./multi-select.module.scss";
 
 export type MultiSelectOption = {
   children?: MultiSelectOption[];
+  iconSrc?: string;
   label: string;
   value: string;
 };
@@ -26,6 +28,7 @@ export type MultiSelectOption = {
 type MultiSelectNode = {
   children: MultiSelectNode[];
   descendantLeafValues: string[];
+  iconSrc?: string;
   isLeaf: boolean;
   label: string;
   level: number;
@@ -77,6 +80,7 @@ function buildMultiSelectTree(
     return {
       children,
       descendantLeafValues,
+      iconSrc: option.iconSrc,
       isLeaf,
       label: option.label,
       level,
@@ -440,7 +444,19 @@ export function MultiSelect({
                   toggleNodeSelection(node);
                 }}
               />
-              <span>{node.label}</span>
+              <span className={styles["multi-select-option-label"]}>
+                {node.iconSrc ? (
+                  <Image
+                    alt=""
+                    aria-hidden="true"
+                    className={styles["multi-select-option-icon"]}
+                    height={16}
+                    src={node.iconSrc}
+                    width={16}
+                  />
+                ) : null}
+                <span>{node.label}</span>
+              </span>
             </label>
           </div>
         </div>
