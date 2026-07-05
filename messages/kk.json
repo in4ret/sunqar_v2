@@ -242,6 +242,16 @@
       "sort-ascending": "Өсу ретімен сұрыптау",
       "sort-descending": "Кему ретімен сұрыптау",
       "sort-cleared": "Сұрыптаусыз"
+    },
+    "related-table": {
+      "title": "Ұқсас пікірлер",
+      "close": "Жабу",
+      "similarity": "Ұқсастық",
+      "similarity-from-filter-placeholder": "Бастап",
+      "similarity-to-filter-placeholder": "Дейін",
+      "loading": "Ұқсас пікірлер жүктелуде...",
+      "error": "Ұқсас пікірлерді жүктеу мүмкін болмады.",
+      "empty": "Ұқсас пікірлер табылған жоқ."
     }
   },
   "posts": {

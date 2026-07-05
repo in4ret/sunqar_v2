@@ -23,8 +23,10 @@ import {
   DEFAULT_COMMENTS_TABLE_FILTERS,
   DEFAULT_COMMENTS_TABLE_PAGE_SIZE,
 } from "@/lib/comments/comments-table.types";
-import { DataTable, type DataTableColumn, type DataTableSort as UiDataTableSort } from "@/ui";
+import { DataTable, type DataTableColumn, type DataTableSort as UiDataTableSort,Modal } from "@/ui";
 import { FunnelPlusIcon, FunnelXIcon } from "@/ui/icon/icon";
+
+import { CommentsPageRelatedTable } from "../comments-page-related-table/comments-page-related-table";
 
 import styles from "./comments-page-table.module.scss";
 
@@ -52,6 +54,11 @@ type TableState =
 type PageState = {
   pageIndex: number;
   querySignature: string;
+};
+
+type ActiveRowState = {
+  querySignature: string;
+  rowId: string | null;
 };
 
 const COMMENTS_TABLE_COLUMN_WIDTHS_STORAGE_KEY = "sunqar-comments-table-column-widths";
@@ -277,6 +284,10 @@ export function CommentsPageTable({
     pageIndex: 0,
     querySignature: "",
   });
+  const [activeRowState, setActiveRowState] = useState<ActiveRowState>({
+    querySignature: "",
+    rowId: null,
+  });
   const [pageSize, setPageSize] = useState<CommentsTablePageSize>(DEFAULT_COMMENTS_TABLE_PAGE_SIZE);
   const selectedPostsRef = useRef(selectedPosts);
   const apiFilters = useMemo(() => toApiFilters(debouncedFilters), [debouncedFilters]);
@@ -297,6 +308,7 @@ export function CommentsPageTable({
     [apiFilters, pageSize, searchFrom, searchQuery, searchTo, searchTrigger, selectedPostsSignature, sortSignature],
   );
   const pageIndex = pageState.querySignature === querySignature ? pageState.pageIndex : 0;
+  const activeRowId = activeRowState.querySignature === querySignature ? activeRowState.rowId : null;
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -465,13 +477,17 @@ export function CommentsPageTable({
           <input
             className={styles["filter-input"]}
             name="sunqar-comments-table-comment"
-            placeholder={t("comments.table.comment-filter-placeholder")}
-            type="search"
-            value={filters.comment}
-            onChange={(event) => {
-              setFilters((current) => ({ ...current, comment: event.target.value }));
-            }}
-          />
+              placeholder={t("comments.table.comment-filter-placeholder")}
+              type="search"
+              value={filters.comment}
+              onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
+                setFilters((current) => ({ ...current, comment: event.target.value }));
+              }}
+            />
         ),
         header: t("comments.table.comment"),
         id: "comment",
@@ -504,6 +520,10 @@ export function CommentsPageTable({
                     .join(" ")}
                   type="button"
                   onClick={() => {
+                    setActiveRowState({
+                      querySignature,
+                      rowId: null,
+                    });
                     applyUsernameFilter(
                       isUsernameFilterAppliedToRow ? "" : row.username,
                       setFilters,
@@ -530,6 +550,10 @@ export function CommentsPageTable({
             type="search"
             value={filters.username}
             onChange={(event) => {
+              setActiveRowState({
+                querySignature,
+                rowId: null,
+              });
               setFilters((current) => ({ ...current, username: event.target.value }));
             }}
           />
@@ -553,6 +577,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.likesFrom}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, likesFrom: event.target.value }));
               }}
             />
@@ -564,6 +592,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.likesTo}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, likesTo: event.target.value }));
               }}
             />
@@ -588,6 +620,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.toxicFrom}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, toxicFrom: event.target.value }));
               }}
             />
@@ -599,6 +635,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.toxicTo}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, toxicTo: event.target.value }));
               }}
             />
@@ -623,6 +663,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.threatFrom}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, threatFrom: event.target.value }));
               }}
             />
@@ -634,6 +678,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.threatTo}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, threatTo: event.target.value }));
               }}
             />
@@ -658,6 +706,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.callToActionFrom}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, callToActionFrom: event.target.value }));
               }}
             />
@@ -669,6 +721,10 @@ export function CommentsPageTable({
               type="number"
               value={filters.callToActionTo}
               onChange={(event) => {
+                setActiveRowState({
+                  querySignature,
+                  rowId: null,
+                });
                 setFilters((current) => ({ ...current, callToActionTo: event.target.value }));
               }}
             />
@@ -682,12 +738,13 @@ export function CommentsPageTable({
         size: 120,
       },
     ],
-    [dateFormatter, filters, t],
+    [dateFormatter, filters, querySignature, t],
   );
 
   return (
     <section className={styles["comments-page-table"]}>
       <DataTable
+        activeRowId={activeRowId}
         columns={columns}
         data={rows}
         getRowId={(row) => row.id}
@@ -720,7 +777,17 @@ export function CommentsPageTable({
         status={state.status}
         storageKey={COMMENTS_TABLE_COLUMN_WIDTHS_STORAGE_KEY}
         total={total}
+        onActiveRowIdChange={(rowId) => {
+          setActiveRowState({
+            querySignature,
+            rowId,
+          });
+        }}
         onPageChange={(nextPageIndex) => {
+          setActiveRowState({
+            querySignature,
+            rowId: null,
+          });
           setPageState({
             pageIndex: nextPageIndex,
             querySignature,
@@ -728,11 +795,35 @@ export function CommentsPageTable({
         }}
         onPageSizeChange={(nextPageSize) => {
           if (COMMENTS_TABLE_PAGE_SIZES.some((availablePageSize) => availablePageSize === nextPageSize)) {
+            setActiveRowState({
+              querySignature,
+              rowId: null,
+            });
             setPageSize(nextPageSize as CommentsTablePageSize);
           }
         }}
-        onSortChange={setSort}
+        onSortChange={(nextSort) => {
+          setActiveRowState({
+            querySignature,
+            rowId: null,
+          });
+          setSort(nextSort);
+        }}
       />
+      <Modal
+        closeLabel={t("comments.related-table.close")}
+        isOpen={activeRowId !== null}
+        size="wide"
+        title={t("comments.related-table.title")}
+        onClose={() => {
+          setActiveRowState({
+            querySignature,
+            rowId: null,
+          });
+        }}
+      >
+        {activeRowId ? <CommentsPageRelatedTable activeCommentId={activeRowId} key={activeRowId} /> : null}
+      </Modal>
     </section>
   );
 }

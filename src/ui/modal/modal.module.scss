@@ -24,6 +24,10 @@
   box-shadow: var(--shadow-soft);
 }
 
+.modal-wide {
+  width: min(60vw, 60rem);
+}
+
 .modal-header,
 .modal-body,
 .modal-footer {
@@ -80,7 +84,6 @@
 
 .modal-body {
   min-height: 0;
-  overflow-y: auto;
   padding-bottom: 1.5rem;
 }
 

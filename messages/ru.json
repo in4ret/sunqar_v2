@@ -242,6 +242,16 @@
       "sort-ascending": "Сортировка по возрастанию",
       "sort-descending": "Сортировка по убыванию",
       "sort-cleared": "Без сортировки"
+    },
+    "related-table": {
+      "title": "Похожие комментарии",
+      "close": "Закрыть",
+      "similarity": "Сходство",
+      "similarity-from-filter-placeholder": "От",
+      "similarity-to-filter-placeholder": "До",
+      "loading": "Загружаем похожие комментарии...",
+      "error": "Не удалось загрузить похожие комментарии.",
+      "empty": "Похожие комментарии не найдены."
     }
   },
   "posts": {

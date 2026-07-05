@@ -1,0 +1,167 @@
+.comments-page-related-table {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.comments-page-related-table-scroll {
+  display: grid;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.comments-page-related-table-content {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  gap: 0.75rem;
+}
+
+.cell-text {
+  min-width: 0;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-cell {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.comment-date {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.username-cell {
+  position: relative;
+  display: flex;
+  width: calc(100% + 1.1rem);
+  min-height: calc(2.75rem + 0.9rem);
+  margin: -0.45rem -0.55rem;
+  padding: 0.45rem 2.05rem 0.45rem 0.55rem;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  min-width: 0;
+}
+
+.username-text {
+  min-width: 0;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.username-filter-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.username-filter-button:hover,
+.username-filter-button:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--bg-soft);
+  color: var(--color-primary-600);
+}
+
+.username-filter-button:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-info-500) 18%, transparent);
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.username-filter-button-active {
+  color: var(--color-info-600);
+}
+
+.username-filter-button-active:hover,
+.username-filter-button-active:focus-visible {
+  color: var(--color-danger-600);
+}
+
+.username-filter-button-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.publication-link {
+  color: var(--link-color, var(--text-primary));
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+}
+
+.publication-thumbnail-link {
+  display: inline-flex;
+  width: 100%;
+  max-width: 10rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.publication-thumbnail-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.filter-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.range-filter-grid {
+  display: grid;
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.likes-cell {
+  width: 100%;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+  white-space: nowrap;
+}

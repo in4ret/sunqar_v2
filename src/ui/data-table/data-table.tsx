@@ -88,6 +88,7 @@ type DataTableProps<TData> = {
   selectedRowIds?: Set<string>;
   selectionMode?: DataTableSelectionMode;
   sort: DataTableSort;
+  stickyHeaderWithScrollableRows?: boolean;
   status: "error" | "loading" | "success";
   storageKey?: string;
   total: number;
@@ -223,6 +224,7 @@ export function DataTable<TData>({
   selectedRowIds = EMPTY_SELECTED_ROW_IDS,
   selectionMode = "multiple",
   sort,
+  stickyHeaderWithScrollableRows = false,
   status,
   storageKey,
   total,
@@ -251,10 +253,20 @@ export function DataTable<TData>({
   ]
     .filter(Boolean)
     .join(" ");
+  const shellClassName = [
+    styles["data-table-shell"],
+    stickyHeaderWithScrollableRows ? styles["data-table-shell-fill-height"] : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const bodyViewportClassName = [styles["data-table-body-viewport"]].filter(Boolean).join(" ");
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const filterRootRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const syncedBodyViewportRef = useRef<HTMLDivElement | null>(null);
+  const syncedHeaderViewportRef = useRef<HTMLDivElement | null>(null);
   const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
+  const [scrollbarCompensation, setScrollbarCompensation] = useState(0);
 
   useEffect(() => {
     setColumnSizing((currentSizing) => ({
@@ -318,6 +330,35 @@ export function DataTable<TData>({
     };
   }, [openFilterColumnId]);
 
+  useEffect(() => {
+    if (!stickyHeaderWithScrollableRows) {
+      setScrollbarCompensation(0);
+      return;
+    }
+
+    function updateScrollbarCompensation() {
+      const viewportElement = syncedBodyViewportRef.current;
+
+      if (!viewportElement) {
+        setScrollbarCompensation(0);
+        return;
+      }
+
+      const nextCompensation = Math.max(0, viewportElement.offsetWidth - viewportElement.clientWidth);
+
+      setScrollbarCompensation((currentValue) =>
+        currentValue === nextCompensation ? currentValue : nextCompensation,
+      );
+    }
+
+    updateScrollbarCompensation();
+    window.addEventListener("resize", updateScrollbarCompensation);
+
+    return () => {
+      window.removeEventListener("resize", updateScrollbarCompensation);
+    };
+  }, [columns, data.length, pageSize, showStatusOverlay, status, stickyHeaderWithScrollableRows, total]);
+
   const tableColumns = useMemo<Array<ColumnDef<TData>>>(
     () =>
       columns.map((column) => ({
@@ -367,6 +408,7 @@ export function DataTable<TData>({
   const tableStyle = {
     ...columnSizeVars,
     "--data-table-grid-template-columns": gridTemplateColumns,
+    "--data-table-scrollbar-compensation": `${scrollbarCompensation}px`,
     "--data-table-total-width": `calc(${columnWidthValues.join(" + ")})`,
   } as CSSProperties & Record<string, string>;
 
@@ -491,8 +533,197 @@ export function DataTable<TData>({
     focusRow(nextRowId);
   }
 
+  function renderHeader() {
+    return (
+      <div className={styles["data-table-head"]} role="rowgroup">
+        {table.getHeaderGroups().map((headerGroup) => (
+          <div className={styles["data-table-row"]} key={headerGroup.id} role="row">
+            {headerGroup.headers.map((header, index) => {
+              const column = columns[index];
+              const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
+              const canSort = column?.enableSorting ?? false;
+              const filterPopoverId = `data-table-filter-${header.id}`;
+              const isFilterOpen = openFilterColumnId === header.column.id;
+              const filterButtonClassName = [
+                styles["filter-button"],
+                column?.isFilterActive ? styles["filter-button-active"] : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+              return (
+                <div
+                  className={styles["data-table-header-cell"]}
+                  data-selection-cell={isSelectionColumn ? "true" : undefined}
+                  key={header.id}
+                  role="columnheader"
+                >
+                  <div className={styles["header-content"]}>
+                    {isSelectionColumn ? (
+                      <label className={styles["checkbox-label"]}>
+                        <input
+                          ref={headerCheckboxRef}
+                          checked={isEveryVisibleRowSelected}
+                          className={styles["checkbox"]}
+                          disabled={!hasRows || !isInteractiveRows}
+                          type="checkbox"
+                          onChange={(event) => handleVisibleRowsSelectionChange(event.target.checked)}
+                        />
+                        <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                      </label>
+                    ) : canSort ? (
+                      <button
+                        className={styles["sort-button"]}
+                        type="button"
+                        onClick={() => onSortChange(getNextSort(sort, header.column.id))}
+                      >
+                        <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                        <span className={styles["sort-indicator"]}>
+                          {getSortIndicator(sort, header.column.id)}
+                        </span>
+                      </button>
+                    ) : (
+                      <span className={styles["header-label"]}>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </span>
+                    )}
+                    {column?.filterRenderer ? (
+                      <div
+                        ref={(element) => {
+                          filterRootRefs.current[header.column.id] = element;
+                        }}
+                        className={styles["filter-control"]}
+                      >
+                        <button
+                          aria-controls={filterPopoverId}
+                          aria-expanded={isFilterOpen}
+                          aria-haspopup="dialog"
+                          aria-label={labels.filterColumn}
+                          className={filterButtonClassName}
+                          type="button"
+                          onClick={() =>
+                            setOpenFilterColumnId((currentColumnId) =>
+                              currentColumnId === header.column.id ? null : header.column.id,
+                            )
+                          }
+                        >
+                          <FunnelIcon className={styles["filter-icon"]} />
+                        </button>
+                        {isFilterOpen ? (
+                          <div
+                            className={styles["filter-popover"]}
+                            id={filterPopoverId}
+                            role="dialog"
+                          >
+                            {column.filterRenderer}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                  {header.column.getCanResize() ? (
+                    <button
+                      aria-label={labels.resizeColumn}
+                      className={styles["resize-handle"]}
+                      type="button"
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                    />
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function renderBody() {
+    return (
+      <div className={bodyClassName} role="rowgroup">
+        {status === "loading" && !hasRows ? (
+          <div className={styles["state-row"]}>{labels.loading}</div>
+        ) : null}
+        {status === "error" && !hasRows ? (
+          <div className={styles["state-row"]}>{labels.error}</div>
+        ) : null}
+        {status === "success" && data.length === 0 ? (
+          <div className={styles["state-row"]}>{labels.empty}</div>
+        ) : null}
+        {hasRows ? (
+          rows.map((row, rowIndex) => {
+            const rowId = row.id;
+
+            return (
+              <div
+                ref={(element) => {
+                  rowRefs.current[rowId] = element;
+                }}
+                className={styles["data-table-row"]}
+                data-active={activeRowId === rowId}
+                data-row-navigation-row="true"
+                data-selected={isSelectionEnabled && resolvedSelectedRowIds.has(rowId)}
+                key={rowId}
+                role="row"
+                tabIndex={
+                  onActiveRowIdChange && isInteractiveRows && rovingTabIndexRowId === rowId
+                    ? 0
+                    : -1
+                }
+                onClick={(event) => handleRowClick(event, rowId)}
+                onKeyDown={(event) => handleRowKeyDown(event, rowIndex, rowId)}
+              >
+                {row.getVisibleCells().map((cell, index) => {
+                  const column = columns[index];
+                  const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
+
+                  return (
+                    <div
+                      className={styles["data-table-cell"]}
+                      data-selection-cell={isSelectionColumn ? "true" : undefined}
+                      key={cell.id}
+                      role="cell"
+                    >
+                      {isSelectionColumn ? (
+                        <input
+                          checked={resolvedSelectedRowIds.has(rowId)}
+                          className={styles["checkbox"]}
+                          disabled={!isInteractiveRows}
+                          type="checkbox"
+                          onChange={(event) => {
+                            const nextSelection = new Set(selectedRowIds);
+
+                            if (event.target.checked) {
+                              nextSelection.add(rowId);
+                            } else {
+                              nextSelection.delete(rowId);
+                            }
+
+                            onSelectedRowIdsChange?.(nextSelection);
+                          }}
+                        />
+                      ) : (
+                        flexRender(cell.column.columnDef.cell, cell.getContext())
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })
+        ) : null}
+        {showStatusOverlay ? (
+          <div className={styles["status-overlay"]} role="status">
+            {status === "loading" ? labels.loading : labels.error}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <section className={styles["data-table-shell"]} style={tableStyle} onKeyDown={handleTableKeyDown}>
+    <section className={shellClassName} style={tableStyle} onKeyDown={handleTableKeyDown}>
       <div className={styles["data-table-toolbar"]}>
         {isSelectionEnabled ? (
           <div className={styles["data-table-toolbar-group"]}>
@@ -559,189 +790,35 @@ export function DataTable<TData>({
           </div>
         </div>
       </div>
-      <div className={styles["data-table-scroll"]}>
-        <div className={styles["data-table"]} role="table">
-          <div className={styles["data-table-head"]} role="rowgroup">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <div className={styles["data-table-row"]} key={headerGroup.id} role="row">
-                {headerGroup.headers.map((header, index) => {
-                  const column = columns[index];
-                  const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
-                  const canSort = column?.enableSorting ?? false;
-                  const filterPopoverId = `data-table-filter-${header.id}`;
-                  const isFilterOpen = openFilterColumnId === header.column.id;
-                  const filterButtonClassName = [
-                    styles["filter-button"],
-                    column?.isFilterActive ? styles["filter-button-active"] : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-
-                  return (
-                    <div
-                      className={styles["data-table-header-cell"]}
-                      data-selection-cell={isSelectionColumn ? "true" : undefined}
-                      key={header.id}
-                      role="columnheader"
-                    >
-                      <div className={styles["header-content"]}>
-                        {isSelectionColumn ? (
-                          <label className={styles["checkbox-label"]}>
-                            <input
-                              ref={headerCheckboxRef}
-                              checked={isEveryVisibleRowSelected}
-                              className={styles["checkbox"]}
-                              disabled={!hasRows || !isInteractiveRows}
-                              type="checkbox"
-                              onChange={(event) => handleVisibleRowsSelectionChange(event.target.checked)}
-                            />
-                            <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-                          </label>
-                        ) : canSort ? (
-                          <button
-                            className={styles["sort-button"]}
-                            type="button"
-                            onClick={() => onSortChange(getNextSort(sort, header.column.id))}
-                          >
-                            <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-                            <span className={styles["sort-indicator"]}>
-                              {getSortIndicator(sort, header.column.id)}
-                            </span>
-                          </button>
-                        ) : (
-                          <span className={styles["header-label"]}>
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                          </span>
-                        )}
-                        {column?.filterRenderer ? (
-                          <div
-                            ref={(element) => {
-                              filterRootRefs.current[header.column.id] = element;
-                            }}
-                            className={styles["filter-control"]}
-                          >
-                            <button
-                              aria-controls={filterPopoverId}
-                              aria-expanded={isFilterOpen}
-                              aria-haspopup="dialog"
-                              aria-label={labels.filterColumn}
-                              className={filterButtonClassName}
-                              type="button"
-                              onClick={() =>
-                                setOpenFilterColumnId((currentColumnId) =>
-                                  currentColumnId === header.column.id ? null : header.column.id,
-                                )
-                              }
-                            >
-                              <FunnelIcon className={styles["filter-icon"]} />
-                            </button>
-                            {isFilterOpen ? (
-                              <div
-                                className={styles["filter-popover"]}
-                                id={filterPopoverId}
-                                role="dialog"
-                              >
-                                {column.filterRenderer}
-                              </div>
-                            ) : null}
-                          </div>
-                        ) : null}
-                      </div>
-                      {header.column.getCanResize() ? (
-                        <button
-                          aria-label={labels.resizeColumn}
-                          className={styles["resize-handle"]}
-                          type="button"
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                        />
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+      {stickyHeaderWithScrollableRows ? (
+        <div className={styles["data-table-synced-shell"]} role="table">
+          <div
+            ref={syncedHeaderViewportRef}
+            aria-hidden="true"
+            className={styles["data-table-synced-header-viewport"]}
+          >
+            <div className={styles["data-table-synced-content"]}>{renderHeader()}</div>
           </div>
-          <div className={bodyClassName} role="rowgroup">
-            {status === "loading" && !hasRows ? (
-              <div className={styles["state-row"]}>{labels.loading}</div>
-            ) : null}
-            {status === "error" && !hasRows ? (
-              <div className={styles["state-row"]}>{labels.error}</div>
-            ) : null}
-            {status === "success" && data.length === 0 ? (
-              <div className={styles["state-row"]}>{labels.empty}</div>
-            ) : null}
-            {hasRows ? (
-              rows.map((row, rowIndex) => {
-                const rowId = row.id;
-
-                return (
-                  <div
-                    ref={(element) => {
-                      rowRefs.current[rowId] = element;
-                    }}
-                    className={styles["data-table-row"]}
-                    data-active={activeRowId === rowId}
-                    data-row-navigation-row="true"
-                    data-selected={isSelectionEnabled && resolvedSelectedRowIds.has(rowId)}
-                    key={rowId}
-                    role="row"
-                    tabIndex={
-                      onActiveRowIdChange && isInteractiveRows && rovingTabIndexRowId === rowId
-                        ? 0
-                        : -1
-                    }
-                    onClick={(event) => handleRowClick(event, rowId)}
-                    onKeyDown={(event) => handleRowKeyDown(event, rowIndex, rowId)}
-                  >
-                    {row.getVisibleCells().map((cell, index) => {
-                      const column = columns[index];
-                      const isSelectionColumn = isSelectionEnabled && column?.id === SELECTION_COLUMN_ID;
-
-                      return (
-                        <div
-                          className={styles["data-table-cell"]}
-                          data-selection-cell={isSelectionColumn ? "true" : undefined}
-                          key={cell.id}
-                          role="cell"
-                        >
-                          {isSelectionColumn ? (
-                            <input
-                              checked={resolvedSelectedRowIds.has(rowId)}
-                              className={styles["checkbox"]}
-                              disabled={!isInteractiveRows}
-                              type="checkbox"
-                              onChange={(event) => {
-                                const nextSelection = new Set(selectedRowIds);
-
-                                if (event.target.checked) {
-                                  nextSelection.add(rowId);
-                                } else {
-                                  nextSelection.delete(rowId);
-                                }
-
-                                onSelectedRowIdsChange?.(nextSelection);
-                              }}
-                            />
-                          ) : (
-                            flexRender(cell.column.columnDef.cell, cell.getContext())
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })
-            ) : null}
-            {showStatusOverlay ? (
-              <div className={styles["status-overlay"]} role="status">
-                {status === "loading" ? labels.loading : labels.error}
-              </div>
-            ) : null}
+          <div
+            className={styles["data-table-synced-body-viewport"]}
+            ref={syncedBodyViewportRef}
+            onScroll={(event) => {
+              if (syncedHeaderViewportRef.current) {
+                syncedHeaderViewportRef.current.scrollLeft = event.currentTarget.scrollLeft;
+              }
+            }}
+          >
+            <div className={styles["data-table-synced-content"]}>{renderBody()}</div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className={styles["data-table-scroll"]}>
+          <div className={styles["data-table"]} role="table">
+            {renderHeader()}
+            <div className={bodyViewportClassName}>{renderBody()}</div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

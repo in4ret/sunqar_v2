@@ -10,6 +10,11 @@ import {
 } from "@/lib/comments/comments-filters";
 import { buildCommentPostOptions } from "@/lib/comments/comments-post-options";
 import {
+  createListCommentsRelatedTableRows,
+  normalizeCommentsRelatedTableCommentId,
+  normalizeCommentsRelatedTableFilters,
+} from "@/lib/comments/comments-related-table";
+import {
   buildCommentsTableFilterConditions,
   normalizeCommentsTableFilters,
 } from "@/lib/comments/comments-table";
@@ -421,6 +426,174 @@ test("buildCommentPostOptions limits youtube posts per channel to the latest 20"
         }),
       ),
   );
+});
+
+test("normalizeCommentsRelatedTableCommentId accepts valid ids", () => {
+  assert.equal(normalizeCommentsRelatedTableCommentId(" 42 "), "42");
+  assert.equal(normalizeCommentsRelatedTableCommentId("0"), null);
+  assert.equal(normalizeCommentsRelatedTableCommentId("abc"), null);
+});
+
+test("normalizeCommentsRelatedTableFilters trims and fills defaults", () => {
+  assert.deepEqual(
+    normalizeCommentsRelatedTableFilters({
+      comment: " hello ",
+      likesTo: " 4 ",
+      similarityFrom: " 0.1 ",
+      username: " alice ",
+    }),
+    {
+      comment: "hello",
+      likesFrom: "",
+      likesTo: "4",
+      similarityFrom: "0.1",
+      similarityTo: "",
+      username: "alice",
+    },
+  );
+});
+
+test("listCommentsRelatedTableRows returns rows sorted by similarity by default", async () => {
+  const listCommentsRelatedTableRows = createListCommentsRelatedTableRows({
+    manticoreSqlImpl: async (query) => {
+      if (query.startsWith("SELECT embbeding FROM comments")) {
+        return [{ embbeding: [0.1, 0.2, 0.3] }];
+      }
+
+      return [
+        {
+          call_to_action: 0,
+          comment: "Closest",
+          comment_id: "comment-1",
+          content_id: "post-1",
+          likes: 7,
+          publishedat: 150,
+          row_id: 10,
+          similarity: 0.05,
+          source: "youtube",
+          threat: 0,
+          toxic: 0,
+          username: "alice",
+        },
+        {
+          call_to_action: 0,
+          comment: "Further",
+          comment_id: "comment-2",
+          content_id: "post-2",
+          likes: 3,
+          publishedat: 100,
+          row_id: 11,
+          similarity: 0.3,
+          source: "youtube",
+          threat: 0,
+          toxic: 0,
+          username: "bob",
+        },
+      ];
+    },
+  });
+
+  const result = await listCommentsRelatedTableRows({
+    commentId: "10",
+    pageIndex: 0,
+    pageSize: 10,
+    sort: null,
+    tableFilters: normalizeCommentsRelatedTableFilters({}),
+  });
+
+  assert.equal(result.total, 2);
+  assert.deepEqual(
+    result.rows.map((row) => ({ id: row.id, similarity: row.similarity })),
+    [
+      { id: "10", similarity: 0.05 },
+      { id: "11", similarity: 0.3 },
+    ],
+  );
+});
+
+test("listCommentsRelatedTableRows filters and sorts the in-memory result set", async () => {
+  const listCommentsRelatedTableRows = createListCommentsRelatedTableRows({
+    manticoreSqlImpl: async (query) => {
+      if (query.startsWith("SELECT embbeding FROM comments")) {
+        return [{ embbeding: [0.1, 0.2, 0.3] }];
+      }
+
+      return [
+        {
+          call_to_action: 0,
+          comment: "Alpha comment",
+          comment_id: "comment-1",
+          content_id: "post-b",
+          likes: 9,
+          publishedat: 100,
+          row_id: 20,
+          similarity: 0.4,
+          source: "youtube",
+          threat: 0,
+          toxic: 0,
+          username: "alice",
+        },
+        {
+          call_to_action: 0,
+          comment: "Beta comment",
+          comment_id: "comment-2",
+          content_id: "post-a",
+          likes: 2,
+          publishedat: 200,
+          row_id: 21,
+          similarity: 0.2,
+          source: "youtube",
+          threat: 0,
+          toxic: 0,
+          username: "bob",
+        },
+      ];
+    },
+  });
+
+  const result = await listCommentsRelatedTableRows({
+    commentId: "20",
+    pageIndex: 0,
+    pageSize: 10,
+    sort: {
+      direction: "desc",
+      field: "content_id",
+    },
+    tableFilters: normalizeCommentsRelatedTableFilters({
+      comment: "comment",
+      likesFrom: "5",
+      similarityFrom: "0.3",
+      similarityTo: "0.5",
+      username: "ali",
+    }),
+  });
+
+  assert.equal(result.total, 1);
+  assert.deepEqual(result.rows.map((row) => row.id), ["20"]);
+});
+
+test("listCommentsRelatedTableRows returns an empty result when the embedding is missing", async () => {
+  const listCommentsRelatedTableRows = createListCommentsRelatedTableRows({
+    manticoreSqlImpl: async () => [{ embbeding: null }],
+  });
+
+  const result = await listCommentsRelatedTableRows({
+    commentId: "10",
+    pageIndex: 0,
+    pageSize: 10,
+    sort: {
+      direction: "asc",
+      field: "similarity",
+    },
+    tableFilters: normalizeCommentsRelatedTableFilters({}),
+  });
+
+  assert.deepEqual(result, {
+    pageIndex: 0,
+    pageSize: 10,
+    rows: [],
+    total: 0,
+  });
 });
 
 test("buildCommentPostOptions keeps youtube posts without publishedAt after dated posts", () => {

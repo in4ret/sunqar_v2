@@ -12,6 +12,7 @@ export type ModalProps = {
   footer?: ReactNode;
   isOpen: boolean;
   onClose: () => void;
+  size?: "default" | "wide";
   title: string;
 };
 
@@ -21,9 +22,13 @@ export function Modal({
   footer,
   isOpen,
   onClose,
+  size = "default",
   title,
 }: ModalProps) {
   const titleId = useId();
+  const modalClassName = [styles["modal"], size === "wide" ? styles["modal-wide"] : ""]
+    .filter(Boolean)
+    .join(" ");
 
   useEffect(() => {
     if (!isOpen) {
@@ -63,7 +68,7 @@ export function Modal({
       <section
         aria-labelledby={titleId}
         aria-modal="true"
-        className={styles["modal"]}
+        className={modalClassName}
         role="dialog"
         onClick={(event) => {
           event.stopPropagation();
