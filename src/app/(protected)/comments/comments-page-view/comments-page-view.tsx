@@ -10,6 +10,7 @@ import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
 import {
   formatDateTimeLocalValueToEpochSeconds,
+  formatEpochSecondsToDateTimeLocalValue,
   getDefaultNewsPageSearchFromValue,
 } from "@/lib/utils";
 import { type MultiSelectOption, useToast } from "@/ui";
@@ -31,8 +32,6 @@ type CommentsPageViewProps = {
   activeTab: CommentsTab;
   aiModels: Array<{ label: string; value: string }>;
   availablePostValues: string[];
-  displaySearchFrom: string;
-  displaySearchTo: string;
   postOptions: MultiSelectOption[];
   searchFrom: string;
   searchQuery: string;
@@ -77,8 +76,6 @@ export function CommentsPageView({
   activeTab,
   aiModels,
   availablePostValues,
-  displaySearchFrom,
-  displaySearchTo,
   postOptions,
   searchFrom,
   searchQuery,
@@ -130,7 +127,10 @@ export function CommentsPageView({
     pendingSearchState.previousSearchFrom === searchFrom &&
     pendingSearchState.previousSearchQuery === searchQuery &&
     pendingSearchState.previousSearchTo === searchTo;
-  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom ? defaultSearchFrom : displaySearchFrom;
+  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom
+    ? defaultSearchFrom
+    : formatEpochSecondsToDateTimeLocalValue(searchFrom);
+  const effectiveDisplaySearchTo = formatEpochSecondsToDateTimeLocalValue(searchTo);
   const effectiveSearchFromEpochSeconds = shouldUseDefaultSearchFrom
     ? formatDateTimeLocalValueToEpochSeconds(defaultSearchFrom)
     : searchFrom;
@@ -242,7 +242,7 @@ export function CommentsPageView({
   return (
     <section className={styles["comments-page"]}>
       <CommentsPageSearchForm
-        key={JSON.stringify([activeTab, effectiveDisplaySearchFrom, searchQuery, displaySearchTo, selectedPostsKey])}
+        key={JSON.stringify([activeTab, effectiveDisplaySearchFrom, searchQuery, effectiveDisplaySearchTo, selectedPostsKey])}
         activeTab={activeTab}
         availablePostValues={availablePostValues}
         initialSelectedPosts={validatedAppliedSelectedPosts}
@@ -267,7 +267,7 @@ export function CommentsPageView({
         postOptions={postOptions}
         searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
-        searchTo={displaySearchTo}
+        searchTo={effectiveDisplaySearchTo}
       />
       <div className={contentClassName} inert={hasPendingSearchChanges}>
         <div className={styles["comments-page-toolbar"]}>

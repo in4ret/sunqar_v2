@@ -4,7 +4,6 @@ import { listAiModels } from "@/lib/ai-models/ai-models";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import { listSources } from "@/lib/sources/sources";
 import {
-  formatEpochSecondsToDateTimeLocalValue,
   normalizeEpochSecondsParam,
   normalizeSearchQueryParam,
 } from "@/lib/utils";
@@ -77,8 +76,6 @@ export default async function NewsTabPage({
     <NewsPageView
       activeTab={tab}
       aiModels={activeAiModels}
-      displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
-      displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
       searchFrom={searchFrom}
       searchQuery={searchQuery}
       searchTo={searchTo}

@@ -5,7 +5,6 @@ import { getCommentsPostOptions } from "@/lib/comments";
 import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
 import {
-  formatEpochSecondsToDateTimeLocalValue,
   normalizeEpochSecondsParam,
   normalizeSearchQueryParam,
 } from "@/lib/utils";
@@ -82,8 +81,6 @@ export default async function CommentsTabPage({
       activeTab={tab}
       aiModels={activeAiModels}
       availablePostValues={commentsPostOptions.availablePostValues}
-      displaySearchFrom={formatEpochSecondsToDateTimeLocalValue(searchFrom)}
-      displaySearchTo={formatEpochSecondsToDateTimeLocalValue(searchTo)}
       postOptions={commentsPostOptions.postOptions}
       searchFrom={searchFrom}
       searchQuery={searchQuery}

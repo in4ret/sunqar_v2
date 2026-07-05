@@ -10,6 +10,7 @@ import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import type { SourceOptionItem } from "@/lib/sources/source-options";
 import {
   formatDateTimeLocalValueToEpochSeconds,
+  formatEpochSecondsToDateTimeLocalValue,
   getDefaultNewsPageSearchFromValue,
 } from "@/lib/utils";
 import { useToast } from "@/ui";
@@ -30,8 +31,6 @@ import styles from "./news-page-view.module.scss";
 type NewsPageViewProps = {
   activeTab: NewsTab;
   aiModels: Array<{ label: string; value: string }>;
-  displaySearchFrom: string;
-  displaySearchTo: string;
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
@@ -72,8 +71,6 @@ function buildNewsTabHref(tab: NewsTab, input: { searchFrom: string; searchQuery
 export function NewsPageView({
   activeTab,
   aiModels,
-  displaySearchFrom,
-  displaySearchTo,
   searchFrom,
   searchQuery,
   searchTo,
@@ -127,7 +124,10 @@ export function NewsPageView({
     pendingSearchState.previousSearchFrom === searchFrom &&
     pendingSearchState.previousSearchQuery === searchQuery &&
     pendingSearchState.previousSearchTo === searchTo;
-  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom ? defaultSearchFrom : displaySearchFrom;
+  const effectiveDisplaySearchFrom = shouldUseDefaultSearchFrom
+    ? defaultSearchFrom
+    : formatEpochSecondsToDateTimeLocalValue(searchFrom);
+  const effectiveDisplaySearchTo = formatEpochSecondsToDateTimeLocalValue(searchTo);
   const effectiveSearchFromEpochSeconds = shouldUseDefaultSearchFrom
     ? formatDateTimeLocalValueToEpochSeconds(defaultSearchFrom)
     : searchFrom;
@@ -234,7 +234,7 @@ export function NewsPageView({
   return (
     <section className={styles["news-page"]}>
       <NewsPageSearchForm
-        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, displaySearchTo, selectedSourcesKey])}
+        key={JSON.stringify([effectiveDisplaySearchFrom, searchQuery, effectiveDisplaySearchTo, selectedSourcesKey])}
         activeTab={activeTab}
         initialSelectedSources={validatedAppliedSelectedSources}
         onSearchChangeStateChange={setHasPendingSearchChanges}
@@ -257,7 +257,7 @@ export function NewsPageView({
         }}
         searchFrom={effectiveDisplaySearchFrom}
         searchQuery={searchQuery}
-        searchTo={displaySearchTo}
+        searchTo={effectiveDisplaySearchTo}
         sources={sources}
       />
       <div className={contentClassName} inert={hasPendingSearchChanges}>
