@@ -91,11 +91,7 @@ export function CommentsPageView({
     : getStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG);
   const hasStoredSearchStateToRestore =
     !hasSearchParams &&
-    !!(
-      storedSearchState?.searchFrom ||
-      storedSearchState?.searchQuery ||
-      storedSearchState?.searchTo
-    );
+    !!storedSearchState?.searchQuery;
   const storedSelectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
@@ -177,16 +173,8 @@ export function CommentsPageView({
 
     const nextUrl = new URL(getCommentsTabRoute(activeTab), window.location.origin);
 
-    if (storedSearchState.searchFrom) {
-      nextUrl.searchParams.set("from", storedSearchState.searchFrom);
-    }
-
     if (storedSearchState.searchQuery) {
       nextUrl.searchParams.set("q", storedSearchState.searchQuery);
-    }
-
-    if (storedSearchState.searchTo) {
-      nextUrl.searchParams.set("to", storedSearchState.searchTo);
     }
 
     router.replace(`${nextUrl.pathname}${nextUrl.search}`);

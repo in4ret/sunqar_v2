@@ -109,9 +109,7 @@ export function CommentsPageSearchForm({
     }
 
     setStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG, {
-      searchFrom: nextSearchFromEpochSeconds,
       searchQuery: nextSearchQuery,
-      searchTo: nextSearchToEpochSeconds,
       selectedPosts: validatedSelectedPosts,
     });
     setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedPosts);

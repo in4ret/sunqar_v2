@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { normalizeEpochSecondsParam, normalizeSearchQuery } from "@/lib/utils";
+import { normalizeSearchQuery } from "@/lib/utils";
 
 type NewsPageSearchFormStorageConfig = {
   changeEventName: string;
@@ -10,17 +10,13 @@ type NewsPageSearchFormStorageConfig = {
 };
 
 export type StoredNewsPageSearchState = {
-  searchFrom: string;
   searchQuery: string;
-  searchTo: string;
   selectedSources: string[];
 };
 
 const DEFAULT_STORED_NEWS_PAGE_SOURCES: string[] = [];
 const DEFAULT_STORED_NEWS_PAGE_SEARCH_STATE: StoredNewsPageSearchState = {
-  searchFrom: "",
   searchQuery: "",
-  searchTo: "",
   selectedSources: DEFAULT_STORED_NEWS_PAGE_SOURCES,
 };
 const storedNewsPageSourcesCache = new Map<
@@ -61,12 +57,8 @@ function normalizeStoredNewsPageSearchState(value: unknown): StoredNewsPageSearc
   const selectedSources = isStringArray(candidate.selectedSources) ? candidate.selectedSources : [];
 
   return {
-    searchFrom:
-      typeof candidate.searchFrom === "string" ? normalizeEpochSecondsParam(candidate.searchFrom) : "",
     searchQuery:
       typeof candidate.searchQuery === "string" ? normalizeSearchQuery(candidate.searchQuery) : "",
-    searchTo:
-      typeof candidate.searchTo === "string" ? normalizeEpochSecondsParam(candidate.searchTo) : "",
     selectedSources,
   };
 }

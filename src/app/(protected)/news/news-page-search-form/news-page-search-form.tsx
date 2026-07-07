@@ -121,9 +121,7 @@ export function NewsPageSearchForm({
     }
 
     setStoredNewsPageSearchState(NEWS_PAGE_SEARCH_STATE_STORAGE_CONFIG, {
-      searchFrom: nextSearchFromEpochSeconds,
       searchQuery: nextSearchQuery,
-      searchTo: nextSearchToEpochSeconds,
       selectedSources: validatedSelectedSources,
     });
     setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedSources);

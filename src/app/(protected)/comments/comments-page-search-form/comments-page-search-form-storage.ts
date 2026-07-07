@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { normalizeEpochSecondsParam, normalizeSearchQuery } from "@/lib/utils";
+import { normalizeSearchQuery } from "@/lib/utils";
 
 type CommentsPageSearchFormStorageConfig = {
   changeEventName: string;
@@ -10,17 +10,13 @@ type CommentsPageSearchFormStorageConfig = {
 };
 
 export type StoredCommentsPageSearchState = {
-  searchFrom: string;
   searchQuery: string;
-  searchTo: string;
   selectedPosts: string[];
 };
 
 const DEFAULT_STORED_COMMENTS_PAGE_POSTS: string[] = [];
 const DEFAULT_STORED_COMMENTS_PAGE_SEARCH_STATE: StoredCommentsPageSearchState = {
-  searchFrom: "",
   searchQuery: "",
-  searchTo: "",
   selectedPosts: DEFAULT_STORED_COMMENTS_PAGE_POSTS,
 };
 const storedCommentsPagePostsCache = new Map<
@@ -61,12 +57,8 @@ function normalizeStoredCommentsPageSearchState(value: unknown): StoredCommentsP
   const selectedPosts = isStringArray(candidate.selectedPosts) ? candidate.selectedPosts : [];
 
   return {
-    searchFrom:
-      typeof candidate.searchFrom === "string" ? normalizeEpochSecondsParam(candidate.searchFrom) : "",
     searchQuery:
       typeof candidate.searchQuery === "string" ? normalizeSearchQuery(candidate.searchQuery) : "",
-    searchTo:
-      typeof candidate.searchTo === "string" ? normalizeEpochSecondsParam(candidate.searchTo) : "",
     selectedPosts,
   };
 }
