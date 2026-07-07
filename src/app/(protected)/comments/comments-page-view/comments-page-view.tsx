@@ -25,6 +25,7 @@ import {
   useStoredCommentsPagePosts,
 } from "../comments-page-search-form/comments-page-search-form-storage";
 import { CommentsPageTable } from "../comments-page-table/comments-page-table";
+import { CommentsUploadForm } from "../comments-upload-form/comments-upload-form";
 
 import styles from "./comments-page-view.module.scss";
 
@@ -320,6 +321,7 @@ export function CommentsPageView({
               selectedPosts={validatedAppliedSelectedPosts}
             />
           ) : null}
+          {activeTab === "upload" ? <CommentsUploadForm /> : null}
         </div>
         <ReportModal
           aiModels={aiModels}

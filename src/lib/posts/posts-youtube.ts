@@ -1,3 +1,5 @@
+import type { NewPost } from "@/lib/db/schema";
+
 type YoutubeApiVideoItem = {
   id?: string;
   snippet?: {
@@ -44,6 +46,7 @@ type SyncYoutubeRowsDependencies = {
 const YOUTUBE_API_CHUNK_SIZE = 50;
 const YOUTUBE_VIDEOS_API_URL = "https://www.googleapis.com/youtube/v3/videos";
 const ALMATY_TIME_ZONE = "Asia/Almaty";
+const YOUTUBE_URL_SPLIT_PATTERN = /[\s,]+/;
 const youtubePublishedAtFormatter = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
   hour: "2-digit",
@@ -95,6 +98,57 @@ export function chunkValues<T>(values: T[], size: number) {
   }
 
   return chunks;
+}
+
+export function parseYoutubeUploadInput(input: string) {
+  return input
+    .split(YOUTUBE_URL_SPLIT_PATTERN)
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+export function extractYoutubeContentIdFromUrl(input: string) {
+  const normalizedInput = input.trim();
+
+  if (!normalizedInput) {
+    return null;
+  }
+
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(normalizedInput);
+  } catch {
+    return null;
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, "");
+
+  if (hostname === "youtu.be") {
+    const contentId = parsedUrl.pathname.split("/").filter(Boolean)[0]?.trim() ?? "";
+
+    return contentId || null;
+  }
+
+  if (hostname !== "youtube.com" && hostname !== "m.youtube.com") {
+    return null;
+  }
+
+  if (parsedUrl.pathname === "/watch") {
+    const contentId = parsedUrl.searchParams.get("v")?.trim() ?? "";
+
+    return contentId || null;
+  }
+
+  const [firstPathSegment, secondPathSegment] = parsedUrl.pathname.split("/").filter(Boolean);
+
+  if ((firstPathSegment === "shorts" || firstPathSegment === "live") && secondPathSegment) {
+    const contentId = secondPathSegment.trim();
+
+    return contentId || null;
+  }
+
+  return null;
 }
 
 export function mapYoutubeVideoToMetadataUpdate(
@@ -161,6 +215,22 @@ export function mapYoutubeVideoToMetadataUpdate(
   };
 }
 
+export function mapYoutubeMetadataUpdateToPost(update: YoutubeMetadataUpdate): NewPost | null {
+  if (update.status !== "ok" || !update.channelId || !update.contentId) {
+    return null;
+  }
+
+  return {
+    channel: update.channelId,
+    channelName: update.channelTitle,
+    contentId: update.contentId,
+    contentTitle: update.contentTitle,
+    id: `youtube:${update.channelId}:${update.contentId}`,
+    publishedAt: update.publishedAt,
+    source: "youtube",
+  };
+}
+
 function createYoutubeErrorUpdates(contentIds: string[]) {
   return contentIds.map((contentId) => ({
     channelId: null,
@@ -203,7 +273,7 @@ async function fetchYoutubeMetadataBatch(
   return contentIds.map((contentId) => mapYoutubeVideoToMetadataUpdate(contentId, itemsById.get(contentId)));
 }
 
-async function fetchYoutubeMetadata(
+export async function fetchYoutubeMetadata(
   contentIds: string[],
   youtubeApiKey: string,
   fetchImpl: typeof fetch,

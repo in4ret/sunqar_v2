@@ -182,6 +182,11 @@
       "text": "Мәтіндер",
       "upload": "Жүктеу"
     },
+    "upload": {
+      "youtube-urls-label": "YouTube видеоларына сілтемелер",
+      "submit": "Жүктеу",
+      "submitting": "Жүктелуде..."
+    },
     "search-label": "Іздеу сұрауы",
     "from-label": "Кезеңнің басы",
     "to-label": "Кезеңнің соңы",
@@ -600,7 +605,13 @@
     "source-fields-required": "Дереккөз атауы міндетті.",
     "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
     "source-not-found": "Дереккөз табылмады.",
-    "posts-sync-failed": "comments кестесінен посттарды жүктеу мүмкін болмады."
+    "posts-sync-failed": "comments кестесінен посттарды жүктеу мүмкін болмады.",
+    "comments-upload-empty": "Кемінде бір YouTube сілтемесін қосыңыз.",
+    "comments-upload-gateway-url-missing": "YouTube жүктеу сервисінің мекенжайы орнатылмаған.",
+    "comments-upload-gateway-request-failed": "Сілтемелерді YouTube жүктеу сервисіне жіберу мүмкін болмады.",
+    "comments-upload-youtube-api-key-missing": "YOUTUBE_API_KEY орнатылмаған.",
+    "comments-upload-no-valid-youtube-urls": "Жарамды YouTube сілтемелері табылмады.",
+    "comments-upload-failed": "YouTube роликтерін жүктеу мүмкін болмады."
   },
   "messages": {
     "user-created": "Пайдаланушы сәтті құрылды.",
@@ -616,6 +627,7 @@
     "source-created": "«{name}» дереккөзі сәтті қосылды.",
     "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",
     "source-deleted": "«{name}» дереккөзі сәтті жойылды.",
-    "posts-synced": "Посттар сәтті жүктелді: {count}."
+    "posts-synced": "Посттар сәтті жүктелді: {count}.",
+    "comments-uploaded-youtube-posts": "YouTube роликтері сәтті жүктелді: {count}."
   }
 }

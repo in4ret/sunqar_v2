@@ -1,0 +1,70 @@
+.comments-upload-form {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 52rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--bg-elevated);
+}
+
+.field-label {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 14rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.textarea:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.textarea:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.submit-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.submit-button:hover,
+.submit-button:focus-visible {
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  background: var(--button-primary-bg-disabled);
+  color: var(--button-primary-text-disabled);
+  cursor: wait;
+  transform: none;
+}

@@ -182,6 +182,11 @@
       "text": "Тексты",
       "upload": "Загрузка"
     },
+    "upload": {
+      "youtube-urls-label": "Ссылки на видео в YouTube",
+      "submit": "Загрузить",
+      "submitting": "Загрузка..."
+    },
     "search-label": "Поисковый запрос",
     "from-label": "Начало периода",
     "to-label": "Конец периода",
@@ -600,7 +605,13 @@
     "source-fields-required": "Название источника обязательно.",
     "source-name-exists": "Источник с таким названием уже существует.",
     "source-not-found": "Источник не найден.",
-    "posts-sync-failed": "Не удалось загрузить посты из comments."
+    "posts-sync-failed": "Не удалось загрузить посты из comments.",
+    "comments-upload-empty": "Добавьте хотя бы одну ссылку на YouTube.",
+    "comments-upload-gateway-url-missing": "Не задан адрес сервиса загрузки YouTube.",
+    "comments-upload-gateway-request-failed": "Не удалось отправить ссылки в сервис загрузки YouTube.",
+    "comments-upload-youtube-api-key-missing": "Не задан YOUTUBE_API_KEY.",
+    "comments-upload-no-valid-youtube-urls": "Не удалось найти валидные ссылки на YouTube.",
+    "comments-upload-failed": "Не удалось загрузить YouTube ролики."
   },
   "messages": {
     "user-created": "Пользователь успешно создан.",
@@ -616,6 +627,7 @@
     "source-created": "Источник «{name}» успешно добавлен.",
     "source-updated": "Источник «{name}» успешно обновлён.",
     "source-deleted": "Источник «{name}» успешно удалён.",
-    "posts-synced": "Посты успешно загружены: {count}."
+    "posts-synced": "Посты успешно загружены: {count}.",
+    "comments-uploaded-youtube-posts": "YouTube ролики успешно загружены: {count}."
   }
 }
