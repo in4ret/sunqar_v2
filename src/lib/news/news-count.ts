@@ -9,6 +9,7 @@ import {
   type NewsQueryInput,
   type NormalizedNewsQueryInput,
   normalizeNewsQueryInput,
+  resolveNewsAggregateExecutionMode,
 } from "@/lib/news/news-filters";
 
 type CountRow = {
@@ -21,6 +22,10 @@ async function getNewsCount(input: NormalizedNewsQueryInput) {
   );
 
   return Number(rows[0]?.total ?? 0);
+}
+
+export function resolveNewsCountExecutionMode(input: Pick<NormalizedNewsQueryInput, "to">) {
+  return resolveNewsAggregateExecutionMode(input);
 }
 
 const getCachedNewsCount = unstable_cache(
@@ -40,6 +45,10 @@ const getCachedNewsCount = unstable_cache(
 
 export async function countNews(input: NewsQueryInput) {
   const normalizedInput = normalizeNewsQueryInput(input);
+
+  if (resolveNewsCountExecutionMode(normalizedInput) === "direct") {
+    return getNewsCount(normalizedInput);
+  }
 
   return getCachedNewsCount(
     normalizedInput.query,

@@ -17,6 +17,7 @@ import {
   type NormalizedNewsQueryInput,
   normalizeNewsEpochSecondsValue,
   normalizeNewsQueryInput,
+  resolveNewsAggregateExecutionMode,
 } from "@/lib/news/news-filters";
 import {
   getDefaultNewsPageSearchFromValue,
@@ -550,6 +551,10 @@ async function getNewsChartData(
   };
 }
 
+export function resolveNewsChartExecutionMode(input: Pick<NormalizedNewsQueryInput, "to">) {
+  return resolveNewsAggregateExecutionMode(input);
+}
+
 const getCachedNewsChart = unstable_cache(
   async (query: string, serializedSources: string, from: string, to: string) =>
     getNewsChartData({
@@ -567,6 +572,10 @@ const getCachedNewsChart = unstable_cache(
 
 export async function getNewsChart(input: NewsQueryInput) {
   const normalizedInput = normalizeNewsQueryInput(input);
+
+  if (resolveNewsChartExecutionMode(normalizedInput) === "direct") {
+    return getNewsChartData(normalizedInput);
+  }
 
   return getCachedNewsChart(
     normalizedInput.query,

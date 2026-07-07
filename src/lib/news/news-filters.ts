@@ -21,6 +21,13 @@ export type NewsDateRange = {
   toEpochSeconds: number | null;
 };
 
+type NormalizeNewsDateRangeOptions = {
+  clampOpenEndedToNow?: boolean;
+  now?: Date;
+};
+
+type BuildNewsWhereClauseOptions = NormalizeNewsDateRangeOptions;
+
 function escapeManticoreMatchValue(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
 }
@@ -51,14 +58,22 @@ export function normalizeNewsEpochSecondsValue(value: string) {
   return epochSeconds;
 }
 
-export function normalizeNewsDateRange(from: string, to: string): NewsDateRange {
+function getCurrentEpochSeconds(now: Date) {
+  return Math.floor(now.getTime() / 1000);
+}
+
+export function normalizeNewsDateRange(
+  from: string,
+  to: string,
+  options: NormalizeNewsDateRangeOptions = {},
+): NewsDateRange {
   const fromEpochSeconds = normalizeNewsEpochSecondsValue(from);
-  const toEpochSeconds = normalizeNewsEpochSecondsValue(to);
+  const explicitToEpochSeconds = normalizeNewsEpochSecondsValue(to);
 
   if (
     fromEpochSeconds !== null &&
-    toEpochSeconds !== null &&
-    fromEpochSeconds > toEpochSeconds
+    explicitToEpochSeconds !== null &&
+    fromEpochSeconds > explicitToEpochSeconds
   ) {
     return {
       fromEpochSeconds: null,
@@ -66,10 +81,22 @@ export function normalizeNewsDateRange(from: string, to: string): NewsDateRange 
     };
   }
 
+  const toEpochSeconds =
+    explicitToEpochSeconds ??
+    (options.clampOpenEndedToNow ? getCurrentEpochSeconds(options.now ?? new Date()) : null);
+
   return {
     fromEpochSeconds,
     toEpochSeconds,
   };
+}
+
+export function shouldUseCachedNewsAggregateQuery(input: Pick<NormalizedNewsQueryInput, "to">) {
+  return input.to !== "";
+}
+
+export function resolveNewsAggregateExecutionMode(input: Pick<NormalizedNewsQueryInput, "to">) {
+  return shouldUseCachedNewsAggregateQuery(input) ? "cached" : "direct";
 }
 
 export function buildNewsWhereClause(
@@ -78,10 +105,16 @@ export function buildNewsWhereClause(
   from: string,
   to: string,
   extraConditions: string[] = [],
+  options: BuildNewsWhereClauseOptions = {
+    clampOpenEndedToNow: true,
+  },
 ) {
   const normalizedQuery = normalizeSearchQuery(query);
   const normalizedSources = normalizeNewsSources(sources);
-  const { fromEpochSeconds, toEpochSeconds } = normalizeNewsDateRange(from, to);
+  const { fromEpochSeconds, toEpochSeconds } = normalizeNewsDateRange(from, to, {
+    clampOpenEndedToNow: options.clampOpenEndedToNow ?? true,
+    now: options.now,
+  });
   const conditions: string[] = [];
 
   if (normalizedQuery) {

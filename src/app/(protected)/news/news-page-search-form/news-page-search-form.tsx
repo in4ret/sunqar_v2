@@ -7,9 +7,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
 import {
-  formatDateTimeLocalValueToEpochSeconds,
   normalizeDateTimeLocalValue,
   normalizeSearchQuery,
+  resolveSubmittedSearchDateRange,
 } from "@/lib/utils";
 import { MultiSelect, SearchInput } from "@/ui";
 
@@ -99,13 +99,22 @@ export function NewsPageSearchForm({
     const formFromValue = formData.get(NEWS_PAGE_FROM_INPUT_NAME);
     const formValue = formData.get(NEWS_PAGE_SEARCH_INPUT_NAME);
     const formToValue = formData.get(NEWS_PAGE_TO_INPUT_NAME);
-    const nextSearchFrom = normalizeDateTimeLocalValue(
+    const normalizedSearchFrom = normalizeDateTimeLocalValue(
       typeof formFromValue === "string" ? formFromValue : "",
     );
     const nextSearchQuery = normalizeSearchQuery(typeof formValue === "string" ? formValue : "");
-    const nextSearchTo = normalizeDateTimeLocalValue(typeof formToValue === "string" ? formToValue : "");
-    const nextSearchFromEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchFrom);
-    const nextSearchToEpochSeconds = formatDateTimeLocalValueToEpochSeconds(nextSearchTo);
+    const normalizedSearchTo = normalizeDateTimeLocalValue(
+      typeof formToValue === "string" ? formToValue : "",
+    );
+    const {
+      from: nextSearchFrom,
+      fromEpochSeconds: nextSearchFromEpochSeconds,
+      to: nextSearchTo,
+      toEpochSeconds: nextSearchToEpochSeconds,
+    } = resolveSubmittedSearchDateRange({
+      from: normalizedSearchFrom,
+      to: normalizedSearchTo,
+    });
     const nextUrl = new URL(getNewsTabRoute(activeTab), window.location.origin);
 
     if (nextSearchFromEpochSeconds) {
@@ -125,6 +134,8 @@ export function NewsPageSearchForm({
       selectedSources: validatedSelectedSources,
     });
     setStoredNewsPageSources(NEWS_PAGE_SEARCH_FORM_STORAGE_CONFIG, validatedSelectedSources);
+    setFromValue(nextSearchFrom);
+    setToValue(nextSearchTo);
     onSearchChangeStateChange(false);
     onSearchSubmit({
       selectedSources: validatedSelectedSources,

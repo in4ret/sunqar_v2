@@ -110,6 +110,34 @@ export function getDefaultNewsPageSearchFromValue(now: Date = new Date()) {
   return formatDateTimeLocalValue(defaultSearchFrom);
 }
 
+export function resolveDefaultSearchDateRange(
+  input: { from: string; to: string },
+  now: Date = new Date(),
+) {
+  if (input.from === "" && input.to === "") {
+    return {
+      from: getDefaultNewsPageSearchFromValue(now),
+      to: "",
+    };
+  }
+
+  return input;
+}
+
+export function resolveSubmittedSearchDateRange(
+  input: { from: string; to: string },
+  now: Date = new Date(),
+) {
+  const range = resolveDefaultSearchDateRange(input, now);
+
+  return {
+    from: range.from,
+    fromEpochSeconds: formatDateTimeLocalValueToEpochSeconds(range.from),
+    to: range.to,
+    toEpochSeconds: formatDateTimeLocalValueToEpochSeconds(range.to),
+  };
+}
+
 export function parseDateTimeLocalValueToEpochSeconds(value: string) {
   const parts = parseDateTimeLocalParts(value);
 
