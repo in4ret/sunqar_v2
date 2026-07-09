@@ -106,6 +106,8 @@ export const tasks = sqliteTable(
   "tasks",
   {
     taskId: text("task_id").primaryKey(),
+    type: text("type", { enum: ["load_yt_videos2"] }),
+    payload: text("payload", { mode: "json" }),
     reportId: text("report_id"),
     keyWords: text("key_words"),
     userId: text("user_id")

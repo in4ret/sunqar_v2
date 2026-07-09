@@ -7,6 +7,9 @@ import {
   processCeleryTaskMeta,
   reconcilePendingTasks,
 } from "@/lib/redis/celery-task-meta";
+import { buildRedisTaskMetaSetPattern } from "@/lib/redis/redis-sub-helpers";
+
+const REDIS_RECONCILE_INTERVAL_MS = 300_000;
 
 type GlobalRedisSubState = {
   redisTaskSubscriberStarted?: boolean;
@@ -37,6 +40,8 @@ export async function startRedisSub() {
   const startupPromise = (async () => {
     const redis = new Redis(connection);
     const subscriber = new Redis(connection);
+    const subscriptionPattern = buildRedisTaskMetaSetPattern(connection);
+    let reconcileIntervalId: ReturnType<typeof setInterval> | null = null;
 
     redis.config("SET", "notify-keyspace-events", "KEA").catch((err) => {
       console.warn("⚠️ \"SET notify-keyspace-events KEA\" failed:", err.message);
@@ -52,15 +57,30 @@ export async function startRedisSub() {
     });
 
     try {
-      await subscriber.psubscribe("__keyevent@0__:set");
+      await subscriber.psubscribe(subscriptionPattern);
 
       globalRedisSub.redisTaskSubscriberStarted = true;
+      globalRedisSub.redisTaskSubscriberCleanup = async () => {
+        if (reconcileIntervalId) {
+          clearInterval(reconcileIntervalId);
+          reconcileIntervalId = null;
+        }
 
-      console.log("✅ Subscribed to Redis SET events");
+        subscriber.disconnect();
+        redis.disconnect();
+      };
+
+      console.log(`✅ Subscribed to Redis SET events on ${subscriptionPattern}`);
 
       void reconcilePendingTasks().catch((error) => {
         console.warn("⚠️ Failed to reconcile pending tasks after Redis subscriber startup:", error);
       });
+
+      reconcileIntervalId = setInterval(() => {
+        void reconcilePendingTasks().catch((error) => {
+          console.warn("⚠️ Failed to reconcile pending tasks on interval:", error);
+        });
+      }, REDIS_RECONCILE_INTERVAL_MS);
     } catch (error) {
       redis.disconnect();
       subscriber.disconnect();

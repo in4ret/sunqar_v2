@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
 import { useHeaderTasks } from "@/components/layout/header-tasks-provider/header-tasks-provider";
 import { getTaskDownloadRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
 import { getFilenameFromResponseHeaders } from "@/lib/tasks/task-download-client";
+import { isInternalTaskNavigationUrl } from "@/lib/tasks/task-navigation";
 import {
   BellIcon,
   CircleCheckIcon,
@@ -204,6 +206,7 @@ export function TaskNotifications() {
                 const taskTitle =
                   task.reportTitle || task.keyWords || t("header.tasks.report-title");
                 const hasReportDescription = Boolean(task.reportDescription);
+                const isInternalNavigationTask = isInternalTaskNavigationUrl(task.downloadUrl);
                 const taskDetails = (
                   <>
                     <p className={styles["task-notifications-report-title"]}>{taskTitle}</p>
@@ -227,7 +230,25 @@ export function TaskNotifications() {
                     data-status={task.status}
                   >
                     <div className={styles["task-notifications-item-top"]}>
-                      {task.downloadUrl ? (
+                      {task.downloadUrl && isInternalNavigationTask ? (
+                        <Link
+                          className={styles["task-notifications-report-link"]}
+                          href={task.downloadUrl}
+                          prefetch={false}
+                        >
+                          <div className={styles["task-notifications-report"]}>
+                            {isUnreadTask ? (
+                              <span
+                                aria-hidden="true"
+                                className={styles["task-notifications-unread-indicator"]}
+                              />
+                            ) : null}
+                            <div className={styles["task-notifications-report-content"]}>
+                              {taskDetails}
+                            </div>
+                          </div>
+                        </Link>
+                      ) : task.downloadUrl ? (
                         <a
                           className={styles["task-notifications-report-link"]}
                           href={getTaskDownloadRoute(task.taskId)}

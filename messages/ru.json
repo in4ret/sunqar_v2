@@ -609,6 +609,7 @@
     "comments-upload-empty": "Добавьте хотя бы одну ссылку на YouTube.",
     "comments-upload-gateway-url-missing": "Не задан адрес сервиса загрузки YouTube.",
     "comments-upload-gateway-request-failed": "Не удалось отправить ссылки в сервис загрузки YouTube.",
+    "comments-upload-gateway-task-id-missing": "Сервис загрузки YouTube не вернул идентификатор задачи.",
     "comments-upload-youtube-api-key-missing": "Не задан YOUTUBE_API_KEY.",
     "comments-upload-no-valid-youtube-urls": "Не удалось найти валидные ссылки на YouTube.",
     "comments-upload-failed": "Не удалось загрузить YouTube ролики."
@@ -628,6 +629,6 @@
     "source-updated": "Источник «{name}» успешно обновлён.",
     "source-deleted": "Источник «{name}» успешно удалён.",
     "posts-synced": "Посты успешно загружены: {count}.",
-    "comments-uploaded-youtube-posts": "YouTube ролики успешно загружены: {count}."
+    "comments-uploaded-youtube-posts": "Новые видео добавлены, идет загрузка комментариев."
   }
 }

@@ -15,6 +15,11 @@ import {
 } from "@/lib/posts/posts-youtube";
 
 type NewPost = InferInsertModel<typeof posts>;
+type InsertedTask = {
+  payload: string[];
+  taskId: string;
+  userId: string;
+};
 
 test("parseYoutubeUploadInput splits links by commas whitespace and new lines", () => {
   assert.deepEqual(
@@ -60,9 +65,11 @@ test("uploadYoutubePostsWithDependencies throws validation error for empty input
       uploadYoutubePostsWithDependencies(" \n\t ", {
         apiGatewayUrl: "https://gateway.example.com",
         fetchImpl: fetch,
+        insertTask() {},
+        reconcileTask() {},
         upsertPosts() {},
         youtubeApiKey: "test-key",
-      }),
+      }, "user-1"),
     (error: unknown) => error instanceof UploadYoutubePostsError && error.code === "comments-upload-empty",
   );
 });
@@ -73,9 +80,11 @@ test("uploadYoutubePostsWithDependencies throws when api gateway url is missing"
       uploadYoutubePostsWithDependencies("https://youtu.be/video-1", {
         apiGatewayUrl: null,
         fetchImpl: fetch,
+        insertTask() {},
+        reconcileTask() {},
         upsertPosts() {},
         youtubeApiKey: "test-key",
-      }),
+      }, "user-1"),
     (error: unknown) =>
       error instanceof UploadYoutubePostsError && error.code === "comments-upload-gateway-url-missing",
   );
@@ -90,9 +99,11 @@ test("uploadYoutubePostsWithDependencies throws when gateway request fails", asy
           new Response("failure", {
             status: 500,
           }),
+        insertTask() {},
+        reconcileTask() {},
         upsertPosts() {},
         youtubeApiKey: "test-key",
-      }),
+      }, "user-1"),
     (error: unknown) =>
       error instanceof UploadYoutubePostsError && error.code === "comments-upload-gateway-request-failed",
   );
@@ -104,12 +115,14 @@ test("uploadYoutubePostsWithDependencies throws when no valid youtube urls remai
       uploadYoutubePostsWithDependencies("https://example.com/video-1", {
         apiGatewayUrl: "https://gateway.example.com",
         fetchImpl: async () =>
-          new Response(JSON.stringify({ ok: true }), {
+          new Response(JSON.stringify([{ task_id: "task-123" }]), {
             status: 200,
           }),
+        insertTask() {},
+        reconcileTask() {},
         upsertPosts() {},
         youtubeApiKey: "test-key",
-      }),
+      }, "user-1"),
     (error: unknown) =>
       error instanceof UploadYoutubePostsError && error.code === "comments-upload-no-valid-youtube-urls",
   );
@@ -121,19 +134,43 @@ test("uploadYoutubePostsWithDependencies throws when youtube api key is missing"
       uploadYoutubePostsWithDependencies("https://youtu.be/video-1", {
         apiGatewayUrl: "https://gateway.example.com",
         fetchImpl: async () =>
-          new Response(JSON.stringify({ ok: true }), {
+          new Response(JSON.stringify([{ task_id: "task-123" }]), {
             status: 200,
           }),
+        insertTask() {},
+        reconcileTask() {},
         upsertPosts() {},
         youtubeApiKey: "",
-      }),
+      }, "user-1"),
     (error: unknown) =>
       error instanceof UploadYoutubePostsError && error.code === "comments-upload-youtube-api-key-missing",
   );
 });
 
-test("uploadYoutubePostsWithDependencies posts original urls to gateway and upserts ok youtube posts", async () => {
+test("uploadYoutubePostsWithDependencies throws when gateway response does not include a valid task id", async () => {
+  await assert.rejects(
+    () =>
+      uploadYoutubePostsWithDependencies("https://youtu.be/video-1", {
+        apiGatewayUrl: "https://gateway.example.com",
+        fetchImpl: async () =>
+          new Response(JSON.stringify([{ not_task_id: "task-123" }]), {
+            status: 200,
+          }),
+        insertTask() {},
+        reconcileTask() {},
+        upsertPosts() {},
+        youtubeApiKey: "test-key",
+      }, "user-1"),
+    (error: unknown) =>
+      error instanceof UploadYoutubePostsError && error.code === "comments-upload-gateway-task-id-missing",
+  );
+});
+
+test("uploadYoutubePostsWithDependencies posts original urls to gateway, stores task payload, and upserts ok youtube posts", async () => {
   const recordedRequests: Array<{ body: string; url: string }> = [];
+  const recordedSteps: string[] = [];
+  const insertedTasks: InsertedTask[] = [];
+  const reconciledTaskIds: string[] = [];
   const upsertedRows: NewPost[] = [];
 
   const result = await uploadYoutubePostsWithDependencies(
@@ -144,12 +181,13 @@ test("uploadYoutubePostsWithDependencies posts original urls to gateway and upse
         const url = typeof input === "string" ? input : input.toString();
 
         if (url.includes("/load_yt_videos2")) {
+          recordedSteps.push("gateway");
           recordedRequests.push({
             body: typeof init?.body === "string" ? init.body : "",
             url,
           });
 
-          return new Response(JSON.stringify({ ok: true }), {
+          return new Response(JSON.stringify([{ task_id: "task-123" }]), {
             status: 200,
           });
         }
@@ -186,11 +224,21 @@ test("uploadYoutubePostsWithDependencies posts original urls to gateway and upse
           },
         );
       },
+      insertTask(task) {
+        recordedSteps.push("insert-task");
+        insertedTasks.push(task);
+      },
+      reconcileTask(taskId) {
+        recordedSteps.push("reconcile-task");
+        reconciledTaskIds.push(taskId);
+      },
       upsertPosts(rows) {
+        recordedSteps.push("upsert-posts");
         upsertedRows.push(...rows);
       },
       youtubeApiKey: "test-key",
     },
+    "user-1",
   );
 
   assert.deepEqual(recordedRequests, [
@@ -208,6 +256,15 @@ test("uploadYoutubePostsWithDependencies posts original urls to gateway and upse
   ]);
   assert.equal(result.insertedCount, 1);
   assert.equal(result.requestedUrlCount, 4);
+  assert.deepEqual(recordedSteps, ["gateway", "insert-task", "reconcile-task", "upsert-posts"]);
+  assert.deepEqual(insertedTasks, [
+    {
+      payload: ["video-1", "video-2"],
+      taskId: "task-123",
+      userId: "user-1",
+    },
+  ]);
+  assert.deepEqual(reconciledTaskIds, ["task-123"]);
   assert.deepEqual(upsertedRows, [
     {
       channel: "channel-video-1",
@@ -219,4 +276,65 @@ test("uploadYoutubePostsWithDependencies posts original urls to gateway and upse
       source: "youtube",
     },
   ]);
+});
+
+test("uploadYoutubePostsWithDependencies stores unique content ids in task payload even when metadata is private or missing", async () => {
+  const insertedTasks: InsertedTask[] = [];
+  const reconciledTaskIds: string[] = [];
+  const upsertedRows: NewPost[] = [];
+
+  const result = await uploadYoutubePostsWithDependencies(
+    "https://youtu.be/video-1 https://www.youtube.com/shorts/video-2",
+    {
+      apiGatewayUrl: "https://gateway.example.com",
+      fetchImpl: async (input) => {
+        const url = typeof input === "string" ? input : input.toString();
+
+        if (url.includes("/load_yt_videos2")) {
+          return new Response(JSON.stringify([{ task_id: "task-456" }]), {
+            status: 200,
+          });
+        }
+
+        return new Response(
+          JSON.stringify({
+            items: [
+              {
+                id: "video-1",
+                status: {
+                  privacyStatus: "private",
+                },
+              },
+            ],
+          }),
+          {
+            status: 200,
+          },
+        );
+      },
+      insertTask(task) {
+        insertedTasks.push(task);
+      },
+      reconcileTask(taskId) {
+        reconciledTaskIds.push(taskId);
+      },
+      upsertPosts(rows) {
+        upsertedRows.push(...rows);
+      },
+      youtubeApiKey: "test-key",
+    },
+    "user-2",
+  );
+
+  assert.equal(result.insertedCount, 0);
+  assert.equal(result.requestedUrlCount, 2);
+  assert.deepEqual(insertedTasks, [
+    {
+      payload: ["video-1", "video-2"],
+      taskId: "task-456",
+      userId: "user-2",
+    },
+  ]);
+  assert.deepEqual(reconciledTaskIds, ["task-456"]);
+  assert.deepEqual(upsertedRows, []);
 });

@@ -141,6 +141,13 @@
       "when": 1782810000000,
       "tag": "0019_silent_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1783619536176,
+      "tag": "0020_handy_sage",
+      "breakpoints": true
     }
   ]
 }

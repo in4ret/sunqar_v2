@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -22,10 +22,17 @@ import {
   COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG,
   COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG,
   getStoredCommentsPageSearchState,
+  setStoredCommentsPagePosts,
+  setStoredCommentsPageSearchState,
   useStoredCommentsPagePosts,
 } from "../comments-page-search-form/comments-page-search-form-storage";
 import { CommentsPageTable } from "../comments-page-table/comments-page-table";
 import { CommentsUploadForm } from "../comments-upload-form/comments-upload-form";
+import {
+  createCommentsTextTaskContentIdsImportState,
+  shouldImportCommentsTextTaskContentIds,
+  shouldLoadCommentsPageData,
+} from "./comments-page-view-helpers";
 
 import styles from "./comments-page-view.module.scss";
 
@@ -33,10 +40,13 @@ type CommentsPageViewProps = {
   activeTab: CommentsTab;
   aiModels: Array<{ label: string; value: string }>;
   availablePostValues: string[];
+  hasTaskContentIdsSearchParam: boolean;
+  initialSelectedPostsFromUrl: string[];
   postOptions: MultiSelectOption[];
   searchFrom: string;
   searchQuery: string;
   searchTo: string;
+  taskContentIds: string[];
 };
 
 type PendingSearchState = {
@@ -54,7 +64,12 @@ function subscribeToDefaultSearchFrom() {
 
 function buildCommentsTabHref(
   tab: CommentsTab,
-  input: { searchFrom: string; searchQuery: string; searchTo: string },
+  input: {
+    searchFrom: string;
+    searchQuery: string;
+    searchTo: string;
+    taskContentIds: string[];
+  },
 ) {
   const nextUrl = new URL(getCommentsTabRoute(tab), "http://sunqar.local");
 
@@ -70,6 +85,10 @@ function buildCommentsTabHref(
     nextUrl.searchParams.set("to", input.searchTo);
   }
 
+  if (input.taskContentIds.length > 0) {
+    nextUrl.searchParams.set("p", input.taskContentIds.join(","));
+  }
+
   return `${nextUrl.pathname}${nextUrl.search}`;
 }
 
@@ -77,16 +96,20 @@ export function CommentsPageView({
   activeTab,
   aiModels,
   availablePostValues,
+  hasTaskContentIdsSearchParam,
+  initialSelectedPostsFromUrl,
   postOptions,
   searchFrom,
   searchQuery,
   searchTo,
+  taskContentIds,
 }: CommentsPageViewProps) {
   const t = useTranslations();
   const router = useRouter();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
-  const hasSearchParams = searchParams.has("from") || searchParams.has("q") || searchParams.has("to");
+  const hasSearchParams =
+    searchParams.has("from") || searchParams.has("p") || searchParams.has("q") || searchParams.has("to");
   const storedSearchState = hasSearchParams
     ? null
     : getStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG);
@@ -94,12 +117,17 @@ export function CommentsPageView({
     !hasSearchParams &&
     !!storedSearchState?.searchQuery;
   const storedSelectedPosts = useStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG);
+  const hasImportedTaskContentIdsSearchParamRef = useRef(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [pendingSearchState, setPendingSearchState] = useState<PendingSearchState>(null);
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [submittedSelectedPosts, setSubmittedSelectedPosts] = useState<string[] | null>(null);
   const [hasPendingSearchChanges, setHasPendingSearchChanges] = useState(false);
+  const shouldImportSelectedPostsFromTaskContentIds = shouldImportCommentsTextTaskContentIds(
+    activeTab,
+    hasTaskContentIdsSearchParam,
+  );
   const isSearchStateResolved = hasSearchParams || !hasStoredSearchStateToRestore;
   const shouldUseDefaultSearchFrom = isSearchStateResolved && searchFrom === "" && searchTo === "";
   const defaultSearchFrom = useSyncExternalStore(
@@ -111,9 +139,21 @@ export function CommentsPageView({
     () => new Set(availablePostValues),
     [availablePostValues],
   );
+  const validatedSelectedPostsFromUrl = useMemo(
+    () => initialSelectedPostsFromUrl.filter((post) => availablePostValuesSet.has(post)),
+    [availablePostValuesSet, initialSelectedPostsFromUrl],
+  );
   const validatedSelectedPosts = useMemo(
-    () => (storedSelectedPosts ?? []).filter((post) => availablePostValuesSet.has(post)),
-    [availablePostValuesSet, storedSelectedPosts],
+    () =>
+      shouldImportSelectedPostsFromTaskContentIds
+        ? validatedSelectedPostsFromUrl
+        : (storedSelectedPosts ?? []).filter((post) => availablePostValuesSet.has(post)),
+    [
+      availablePostValuesSet,
+      shouldImportSelectedPostsFromTaskContentIds,
+      storedSelectedPosts,
+      validatedSelectedPostsFromUrl,
+    ],
   );
   const validatedAppliedSelectedPosts = useMemo(
     () => (submittedSelectedPosts ?? validatedSelectedPosts).filter((post) => availablePostValuesSet.has(post)),
@@ -137,30 +177,35 @@ export function CommentsPageView({
   const submittedSearchQuery = hasPendingSearchState ? pendingSearchState.nextSearchQuery : searchQuery;
   const submittedSearchTo = hasPendingSearchState ? pendingSearchState.nextSearchTo : searchTo;
   const isSearchReady = isSearchStateResolved && (!shouldUseDefaultSearchFrom || defaultSearchFrom !== "");
+  const hasLoadedSelectedPosts = shouldLoadCommentsPageData({
+    isImportingTaskContentIdsSearchParam: shouldImportSelectedPostsFromTaskContentIds,
+    isSearchReady,
+    storedSelectedPosts,
+  });
   const selectedPostsKey = validatedAppliedSelectedPosts.join("\u0000");
 
   const tabs = useMemo(
     () => [
       {
-        href: buildCommentsTabHref("chart", { searchFrom, searchQuery, searchTo }),
+        href: buildCommentsTabHref("chart", { searchFrom, searchQuery, searchTo, taskContentIds }),
         id: "chart" as const,
         label: t("comments.tabs.chart"),
         panelId: "comments-chart-panel",
       },
       {
-        href: buildCommentsTabHref("text", { searchFrom, searchQuery, searchTo }),
+        href: buildCommentsTabHref("text", { searchFrom, searchQuery, searchTo, taskContentIds }),
         id: "text" as const,
         label: t("comments.tabs.text"),
         panelId: "comments-text-panel",
       },
       {
-        href: buildCommentsTabHref("upload", { searchFrom, searchQuery, searchTo }),
+        href: buildCommentsTabHref("upload", { searchFrom, searchQuery, searchTo, taskContentIds }),
         id: "upload" as const,
         label: t("comments.tabs.upload"),
         panelId: "comments-upload-panel",
       },
     ],
-    [searchFrom, searchQuery, searchTo, t],
+    [searchFrom, searchQuery, searchTo, t, taskContentIds],
   );
   const activeTabPanelId = tabs.find((tab) => tab.id === activeTab)?.panelId ?? "comments-chart-panel";
   const contentClassName = hasPendingSearchChanges
@@ -180,6 +225,42 @@ export function CommentsPageView({
 
     router.replace(`${nextUrl.pathname}${nextUrl.search}`);
   }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
+
+  useEffect(() => {
+    if (!shouldImportSelectedPostsFromTaskContentIds) {
+      hasImportedTaskContentIdsSearchParamRef.current = false;
+    }
+  }, [shouldImportSelectedPostsFromTaskContentIds]);
+
+  useEffect(() => {
+    if (!shouldImportSelectedPostsFromTaskContentIds) {
+      return;
+    }
+
+    if (hasImportedTaskContentIdsSearchParamRef.current) {
+      return;
+    }
+
+    hasImportedTaskContentIdsSearchParamRef.current = true;
+
+    const nextState = createCommentsTextTaskContentIdsImportState({
+      searchFrom,
+      searchQuery,
+      searchTo,
+      selectedPosts: validatedSelectedPostsFromUrl,
+    });
+
+    setStoredCommentsPagePosts(COMMENTS_PAGE_SEARCH_FORM_STORAGE_CONFIG, nextState.posts);
+    setStoredCommentsPageSearchState(COMMENTS_PAGE_SEARCH_STATE_STORAGE_CONFIG, nextState.searchState);
+    router.replace(nextState.href);
+  }, [
+    router,
+    searchFrom,
+    searchQuery,
+    searchTo,
+    shouldImportSelectedPostsFromTaskContentIds,
+    validatedSelectedPostsFromUrl,
+  ]);
 
   async function handleReportSubmit({ model, prompt }: { model: string; prompt: string }) {
     setIsReportSubmitting(true);
@@ -286,7 +367,7 @@ export function CommentsPageView({
               {t("report-modal.open-button")}
             </button>
             <CommentsPageCount
-              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              hasLoadedStoredPosts={hasLoadedSelectedPosts}
               selectedPosts={validatedAppliedSelectedPosts}
               searchFrom={submittedSearchFrom}
               searchQuery={submittedSearchQuery}
@@ -303,7 +384,7 @@ export function CommentsPageView({
         >
           {activeTab === "chart" ? (
             <CommentsPageScatterChart
-              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              hasLoadedStoredPosts={hasLoadedSelectedPosts}
               searchFrom={submittedSearchFrom}
               searchQuery={submittedSearchQuery}
               searchTo={submittedSearchTo}
@@ -313,7 +394,7 @@ export function CommentsPageView({
           ) : null}
           {activeTab === "text" ? (
             <CommentsPageTable
-              hasLoadedStoredPosts={storedSelectedPosts !== null && isSearchReady}
+              hasLoadedStoredPosts={hasLoadedSelectedPosts}
               searchFrom={submittedSearchFrom}
               searchQuery={submittedSearchQuery}
               searchTo={submittedSearchTo}

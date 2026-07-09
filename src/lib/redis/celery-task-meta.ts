@@ -7,6 +7,8 @@ import { db } from "@/lib/db/client";
 import { tasks } from "@/lib/db/schema";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 
+import { resolveSuccessfulTaskDownloadUrl } from "./celery-task-meta-helpers";
+
 const CELERY_TASK_META_PREFIX = "celery-task-meta-";
 
 function failTask(taskId: string, raw: string | null) {
@@ -35,7 +37,12 @@ function completeSuccessfulTask(taskId: string, downloadUrl: string) {
 
 export async function processCeleryTaskMeta(taskId: string, raw: string | null) {
   const task = db
-    .select({ taskId: tasks.taskId, userId: tasks.userId })
+    .select({
+      payload: tasks.payload,
+      taskId: tasks.taskId,
+      type: tasks.type,
+      userId: tasks.userId,
+    })
     .from(tasks)
     .where(eq(tasks.taskId, taskId))
     .get();
@@ -45,7 +52,7 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
   try {
     const parsed = JSON.parse(raw ?? "");
     const status = typeof parsed.status === "string" ? parsed.status : "";
-    const downloadUrl = parsed?.result?.download_url ?? parsed?.result?.result?.download_url ?? null;
+    const downloadUrl = resolveSuccessfulTaskDownloadUrl(task, parsed);
 
     if (status === "SUCCESS" && downloadUrl) {
       completeSuccessfulTask(taskId, downloadUrl);
@@ -60,6 +67,37 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
   }
 
   await publishTaskSnapshotInvalidation(task.userId);
+}
+
+export async function reconcileTaskById(taskId: string): Promise<void> {
+  const normalizedTaskId = taskId.trim();
+
+  if (!normalizedTaskId) {
+    return;
+  }
+
+  const connection = process.env.REDIS_CONNECTION;
+
+  if (!connection) {
+    console.warn("⚠️ REDIS_CONNECTION is not set, task reconciliation skipped");
+    return;
+  }
+
+  const redis = new Redis(connection);
+
+  try {
+    const raw = await redis.get(`${CELERY_TASK_META_PREFIX}${normalizedTaskId}`);
+
+    if (!raw) {
+      return;
+    }
+
+    await processCeleryTaskMeta(normalizedTaskId, raw);
+  } catch (error) {
+    console.warn(`⚠️ Failed to reconcile task ${normalizedTaskId} with Redis:`, error);
+  } finally {
+    redis.disconnect();
+  }
 }
 
 export async function reconcilePendingTasks(): Promise<void> {

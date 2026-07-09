@@ -20,13 +20,13 @@ export async function submitUploadYoutubePosts(
   formData: FormData,
 ): Promise<UploadYoutubePostsState> {
   void previousState;
-  await requireAuth();
+  const user = await requireAuth();
 
   const rawInput = formData.get(YOUTUBE_URLS_FIELD_NAME);
   const urlsInput = typeof rawInput === "string" ? rawInput : "";
 
   try {
-    const result = await uploadYoutubePosts(urlsInput);
+    await uploadYoutubePosts(urlsInput, user.id);
 
     revalidatePath(routes.commentsUpload);
     revalidatePath(routes.posts);
@@ -34,9 +34,7 @@ export async function submitUploadYoutubePosts(
 
     return {
       error: null,
-      success: createActionMessage("messages.comments-uploaded-youtube-posts", {
-        count: result.insertedCount,
-      }),
+      success: createActionMessage("messages.comments-uploaded-youtube-posts"),
     };
   } catch (error) {
     if (error instanceof UploadYoutubePostsError) {

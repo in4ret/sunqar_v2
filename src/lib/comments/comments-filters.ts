@@ -20,6 +20,8 @@ export type NormalizedCommentsQueryInput = {
   to: string;
 };
 
+type CommentsTaskContentIdsParam = string | string[] | undefined;
+
 type CommentsDateRange = {
   fromEpochSeconds: number | null;
   toEpochSeconds: number | null;
@@ -96,6 +98,63 @@ export function normalizeCommentsPosts(posts: string[]) {
   }
 
   return [...normalizedValues].sort((left, right) => left.localeCompare(right, "en"));
+}
+
+export function normalizeCommentsTaskContentIdsParam(value: CommentsTaskContentIdsParam) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  if (typeof rawValue !== "string") {
+    return [];
+  }
+
+  const normalizedValues = new Set<string>();
+
+  for (const item of rawValue.split(",")) {
+    const normalizedValue = item.trim();
+
+    if (!normalizedValue) {
+      continue;
+    }
+
+    normalizedValues.add(normalizedValue);
+  }
+
+  return [...normalizedValues];
+}
+
+export function mapYoutubeContentIdsToCommentPostFilterValues(
+  contentIds: string[],
+  availablePostValues: string[],
+) {
+  if (contentIds.length === 0 || availablePostValues.length === 0) {
+    return [];
+  }
+
+  const youtubePostValuesByContentId = new Map<string, string>();
+
+  for (const value of availablePostValues) {
+    const decodedValue = decodeCommentPostFilterValue(value);
+
+    if (!decodedValue || decodedValue.source !== "youtube" || youtubePostValuesByContentId.has(decodedValue.contentId)) {
+      continue;
+    }
+
+    youtubePostValuesByContentId.set(decodedValue.contentId, value);
+  }
+
+  const selectedPostValues = new Set<string>();
+
+  for (const contentId of contentIds) {
+    const selectedPostValue = youtubePostValuesByContentId.get(contentId);
+
+    if (!selectedPostValue) {
+      continue;
+    }
+
+    selectedPostValues.add(selectedPostValue);
+  }
+
+  return [...selectedPostValues];
 }
 
 export function normalizeCommentsEpochSecondsValue(value: string) {
