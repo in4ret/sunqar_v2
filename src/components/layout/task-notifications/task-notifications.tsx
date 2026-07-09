@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useHeaderTasks } from "@/components/layout/header-tasks-provider/header-tasks-provider";
 import { getTaskDownloadRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
+import { getFilenameFromResponseHeaders } from "@/lib/tasks/task-download-client";
 import {
   BellIcon,
   CircleCheckIcon,
@@ -111,6 +112,42 @@ export function TaskNotifications() {
     }
   }
 
+  async function handleDownloadTask(
+    event: React.MouseEvent<HTMLAnchorElement>,
+    task: HeaderTaskItem,
+  ) {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(getTaskDownloadRoute(task.taskId), {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download task ${task.taskId}.`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const filename = getFilenameFromResponseHeaders(response.headers, task.downloadUrl, task.taskId);
+      const link = document.createElement("a");
+
+      link.href = objectUrl;
+      link.download = filename;
+      link.rel = "noreferrer";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Failed to download task file.", error);
+      showToast({
+        message: t("header.tasks.load-error"),
+        status: "error",
+      });
+    }
+  }
+
   return (
     <div ref={rootRef} className={styles["task-notifications"]}>
       <button
@@ -195,6 +232,9 @@ export function TaskNotifications() {
                           className={styles["task-notifications-report-link"]}
                           href={getTaskDownloadRoute(task.taskId)}
                           rel="noreferrer"
+                          onClick={(event) => {
+                            void handleDownloadTask(event, task);
+                          }}
                         >
                           <div className={styles["task-notifications-report"]}>
                             {isUnreadTask ? (
