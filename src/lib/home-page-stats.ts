@@ -1,10 +1,8 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
-
 import crypto from "node:crypto";
 
-import { ONE_HOUR_REVALIDATE } from "@/lib/cache";
+import { ONE_HOUR_REVALIDATE, swrCache } from "@/lib/cache";
 import {
   type HomePageNewsCountryChartSlice,
   type HomePageNewsCountryChartStats,
@@ -962,70 +960,86 @@ async function getNewsCountryChartStats(searchQuery: string): Promise<HomePageNe
   };
 }
 
-const getCachedHomePageNewsStats = unstable_cache(
-  async (searchQuery: string) => getNewsStats(searchQuery),
-  ["home-page-stats", "news"],
-  {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:news"],
-  }
-);
+const getCachedHomePageNewsStats = swrCache(async (searchQuery: string) => getNewsStats(searchQuery), {
+  getKeyArgs: (searchQuery: string) => [searchQuery],
+  keyParts: ["home-page-stats", "news"],
+  maxAgeSeconds: ONE_HOUR_REVALIDATE,
+  onRefreshError(error) {
+    console.error("Failed to refresh cached news stats from Manticore.", error);
+  },
+});
 
-const getCachedHomePageSourcesStats = unstable_cache(
+const getCachedHomePageSourcesStats = swrCache(
   async (searchQuery: string) => getSourcesStats(searchQuery),
-  ["home-page-stats", "sources"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:sources"],
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "sources"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached source stats from Manticore.", error);
+    },
   }
 );
 
-const getCachedHomePageCommentsStats = unstable_cache(
+const getCachedHomePageCommentsStats = swrCache(
   async (searchQuery: string) => getCommentsStats(searchQuery),
-  ["home-page-stats", "comments"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:comments"],
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "comments"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached comments stats from Manticore.", error);
+    },
   }
 );
 
-const getCachedHomePageCommentsToneAverageStats = unstable_cache(
+const getCachedHomePageCommentsToneAverageStats = swrCache(
   async (searchQuery: string) => getCommentsToneAverageStats(searchQuery),
-  ["home-page-stats", "comments-tone-average"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:comments-tone-average"],
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "comments-tone-average"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached comments tone average stats from Manticore.", error);
+    },
   }
 );
 
-const getCachedHomePageCommentsChartStats = unstable_cache(
+const getCachedHomePageCommentsChartStats = swrCache(
   async (searchQuery: string) => getCommentsChartStats(searchQuery),
-  ["home-page-stats", "comments-chart-v4"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:comments-chart-v4"],
-  }
-);
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "comments-chart"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached comments chart stats from Manticore.", error);
+    },
+  });
 
-const getCachedHomePageNewsChartStats = unstable_cache(
+const getCachedHomePageNewsChartStats = swrCache(
   async (searchQuery: string) => getNewsChartStats(searchQuery),
-  ["home-page-stats", "news-chart-v1"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:news-chart-v1"],
-  }
-);
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "news-chart"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached news chart stats from Manticore.", error);
+    },
+  });
 
-const getCachedHomePageNewsCountryChartStats = unstable_cache(
+const getCachedHomePageNewsCountryChartStats = swrCache(
   async (searchQuery: string) => getNewsCountryChartStats(searchQuery),
-  ["home-page-stats", "news-country-chart-v1"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:news-country-chart-v1"],
+    getKeyArgs: (searchQuery: string) => [searchQuery],
+    keyParts: ["home-page-stats", "news-country-chart"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached news country chart stats from Manticore.", error);
+    },
   }
 );
 
-const getCachedHomePageReportTrendStats = unstable_cache(
+const getCachedHomePageReportTrendStats = swrCache(
   async (
     userId: string,
     reportItems: HomePageReportTrendInput[],
@@ -1036,10 +1050,16 @@ const getCachedHomePageReportTrendStats = unstable_cache(
 
     return getReportTrendStats(reportItems);
   },
-  ["home-page-stats", "report-trend-v2"],
   {
-    revalidate: ONE_HOUR_REVALIDATE,
-    tags: ["home-page-stats:report-trend-v2"],
+    getKeyArgs: (userId: string, _reportItems: HomePageReportTrendInput[], reportItemsSignature: string) => [
+      userId,
+      reportItemsSignature,
+    ],
+    keyParts: ["home-page-stats", "report-trend"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
+    onRefreshError(error) {
+      console.error("Failed to refresh cached report trend stats from Manticore.", error);
+    },
   }
 );
 

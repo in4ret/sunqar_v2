@@ -67,6 +67,7 @@ async function executeManticoreSql<T = unknown>(
     throw new Error('MANTICORE_URL is not set');
   }
 
+  console.time(query);
   const res = await fetch(`${MANTICORE_URL}/sql`, {
     method: 'POST',
     headers: {
@@ -76,6 +77,7 @@ async function executeManticoreSql<T = unknown>(
     body: new URLSearchParams({ query }),
     cache: 'no-store',
   });
+  console.timeEnd(query);
 
   if (!res.ok) {
     const text = await res.text();
