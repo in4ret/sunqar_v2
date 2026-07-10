@@ -52,7 +52,7 @@ export const sources = sqliteTable(
       .notNull()
       .default(sql`(unixepoch() * 1000)`),
   },
-  (table) => [uniqueIndex("sources_name_unique").on(table.name)],
+  (table) => [uniqueIndex("sources_name_unique").on(table.name, table.type, table.country)],
 );
 
 export const reports = sqliteTable("reports", {
