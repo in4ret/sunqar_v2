@@ -362,7 +362,7 @@ export function startMaintenanceScheduler() {
     const now = new Date();
 
     const today = now.toISOString().slice(0, 10);
-    const isTwoAM = now.getHours() === 1;
+    const isTwoAM = now.getHours() === 2;
 
     if (!isTwoAM) return;
     if (globalMaintenanceState.lastRunDate === today) return;
@@ -377,5 +377,5 @@ export function startMaintenanceScheduler() {
     } finally {
       globalMaintenanceState.isMaintenanceInProgress = false;
     }
-  }, 3_000);
+  }, 60_000);
 }
