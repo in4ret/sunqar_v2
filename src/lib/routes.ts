@@ -10,7 +10,6 @@ export const routes = {
   news: "/news",
   newsChart: "/news/chart",
   newsText: "/news/text",
-  posts: "/posts",
   taskApi: "/api/tasks",
   taskStreamApi: "/api/tasks/stream",
   tasks: "/tasks",

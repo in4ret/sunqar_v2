@@ -1,12 +1,9 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
-
+import { ONE_HOUR_REVALIDATE, swrCache } from "@/lib/cache";
 import { buildCommentPostOptions } from "@/lib/comments/comments-post-options";
 import { listPosts } from "@/lib/posts/posts";
 import type { MultiSelectOption } from "@/ui";
-
-export const COMMENTS_POST_OPTIONS_TAG = "comments:post-options";
 
 export type CommentsPostOptionsData = {
   availablePostValues: string[];
@@ -52,14 +49,18 @@ async function buildCommentsPostOptionsData(): Promise<CommentsPostOptionsData> 
   };
 }
 
-const getCachedCommentsPostOptions = unstable_cache(
+const getCachedCommentsPostOptions = swrCache(
   async () => buildCommentsPostOptionsData(),
-  ["comments-post-options-v3"],
   {
-    tags: [COMMENTS_POST_OPTIONS_TAG],
+    keyParts: ["comments-post-options"],
+    maxAgeSeconds: ONE_HOUR_REVALIDATE,
   },
 );
 
 export async function getCommentsPostOptions() {
   return getCachedCommentsPostOptions();
+}
+
+export async function refreshCommentsPostOptionsCache() {
+  return getCachedCommentsPostOptions.refresh();
 }

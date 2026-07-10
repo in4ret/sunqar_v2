@@ -146,6 +146,26 @@ test("swrCache keeps stale data after a failed refresh and retries on a later re
   assert.equal(await cachedLoader("alpha"), "alpha:fresh");
 });
 
+test("swrCache refresh eagerly recomputes and overwrites the cached value", async () => {
+  let calls = 0;
+  const cachedLoader = swrCache(
+    async (query: string) => {
+      calls += 1;
+
+      return `${query}:${calls}`;
+    },
+    {
+      keyParts: ["cache-test", "eager-refresh"],
+      maxAgeSeconds: 60,
+    },
+  );
+
+  assert.equal(await cachedLoader("alpha"), "alpha:1");
+  assert.equal(await cachedLoader.refresh("alpha"), "alpha:2");
+  assert.equal(await cachedLoader("alpha"), "alpha:2");
+  assert.equal(calls, 2);
+});
+
 test("swrCache namespaces keys with static keyParts and runtime arguments", async () => {
   const sharedLoader = async (query: string) => query;
   const homePageSourcesCache = swrCache(sharedLoader, {

@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { sources as sourcesTable } from "@/lib/db/schema";
 import { env } from "@/lib/env";
+import { syncPosts } from "@/lib/posts/posts";
 
 type GlobalMaintenanceState = {
   isMaintenanceSchedulerStarted?: boolean;
@@ -342,6 +343,8 @@ export async function runDailyUpdate() {
   console.log(formatMaintenanceLogMessage("Daily update started"));
 
   await updateSources();
+  console.log(formatMaintenanceLogMessage("Posts sync started..."));
+  await syncPosts();
 
   console.log(formatMaintenanceLogMessage("Daily update finished"));
 }
@@ -359,7 +362,7 @@ export function startMaintenanceScheduler() {
     const now = new Date();
 
     const today = now.toISOString().slice(0, 10);
-    const isTwoAM = now.getHours() === 20;
+    const isTwoAM = now.getHours() === 1;
 
     if (!isTwoAM) return;
     if (globalMaintenanceState.lastRunDate === today) return;

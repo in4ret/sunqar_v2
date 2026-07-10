@@ -1,5 +1,5 @@
 export {
-  COMMENTS_POST_OPTIONS_TAG,
   type CommentsPostOptionsData,
   getCommentsPostOptions,
+  refreshCommentsPostOptionsCache,
 } from "./comments-post-options-cache";

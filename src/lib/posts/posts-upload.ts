@@ -1,5 +1,6 @@
 import { type InferInsertModel } from "drizzle-orm";
 
+import { refreshCommentsPostOptionsCache } from "@/lib/comments";
 import { posts, tasks } from "@/lib/db/schema";
 import { env } from "@/lib/env";
 import {
@@ -147,6 +148,7 @@ export async function uploadYoutubePostsWithDependencies(
 
   if (postRows.length > 0) {
     await upsertPostsImpl(postRows);
+    await refreshCommentsPostOptionsCache();
   }
 
   return {

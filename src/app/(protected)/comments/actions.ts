@@ -1,12 +1,10 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 import { requireAuth } from "@/lib/auth/auth";
-import { COMMENTS_POST_OPTIONS_TAG } from "@/lib/comments";
 import { type ActionMessage, createActionMessage } from "@/lib/i18n/action-messages";
 import { uploadYoutubePosts, UploadYoutubePostsError } from "@/lib/posts/posts-upload";
-import { routes } from "@/lib/routes";
 
 export type UploadYoutubePostsState = {
   error: ActionMessage | null;
@@ -28,9 +26,7 @@ export async function submitUploadYoutubePosts(
   try {
     await uploadYoutubePosts(urlsInput, user.id);
 
-    revalidatePath(routes.commentsUpload);
-    revalidatePath(routes.posts);
-    updateTag(COMMENTS_POST_OPTIONS_TAG);
+    revalidatePath("/comments/upload");
 
     return {
       error: null,

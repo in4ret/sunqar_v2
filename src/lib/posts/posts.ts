@@ -1,5 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 
+import { refreshCommentsPostOptionsCache } from "@/lib/comments";
 import { db } from "@/lib/db/client";
 import { type NewPost, posts, youtube } from "@/lib/db/schema";
 import { env } from "@/lib/env";
@@ -16,7 +17,6 @@ import {
 } from "@/lib/posts/posts-sync";
 import { chunkValues, type RawYoutubeRow, type YoutubeMetadataUpdate, type YoutubeRow } from "@/lib/posts/posts-youtube";
 
-const SYNC_POSTS_TIMER_LABEL = "syncPosts";
 const INSERT_POSTS_CHUNK_SIZE = 500;
 
 function replaceYoutubeRowsInDatabase(rows: YoutubeRow[]) {
@@ -85,26 +85,24 @@ export async function listPosts() {
 }
 
 export async function syncPosts() {
-  console.time(SYNC_POSTS_TIMER_LABEL);
+  const res = await syncPostsWithDependencies({
+    applyYoutubeUpdates: applyYoutubeUpdatesInDatabase,
+    enrichCommentPostRows: (rows) => enrichCommentPostRows(rows, fetch),
+    fetchImpl: fetch,
+    loadCommentPostRows: () =>
+      manticoreSql<RawCommentPostRow>(
+        `SELECT source, channel, content_id FROM comments WHERE source IN ('ig', 'tiktok') GROUP BY source, channel, content_id LIMIT 1000000 OPTION max_matches=10000`,
+      ),
+    loadYoutubeRows: () =>
+      manticoreSql<RawYoutubeRow>(
+        `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=20000`,
+      ),
+    rebuildPosts: rebuildPostsInDatabase,
+    replaceYoutubeRows: replaceYoutubeRowsInDatabase,
+    youtubeApiKey: env.youtubeApiKey,
+  });
 
-  try {
-    return await syncPostsWithDependencies({
-      applyYoutubeUpdates: applyYoutubeUpdatesInDatabase,
-      enrichCommentPostRows: (rows) => enrichCommentPostRows(rows, fetch),
-      fetchImpl: fetch,
-      loadCommentPostRows: () =>
-        manticoreSql<RawCommentPostRow>(
-          `SELECT source, channel, content_id FROM comments WHERE source IN ('ig', 'tiktok') GROUP BY source, channel, content_id LIMIT 1000000 OPTION max_matches=10000`,
-        ),
-      loadYoutubeRows: () =>
-        manticoreSql<RawYoutubeRow>(
-          `SELECT content_id FROM comments WHERE source = 'youtube' GROUP BY content_id LIMIT 1000000 OPTION max_matches=20000`,
-        ),
-      rebuildPosts: rebuildPostsInDatabase,
-      replaceYoutubeRows: replaceYoutubeRowsInDatabase,
-      youtubeApiKey: env.youtubeApiKey,
-    });
-  } finally {
-    console.timeEnd(SYNC_POSTS_TIMER_LABEL);
-  }
+  await refreshCommentsPostOptionsCache();
+
+  return res;
 }

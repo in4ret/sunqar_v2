@@ -12,6 +12,13 @@ type SwrCacheOptions<TArgs extends readonly unknown[]> = {
   onRefreshError?: (error: unknown, ...args: TArgs) => void | Promise<void>;
 };
 
+export type SwrCachedLoader<TArgs extends readonly unknown[], TValue> = ((
+  ...args: TArgs
+) => Promise<TValue>) & {
+  clear: (...args: TArgs) => void;
+  refresh: (...args: TArgs) => Promise<TValue>;
+};
+
 type GlobalSwrCacheState = {
   swrCacheEntries?: Map<string, SwrCacheEntry<unknown>>;
   swrCacheRefreshes?: Map<string, Promise<void>>;
@@ -86,25 +93,39 @@ function buildSwrCacheKey(keyParts: readonly string[], keyArgs: readonly unknown
 export function swrCache<TArgs extends readonly unknown[], TValue>(
   loader: (...args: TArgs) => Promise<TValue>,
   options: SwrCacheOptions<TArgs>,
-) {
+): SwrCachedLoader<TArgs, TValue> {
   const cacheEntries = getSwrCacheEntries();
   const cacheRefreshes = getSwrCacheRefreshes();
   const maxAgeMilliseconds = options.maxAgeSeconds * 1000;
+  const getKeyArgs = (...args: TArgs) => options.getKeyArgs ? options.getKeyArgs(...args) : args;
+  const getCacheKey = (...args: TArgs) => buildSwrCacheKey(options.keyParts, getKeyArgs(...args));
 
-  return async (...args: TArgs): Promise<TValue> => {
-    const keyArgs = options.getKeyArgs ? options.getKeyArgs(...args) : args;
-    const cacheKey = buildSwrCacheKey(options.keyParts, keyArgs);
+  const clear = (...args: TArgs) => {
+    const cacheKey = getCacheKey(...args);
+
+    cacheEntries.delete(cacheKey);
+    cacheRefreshes.delete(cacheKey);
+  };
+
+  const refresh = async (...args: TArgs): Promise<TValue> => {
+    const cacheKey = getCacheKey(...args);
+    const value = await loader(...args);
+
+    cacheEntries.set(cacheKey, {
+      cachedAt: Date.now(),
+      value,
+    });
+    cacheRefreshes.delete(cacheKey);
+
+    return value;
+  };
+
+  const cachedLoader = async (...args: TArgs): Promise<TValue> => {
+    const cacheKey = getCacheKey(...args);
     const cachedEntry = cacheEntries.get(cacheKey) as SwrCacheEntry<TValue> | undefined;
 
     if (!cachedEntry) {
-      const value = await loader(...args);
-
-      cacheEntries.set(cacheKey, {
-        cachedAt: Date.now(),
-        value,
-      });
-
-      return value;
+      return refresh(...args);
     }
 
     const ageMilliseconds = Date.now() - cachedEntry.cachedAt;
@@ -116,12 +137,7 @@ export function swrCache<TArgs extends readonly unknown[], TValue>(
     if (!cacheRefreshes.has(cacheKey)) {
       const refreshPromise = (async () => {
         try {
-          const value = await loader(...args);
-
-          cacheEntries.set(cacheKey, {
-            cachedAt: Date.now(),
-            value,
-          });
+          await refresh(...args);
         } catch (error) {
           await options.onRefreshError?.(error, ...args);
         } finally {
@@ -134,4 +150,9 @@ export function swrCache<TArgs extends readonly unknown[], TValue>(
 
     return cachedEntry.value;
   };
+
+  cachedLoader.clear = clear;
+  cachedLoader.refresh = refresh;
+
+  return cachedLoader;
 }

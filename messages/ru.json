@@ -25,7 +25,6 @@
     "home": "Главная",
     "reports": "Отчёты",
     "comments": "Комментарии",
-    "posts": "Публикации",
     "news": "Новости",
     "account": "Личный кабинет",
     "sign-in": "Войти",
@@ -253,21 +252,6 @@
       "loading": "Загружаем похожие комментарии...",
       "error": "Не удалось загрузить похожие комментарии.",
       "empty": "Похожие комментарии не найдены."
-    }
-  },
-  "posts": {
-    "title": "Публикации",
-    "empty": "В таблице posts пока нет записей.",
-    "sync": {
-      "submit": "Обновить",
-      "submitting": "Обновление..."
-    },
-    "fields": {
-      "source": "Источник",
-      "channel": "Канал",
-      "channel-name": "Название канала",
-      "content-id": "Content ID",
-      "content-title": "Заголовок контента"
     }
   },
   "reports": {
@@ -598,7 +582,6 @@
     "report-not-found": "Отчёт не найден.",
     "report-run-url-missing": "Не задан адрес сервиса генерации отчёта.",
     "report-run-request-failed": "Не удалось отправить отчёт в сервис генерации.",
-    "posts-sync-failed": "Не удалось загрузить посты из comments.",
     "comments-upload-empty": "Добавьте хотя бы одну ссылку на YouTube.",
     "comments-upload-gateway-url-missing": "Не задан адрес сервиса загрузки YouTube.",
     "comments-upload-gateway-request-failed": "Не удалось отправить ссылки в сервис загрузки YouTube.",
@@ -618,7 +601,6 @@
     "report-deactivated": "Отчёт «{title}» деактивирован.",
     "report-run": "Отчёт «{title}» запущен.",
     "report-deleted": "Отчёт «{title}» успешно удалён.",
-    "posts-synced": "Посты успешно загружены: {count}.",
     "comments-uploaded-youtube-posts": "Новые видео добавлены, идет загрузка комментариев."
   }
 }

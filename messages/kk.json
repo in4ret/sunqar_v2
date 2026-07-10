@@ -25,7 +25,6 @@
     "home": "Басты бет",
     "reports": "Есептер",
     "comments": "Пікірлер",
-    "posts": "Жарияланымдар",
     "news": "Жаңалықтар",
     "account": "Жеке кабинет",
     "sign-in": "Кіру",
@@ -253,21 +252,6 @@
       "loading": "Ұқсас пікірлер жүктелуде...",
       "error": "Ұқсас пікірлерді жүктеу мүмкін болмады.",
       "empty": "Ұқсас пікірлер табылған жоқ."
-    }
-  },
-  "posts": {
-    "title": "Жарияланымдар",
-    "empty": "posts кестесінде әзірге жазба жоқ.",
-    "sync": {
-      "submit": "Жаңарту",
-      "submitting": "Жаңартылуда..."
-    },
-    "fields": {
-      "source": "Дереккөз",
-      "channel": "Арна",
-      "channel-name": "Арна атауы",
-      "content-id": "Content ID",
-      "content-title": "Контент тақырыбы"
     }
   },
   "reports": {
@@ -598,7 +582,6 @@
     "report-not-found": "Есеп табылмады.",
     "report-run-url-missing": "Есеп генерациясы сервисінің мекенжайы орнатылмаған.",
     "report-run-request-failed": "Есепті генерация сервисіне жіберу мүмкін болмады.",
-    "posts-sync-failed": "comments кестесінен посттарды жүктеу мүмкін болмады.",
     "comments-upload-empty": "Кемінде бір YouTube сілтемесін қосыңыз.",
     "comments-upload-gateway-url-missing": "YouTube жүктеу сервисінің мекенжайы орнатылмаған.",
     "comments-upload-gateway-request-failed": "Сілтемелерді YouTube жүктеу сервисіне жіберу мүмкін болмады.",
@@ -618,7 +601,6 @@
     "report-deactivated": "«{title}» есебінің белсенділігі өшірілді.",
     "report-run": "«{title}» есебі іске қосылды.",
     "report-deleted": "«{title}» есебі сәтті жойылды.",
-    "posts-synced": "Посттар сәтті жүктелді: {count}.",
     "comments-uploaded-youtube-posts": "Жаңа видеолар қосылды, пікірлерді жүктеу басталды."
   }
 }
