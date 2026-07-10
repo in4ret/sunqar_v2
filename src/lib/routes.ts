@@ -16,7 +16,6 @@ export const routes = {
   tasks: "/tasks",
   newReport: "/reports/new",
   reports: "/reports",
-  sources: "/sources",
   users: "/users",
 } as const;
 

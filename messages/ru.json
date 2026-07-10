@@ -31,7 +31,6 @@
     "sign-in": "Войти",
     "admin-navigation": "Администрирование",
     "ai-models": "AI модели",
-    "sources": "Источники",
     "users": "Пользователи",
     "logout": "Выйти",
     "tasks": {
@@ -85,9 +84,6 @@
     "admin-title": "Администрирование пользователей",
     "admin-description": "Создавайте пользователей и управляйте доступом на экране администрирования.",
     "admin-link": "Открыть управление пользователями",
-    "sources-admin-title": "Администрирование списка источников",
-    "sources-admin-description": "Добавляйте, переименовывайте и удаляйте источники для отчётов и данных.",
-    "sources-admin-link": "Открыть управление источниками",
     "ai-models-admin-title": "Администрирование AI моделей",
     "ai-models-admin-description": "Добавляйте, изменяйте и отключайте модели, доступные для AI функций.",
     "ai-models-admin-link": "Открыть управление AI моделями"
@@ -602,9 +598,6 @@
     "report-not-found": "Отчёт не найден.",
     "report-run-url-missing": "Не задан адрес сервиса генерации отчёта.",
     "report-run-request-failed": "Не удалось отправить отчёт в сервис генерации.",
-    "source-fields-required": "Название источника обязательно.",
-    "source-name-exists": "Источник с таким названием уже существует.",
-    "source-not-found": "Источник не найден.",
     "posts-sync-failed": "Не удалось загрузить посты из comments.",
     "comments-upload-empty": "Добавьте хотя бы одну ссылку на YouTube.",
     "comments-upload-gateway-url-missing": "Не задан адрес сервиса загрузки YouTube.",
@@ -625,9 +618,6 @@
     "report-deactivated": "Отчёт «{title}» деактивирован.",
     "report-run": "Отчёт «{title}» запущен.",
     "report-deleted": "Отчёт «{title}» успешно удалён.",
-    "source-created": "Источник «{name}» успешно добавлен.",
-    "source-updated": "Источник «{name}» успешно обновлён.",
-    "source-deleted": "Источник «{name}» успешно удалён.",
     "posts-synced": "Посты успешно загружены: {count}.",
     "comments-uploaded-youtube-posts": "Новые видео добавлены, идет загрузка комментариев."
   }

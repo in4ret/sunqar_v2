@@ -9,7 +9,6 @@ import {
   ChartPieIcon,
   ChartScatterIcon,
   CloudUploadIcon,
-  DatabaseIcon,
   FileTextIcon,
   HouseIcon,
   NewspaperIcon,
@@ -104,11 +103,6 @@ export function AppShellView({
       href: routes.users,
       icon: UsersIcon,
       label: t("header.users"),
-    },
-    {
-      href: routes.sources,
-      icon: DatabaseIcon,
-      label: t("header.sources"),
     },
     {
       href: routes.aiModels,

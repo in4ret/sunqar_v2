@@ -31,7 +31,6 @@
     "sign-in": "Кіру",
     "admin-navigation": "Әкімшілеу",
     "ai-models": "AI модельдер",
-    "sources": "Дереккөздер",
     "users": "Пайдаланушылар",
     "logout": "Шығу",
     "tasks": {
@@ -85,9 +84,6 @@
     "admin-title": "Әкімшілеу",
     "admin-description": "Пайдаланушыларды жасаңыз және әкімшілеу бетінде қолжетімділікті басқарыңыз.",
     "admin-link": "Пайдаланушыларды басқаруды ашу",
-    "sources-admin-title": "Дереккөздер тізімін әкімшілеу",
-    "sources-admin-description": "Есептер мен деректерге арналған дереккөздерді қосыңыз, өзгертіңіз және жойыңыз.",
-    "sources-admin-link": "Дереккөздерді басқаруды ашу",
     "ai-models-admin-title": "AI модельдерді әкімшілеу",
     "ai-models-admin-description": "AI функцияларына қолжетімді модельдерді қосыңыз, өзгертіңіз және өшіріңіз.",
     "ai-models-admin-link": "AI модельдерді басқаруды ашу"
@@ -602,9 +598,6 @@
     "report-not-found": "Есеп табылмады.",
     "report-run-url-missing": "Есеп генерациясы сервисінің мекенжайы орнатылмаған.",
     "report-run-request-failed": "Есепті генерация сервисіне жіберу мүмкін болмады.",
-    "source-fields-required": "Дереккөз атауы міндетті.",
-    "source-name-exists": "Мұндай атауы бар дереккөз бұрыннан бар.",
-    "source-not-found": "Дереккөз табылмады.",
     "posts-sync-failed": "comments кестесінен посттарды жүктеу мүмкін болмады.",
     "comments-upload-empty": "Кемінде бір YouTube сілтемесін қосыңыз.",
     "comments-upload-gateway-url-missing": "YouTube жүктеу сервисінің мекенжайы орнатылмаған.",
@@ -625,9 +618,6 @@
     "report-deactivated": "«{title}» есебінің белсенділігі өшірілді.",
     "report-run": "«{title}» есебі іске қосылды.",
     "report-deleted": "«{title}» есебі сәтті жойылды.",
-    "source-created": "«{name}» дереккөзі сәтті қосылды.",
-    "source-updated": "«{name}» дереккөзі сәтті жаңартылды.",
-    "source-deleted": "«{name}» дереккөзі сәтті жойылды.",
     "posts-synced": "Посттар сәтті жүктелді: {count}.",
     "comments-uploaded-youtube-posts": "Жаңа видеолар қосылды, пікірлерді жүктеу басталды."
   }
