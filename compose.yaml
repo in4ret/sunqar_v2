@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       network: host
     command: ["npm", "run", "db:migrate"]
+    container_name: migrate
     env_file:
       - .env.prod
     volumes:
@@ -17,6 +18,7 @@ services:
       dockerfile: Dockerfile
       network: host
     command: ["npm", "run", "start"]
+    container_name: dash
     env_file:
       - .env.prod
     depends_on:
@@ -26,12 +28,13 @@ services:
       - ./data:/app/data
     restart: unless-stopped
 
-  scheduler:
+  scheduler-ui:
     build:
       context: .
       dockerfile: Dockerfile
       network: host
     command: ["npm", "run", "start:scheduler"]
+    container_name: scheduler-ui
     env_file:
       - .env.prod
     depends_on:
