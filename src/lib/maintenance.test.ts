@@ -4,14 +4,14 @@ import test from "node:test";
 import {
   buildSourcesGoogleSheetCsvUrl,
   diffSourcesForSync,
-  formatMaintenanceLogMessage,
+  formatLogMessage,
   normalizeSourceRows,
   parseTelegramSourceRowsCsv,
   parseWebSourceRowsCsv,
 } from "@/lib/maintenance";
 
 test("formatMaintenanceLogMessage prefixes message with ISO UTC timestamp", () => {
-  const formattedMessage = formatMaintenanceLogMessage("Daily update started");
+  const formattedMessage = formatLogMessage("Daily update started");
 
   assert.match(
     formattedMessage,

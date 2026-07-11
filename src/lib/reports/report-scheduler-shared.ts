@@ -3,6 +3,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/database";
 import { aiModels, reports, tasks, users } from "@/lib/db/schema";
 import { env } from "@/lib/env";
+import { formatLogMessage } from "@/lib/logs";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 import { extractTaskId } from "@/lib/tasks/extract-task-id";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
@@ -416,12 +417,12 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
   }).format(new Date());
 
   try {
-    console.log(`[reports] Report generation started at Astana time: ${astanaTime}.`);
+    console.log(formatLogMessage(`[reports] Report generation started at Astana time: ${astanaTime}.`));
     console.log(
-      `[reports] Report generation request summary: ${JSON.stringify({
+      formatLogMessage(`[reports] Report generation request summary: ${JSON.stringify({
         title: requestBody.title,
         author: requestBody.author,
-      })}`,
+      })}`),
     );
 
     const response = await fetch(generateReportUrl, {
@@ -436,7 +437,11 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     if (!response.ok) {
       const responseText = await response.text();
 
-      console.error(`Generate report request failed for report ${report.id} with status ${response.status}: ${responseText}`);
+      console.error(
+        formatLogMessage(
+          `Generate report request failed for report ${report.id} with status ${response.status}: ${responseText}`,
+        ),
+      );
 
       return { error: "report-run-request-failed" };
     }
@@ -445,7 +450,12 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     const taskId = extractTaskId(data);
 
     if (!taskId) {
-      console.error(`Generate report request for report ${report.id} succeeded without a valid task_id.`, data);
+      console.error(
+        formatLogMessage(
+          `Generate report request for report ${report.id} succeeded without a valid task_id.`,
+        ),
+        data,
+      );
 
       return { error: "report-run-request-failed" };
     }
@@ -467,7 +477,7 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
 
     await publishTaskSnapshotInvalidation(report.authorId);
   } catch (error) {
-    console.error(`Generate report request failed for report ${report.id}.`, error);
+    console.error(formatLogMessage(`Generate report request failed for report ${report.id}.`), error);
 
     return { error: "report-run-request-failed" };
   }

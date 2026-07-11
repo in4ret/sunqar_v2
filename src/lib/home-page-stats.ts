@@ -8,6 +8,7 @@ import {
   type HomePageNewsCountryChartStats,
   UNKNOWN_NEWS_COUNTRY,
 } from "@/lib/home-page-stats-shared";
+import { formatLogMessage } from "@/lib/logs";
 import { manticoreSql } from "@/lib/manticore";
 import type { ReportBlocks } from "@/lib/reports";
 
@@ -965,7 +966,7 @@ const getCachedHomePageNewsStats = swrCache(async (searchQuery: string) => getNe
   keyParts: ["home-page-stats", "news"],
   maxAgeSeconds: ONE_HOUR_REVALIDATE,
   onRefreshError(error) {
-    console.error("Failed to refresh cached news stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to refresh cached news stats from Manticore."), error);
   },
 });
 
@@ -976,7 +977,7 @@ const getCachedHomePageSourcesStats = swrCache(
     keyParts: ["home-page-stats", "sources"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached source stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached source stats from Manticore."), error);
     },
   }
 );
@@ -988,7 +989,7 @@ const getCachedHomePageCommentsStats = swrCache(
     keyParts: ["home-page-stats", "comments"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached comments stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached comments stats from Manticore."), error);
     },
   }
 );
@@ -1000,7 +1001,7 @@ const getCachedHomePageCommentsToneAverageStats = swrCache(
     keyParts: ["home-page-stats", "comments-tone-average"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached comments tone average stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached comments tone average stats from Manticore."), error);
     },
   }
 );
@@ -1012,7 +1013,7 @@ const getCachedHomePageCommentsChartStats = swrCache(
     keyParts: ["home-page-stats", "comments-chart"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached comments chart stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached comments chart stats from Manticore."), error);
     },
   });
 
@@ -1023,7 +1024,7 @@ const getCachedHomePageNewsChartStats = swrCache(
     keyParts: ["home-page-stats", "news-chart"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached news chart stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached news chart stats from Manticore."), error);
     },
   });
 
@@ -1034,7 +1035,7 @@ const getCachedHomePageNewsCountryChartStats = swrCache(
     keyParts: ["home-page-stats", "news-country-chart"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached news country chart stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached news country chart stats from Manticore."), error);
     },
   }
 );
@@ -1058,7 +1059,7 @@ const getCachedHomePageReportTrendStats = swrCache(
     keyParts: ["home-page-stats", "report-trend"],
     maxAgeSeconds: ONE_HOUR_REVALIDATE,
     onRefreshError(error) {
-      console.error("Failed to refresh cached report trend stats from Manticore.", error);
+      console.error(formatLogMessage("Failed to refresh cached report trend stats from Manticore."), error);
     },
   }
 );
@@ -1067,7 +1068,7 @@ export async function getHomePageNewsStats(searchQuery: string): Promise<HomePag
   try {
     return await getCachedHomePageNewsStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load news stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load news stats from Manticore."), error);
 
     return {
       total: 0,
@@ -1080,7 +1081,7 @@ export async function getHomePageSourcesStats(searchQuery: string): Promise<Home
   try {
     return await getCachedHomePageSourcesStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load source stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load source stats from Manticore."), error);
 
     return {
       total: 0,
@@ -1093,7 +1094,7 @@ export async function getHomePageCommentsStats(searchQuery: string): Promise<Hom
   try {
     return await getCachedHomePageCommentsStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load comments stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load comments stats from Manticore."), error);
 
     return {
       total: 0,
@@ -1108,7 +1109,7 @@ export async function getHomePageCommentsToneAverageStats(
   try {
     return await getCachedHomePageCommentsToneAverageStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load comments tone average stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load comments tone average stats from Manticore."), error);
 
     return {
       total: 0,
@@ -1123,7 +1124,7 @@ export async function getHomePageCommentsChartStats(
   try {
     return await getCachedHomePageCommentsChartStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load comment chart stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load comment chart stats from Manticore."), error);
 
     return getEmptyCommentsChartStats();
   }
@@ -1135,7 +1136,7 @@ export async function getHomePageNewsChartStats(
   try {
     return await getCachedHomePageNewsChartStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load news chart stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load news chart stats from Manticore."), error);
 
     return getEmptyNewsChartStats();
   }
@@ -1147,7 +1148,7 @@ export async function getHomePageNewsCountryChartStats(
   try {
     return await getCachedHomePageNewsCountryChartStats(searchQuery);
   } catch (error) {
-    console.error("Failed to load news country chart stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load news country chart stats from Manticore."), error);
 
     return getEmptyNewsCountryChartStats();
   }
@@ -1168,7 +1169,7 @@ export async function getHomePageReportTrendStats(
       getReportTrendCacheSignature(reportItems)
     );
   } catch (error) {
-    console.error("Failed to load report trend stats from Manticore.", error);
+    console.error(formatLogMessage("Failed to load report trend stats from Manticore."), error);
 
     return reportItems.map((report) => getEmptyReportTrendStats(report.reportId));
   }

@@ -1,5 +1,7 @@
 import Redis from "ioredis";
 
+import { formatLogMessage } from "@/lib/logs";
+
 const TASK_STREAM_SYNC_CHANNEL = "sunqar:task-stream:sync";
 
 type GlobalTaskStreamSyncPublisherState = {
@@ -14,7 +16,7 @@ function getRedisConnection() {
 
   if (!connection && !globalTaskStreamSync.taskStreamSyncWarnedMissingConnection) {
     globalTaskStreamSync.taskStreamSyncWarnedMissingConnection = true;
-    console.warn("⚠️ REDIS_CONNECTION is not set, task stream sync publish skipped");
+    console.warn(formatLogMessage("⚠️ REDIS_CONNECTION is not set, task stream sync publish skipped"));
   }
 
   return connection;

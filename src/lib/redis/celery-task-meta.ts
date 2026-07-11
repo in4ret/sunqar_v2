@@ -5,6 +5,7 @@ import Redis from "ioredis";
 
 import { db } from "@/lib/db/client";
 import { tasks } from "@/lib/db/schema";
+import { formatLogMessage } from "@/lib/logs";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 
 import { resolveSuccessfulTaskDownloadUrl } from "./celery-task-meta-helpers";
@@ -56,14 +57,12 @@ export async function processCeleryTaskMeta(taskId: string, raw: string | null) 
 
     if (status === "SUCCESS" && downloadUrl) {
       completeSuccessfulTask(taskId, downloadUrl);
-      // console.log("### Task", taskId, "succeeded:", downloadUrl);
     } else {
       failTask(taskId, raw);
-      // console.error("### Task", taskId, "failed:", raw);
     }
   } catch (error) {
     failTask(taskId, raw);
-    console.error("### Failed to process celery task meta for task", taskId, error);
+    console.error(formatLogMessage("Failed to process celery task meta for task"), taskId, error);
   }
 
   await publishTaskSnapshotInvalidation(task.userId);
@@ -79,7 +78,7 @@ export async function reconcileTaskById(taskId: string): Promise<void> {
   const connection = process.env.REDIS_CONNECTION;
 
   if (!connection) {
-    console.warn("⚠️ REDIS_CONNECTION is not set, task reconciliation skipped");
+    console.warn(formatLogMessage("⚠️ REDIS_CONNECTION is not set, task reconciliation skipped"));
     return;
   }
 
@@ -94,7 +93,7 @@ export async function reconcileTaskById(taskId: string): Promise<void> {
 
     await processCeleryTaskMeta(normalizedTaskId, raw);
   } catch (error) {
-    console.warn(`⚠️ Failed to reconcile task ${normalizedTaskId} with Redis:`, error);
+    console.warn(formatLogMessage(`⚠️ Failed to reconcile task ${normalizedTaskId} with Redis:`), error);
   } finally {
     redis.disconnect();
   }
@@ -114,7 +113,7 @@ export async function reconcilePendingTasks(): Promise<void> {
   const connection = process.env.REDIS_CONNECTION;
 
   if (!connection) {
-    console.warn("⚠️ REDIS_CONNECTION is not set, pending tasks reconciliation skipped");
+    console.warn(formatLogMessage("⚠️ REDIS_CONNECTION is not set, pending tasks reconciliation skipped"));
     return;
   }
 
@@ -140,7 +139,7 @@ export async function reconcilePendingTasks(): Promise<void> {
       }),
     );
   } catch (error) {
-    console.warn("⚠️ Failed to reconcile pending tasks with Redis:", error);
+    console.warn(formatLogMessage("⚠️ Failed to reconcile pending tasks with Redis:"), error);
   } finally {
     redis.disconnect();
   }

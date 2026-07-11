@@ -2,6 +2,7 @@ import "server-only";
 
 import Redis from "ioredis";
 
+import { formatLogMessage } from "@/lib/logs";
 import {
   CELERY_TASK_META_PREFIX,
   processCeleryTaskMeta,
@@ -21,14 +22,14 @@ const globalRedisSub = globalThis as typeof globalThis & GlobalRedisSubState;
 
 export async function startRedisSub() {
   if (globalRedisSub.redisTaskSubscriberStarted) {
-    console.log("ℹ️ Redis task subscriber already started");
+    console.log(formatLogMessage("ℹ️ Redis task subscriber already started"));
     return;
   }
 
   const connection = process.env.REDIS_CONNECTION;
 
   if (!connection) {
-    console.warn("⚠️ REDIS_CONNECTION is not set, Redis task subscriber skipped");
+    console.warn(formatLogMessage("⚠️ REDIS_CONNECTION is not set, Redis task subscriber skipped"));
     return;
   }
 
@@ -44,7 +45,7 @@ export async function startRedisSub() {
     let reconcileIntervalId: ReturnType<typeof setInterval> | null = null;
 
     redis.config("SET", "notify-keyspace-events", "KEA").catch((err) => {
-      console.warn("⚠️ \"SET notify-keyspace-events KEA\" failed:", err.message);
+      console.warn(formatLogMessage("⚠️ \"SET notify-keyspace-events KEA\" failed:"), err.message);
     });
 
     subscriber.on("pmessage", async (_pattern, _channel, key) => {
@@ -70,15 +71,18 @@ export async function startRedisSub() {
         redis.disconnect();
       };
 
-      console.log(`✅ Subscribed to Redis SET events on ${subscriptionPattern}`);
+      console.log(formatLogMessage(`✅ Subscribed to Redis SET events on ${subscriptionPattern}`));
 
       void reconcilePendingTasks().catch((error) => {
-        console.warn("⚠️ Failed to reconcile pending tasks after Redis subscriber startup:", error);
+        console.warn(
+          formatLogMessage("⚠️ Failed to reconcile pending tasks after Redis subscriber startup:"),
+          error,
+        );
       });
 
       reconcileIntervalId = setInterval(() => {
         void reconcilePendingTasks().catch((error) => {
-          console.warn("⚠️ Failed to reconcile pending tasks on interval:", error);
+          console.warn(formatLogMessage("⚠️ Failed to reconcile pending tasks on interval:"), error);
         });
       }, REDIS_RECONCILE_INTERVAL_MS);
     } catch (error) {

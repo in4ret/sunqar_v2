@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/auth/auth";
+import { formatLogMessage } from "@/lib/logs";
 import { formatTaskSnapshotEvent, registerTaskStreamConnection } from "@/lib/task-stream";
 import { startTaskStreamSyncSubscriber } from "@/lib/task-stream-sync-server";
 import { listTasksByUserId } from "@/lib/tasks";
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
             controller.enqueue(encoder.encode(nextSnapshotPayload));
           }
         } catch (error) {
-          console.error("Failed to refresh task stream snapshot.", error);
+          console.error(formatLogMessage("Failed to refresh task stream snapshot."), error);
         } finally {
           if (!isClosed) {
             snapshotRefreshTimeoutId = setTimeout(refreshSnapshot, SNAPSHOT_REFRESH_INTERVAL_MS);

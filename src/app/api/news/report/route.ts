@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/auth/auth";
 import { db } from "@/lib/db/client";
 import { tasks } from "@/lib/db/schema";
 import { env } from "@/lib/env";
+import { formatLogMessage } from "@/lib/logs";
 import { publishTaskSnapshotInvalidation } from "@/lib/task-stream-sync";
 import { extractTaskId } from "@/lib/tasks/extract-task-id";
 
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
     try {
       responseData = JSON.parse(responseText);
     } catch {
-      console.error("News report doc response is not valid JSON.", responseText);
+      console.error(formatLogMessage("News report doc response is not valid JSON."), responseText);
 
       return buildJsonResponse({ error: "Failed to read report task response." }, 502);
     }
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
     const taskId = extractTaskId(responseData);
 
     if (!taskId) {
-      console.error("News report doc response succeeded without a valid task_id.", responseData);
+      console.error(formatLogMessage("News report doc response succeeded without a valid task_id."), responseData);
 
       return buildJsonResponse({ error: "Report task_id is missing in response." }, 502);
     }
@@ -129,7 +130,10 @@ export async function POST(request: Request) {
 
     return buildJsonResponse({ ok: true, taskId }, 200);
   } catch (error) {
-    console.error("Failed to submit news report request to API gateway download_report_doc endpoint.", error);
+    console.error(
+      formatLogMessage("Failed to submit news report request to API gateway download_report_doc endpoint."),
+      error,
+    );
 
     return buildJsonResponse({ error: "Failed to reach API gateway." }, 502);
   }

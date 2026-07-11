@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 
+import { formatLogMessage } from "@/lib/logs";
 import { routes } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
 
@@ -43,7 +44,7 @@ export function HeaderTasksProvider({ children }: HeaderTasksProviderProps) {
         setTasks(nextTasks);
         setStatus("ready");
       } catch (error) {
-        console.error("Failed to parse header tasks snapshot.", error);
+        console.error(formatLogMessage("Failed to parse header tasks snapshot."), error);
 
         if (!hasReceivedSnapshotRef.current) {
           setStatus("error");

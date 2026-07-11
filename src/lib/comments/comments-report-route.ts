@@ -1,3 +1,4 @@
+import { formatLogMessage } from "@/lib/logs";
 import { extractTaskId } from "@/lib/tasks/extract-task-id";
 import { normalizeSearchQuery } from "@/lib/utils";
 
@@ -131,7 +132,7 @@ export function createCommentsReportPostHandler({
       try {
         responseData = JSON.parse(responseText);
       } catch {
-        console.error("Comments report response is not valid JSON.", responseText);
+        console.error(formatLogMessage("Comments report response is not valid JSON."), responseText);
 
         return buildJsonResponse({ error: "Failed to read comments task response." }, 502);
       }
@@ -139,7 +140,10 @@ export function createCommentsReportPostHandler({
       const taskId = extractTaskId(responseData);
 
       if (!taskId) {
-        console.error("Comments report response succeeded without a valid task_id.", responseData);
+        console.error(
+          formatLogMessage("Comments report response succeeded without a valid task_id."),
+          responseData,
+        );
 
         return buildJsonResponse({ error: "Report task_id is missing in response." }, 502);
       }
@@ -153,7 +157,10 @@ export function createCommentsReportPostHandler({
 
       return buildJsonResponse({ ok: true, taskId }, 200);
     } catch (error) {
-      console.error("Failed to submit comments report request to API gateway download_comments endpoint.", error);
+      console.error(
+        formatLogMessage("Failed to submit comments report request to API gateway download_comments endpoint."),
+        error,
+      );
 
       return buildJsonResponse({ error: "Failed to reach API gateway." }, 502);
     }

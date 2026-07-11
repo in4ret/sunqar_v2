@@ -2,6 +2,7 @@ import "server-only";
 
 import Redis from "ioredis";
 
+import { formatLogMessage } from "@/lib/logs";
 import { broadcastTaskSnapshotToUser } from "@/lib/task-stream";
 import { TASK_STREAM_SYNC_CHANNEL } from "@/lib/task-stream-sync";
 
@@ -18,7 +19,7 @@ function getRedisConnection() {
 
   if (!connection && !globalTaskStreamSync.taskStreamSyncWarnedMissingConnection) {
     globalTaskStreamSync.taskStreamSyncWarnedMissingConnection = true;
-    console.warn("⚠️ REDIS_CONNECTION is not set, task stream sync subscriber skipped");
+    console.warn(formatLogMessage("⚠️ REDIS_CONNECTION is not set, task stream sync subscriber skipped"));
   }
 
   return connection;

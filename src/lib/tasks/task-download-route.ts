@@ -1,3 +1,4 @@
+import { formatLogMessage } from "@/lib/logs";
 import type { TaskDownloadItem } from "@/lib/tasks";
 
 type GetCurrentUser = () => Promise<{ id: string } | null>;
@@ -64,13 +65,13 @@ export function createTaskDownloadGetHandler({
         redirect: "follow",
       });
     } catch (error) {
-      console.error("Failed to fetch task file.", error);
+      console.error(formatLogMessage("Failed to fetch task file."), error);
 
       return buildTextResponse("Failed to fetch task result.", 502);
     }
 
     if (!upstreamResponse.ok) {
-      console.error("Task file upstream request failed.", {
+      console.error(formatLogMessage("Task file upstream request failed."), {
         status: upstreamResponse.status,
         taskId: task.taskId,
         url: upstreamUrl.toString(),

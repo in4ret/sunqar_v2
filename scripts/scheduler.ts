@@ -1,5 +1,7 @@
 import * as nextEnv from "@next/env";
 
+import { formatLogMessage } from "@/lib/logs";
+
 const POLL_INTERVAL_MS = 30_000;
 
 const loadEnvConfig =
@@ -43,13 +45,15 @@ async function processReport(
     });
 
     if (result.error) {
-      console.error(`[scheduler] Failed to initialize nextRunAt for report ${report.id}.`);
+      console.error(formatLogMessage(
+        `[scheduler] Failed to initialize nextRunAt for report ${report.id}.`,
+      ));
       return;
     }
 
-    console.log(
-      `[scheduler] Initialized nextRunAt for report ${report.id}: ${nextRunAt?.toISOString() ?? "null"}.`,
-    );
+    // console.log(formatLogMessage(
+    //   `[scheduler] Initialized nextRunAt for report ${report.id}: ${nextRunAt?.toISOString() ?? "null"}.`,
+    // ));
     return;
   }
 
@@ -64,29 +68,33 @@ async function processReport(
   });
 
   if (updateResult.error) {
-    console.error(`[scheduler] Failed to update nextRunAt for due report ${report.id}.`);
+    console.error(formatLogMessage(
+      `[scheduler] Failed to update nextRunAt for due report ${report.id}.`,
+    ));
     return;
   }
 
   const runItem = await scheduler.getReportRunItemById(report.id);
 
   if (!runItem) {
-    console.error(`[scheduler] Failed to load run payload for report ${report.id}.`);
+    console.error(formatLogMessage(
+      `[scheduler] Failed to load run payload for report ${report.id}.`,
+    ));
     return;
   }
 
   const triggerResult = await scheduler.triggerReportGeneration(runItem);
 
   if (triggerResult.error) {
-    console.error(
+    console.error(formatLogMessage(
       `[scheduler] Failed to generate report ${report.id}: ${triggerResult.error}.`,
-    );
+    ));
     return;
   }
 
-  console.log(
+  console.log(formatLogMessage(
     `[scheduler] Triggered report ${report.id}; nextRunAt=${nextRunAt?.toISOString() ?? "null"}.`,
-  );
+  ));
 }
 
 async function runSchedulerPass(scheduler: SchedulerModule) {
@@ -96,7 +104,9 @@ async function runSchedulerPass(scheduler: SchedulerModule) {
     try {
       await processReport(scheduler, report);
     } catch (error) {
-      console.error(`[scheduler] Unexpected error while processing report ${report.id}.`, error);
+      console.error(formatLogMessage(
+        `[scheduler] Unexpected error while processing report ${report.id}.`,
+      ), error);
     }
   }
 }
@@ -104,13 +114,15 @@ async function runSchedulerPass(scheduler: SchedulerModule) {
 async function main() {
   const scheduler = await import("../src/lib/reports/reports-scheduler");
 
-  console.log(`[scheduler] Started with ${POLL_INTERVAL_MS / 1000}s polling interval.`);
+  console.log(formatLogMessage(
+    `[scheduler] Started with ${POLL_INTERVAL_MS / 1000}s polling interval.`,
+  ));
 
   while (true) {
     try {
       await runSchedulerPass(scheduler);
     } catch (error) {
-      console.error("[scheduler] Pass failed.", error);
+      console.error(formatLogMessage("[scheduler] Pass failed."), error);
     }
 
     await sleep(POLL_INTERVAL_MS);
@@ -118,7 +130,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("[scheduler] Fatal error.");
-  console.error(error);
+  console.error(formatLogMessage("[scheduler] Fatal error."), error);
   process.exit(1);
 });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
 import { useHeaderTasks } from "@/components/layout/header-tasks-provider/header-tasks-provider";
+import { formatLogMessage } from "@/lib/logs";
 import { getTaskDownloadRoute, getTaskRoute } from "@/lib/routes";
 import type { HeaderTaskItem } from "@/lib/tasks";
 import { getFilenameFromResponseHeaders } from "@/lib/tasks/task-download-client";
@@ -99,7 +100,7 @@ export function TaskNotifications() {
       removeTask(task.taskId);
       showToast({ message: t("header.tasks.delete-success"), status: "success" });
     } catch (error) {
-      console.error("Failed to delete task notification.", error);
+      console.error(formatLogMessage("Failed to delete task notification."), error);
       setHiddenTaskIds((currentTaskIds) =>
         currentTaskIds.filter((taskId) => taskId !== task.taskId),
       );
@@ -142,7 +143,7 @@ export function TaskNotifications() {
       link.remove();
       URL.revokeObjectURL(objectUrl);
     } catch (error) {
-      console.error("Failed to download task file.", error);
+      console.error(formatLogMessage("Failed to download task file."), error);
       showToast({
         message: t("header.tasks.load-error"),
         status: "error",

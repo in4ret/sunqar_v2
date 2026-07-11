@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ReportModal } from "@/components/reports";
+import { formatLogMessage } from "@/lib/logs";
 import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
 import {
@@ -299,7 +300,7 @@ export function CommentsPageView({
 
       setIsReportModalOpen(false);
     } catch (error) {
-      console.error("Failed to submit comments report request.", error);
+      console.error(formatLogMessage("Failed to submit comments report request."), error);
       showToast({
         message: error instanceof Error ? error.message : t("report-modal.submit-error"),
         status: "error",

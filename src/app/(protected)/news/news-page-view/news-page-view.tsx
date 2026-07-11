@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ReportModal } from "@/components/reports";
+import { formatLogMessage } from "@/lib/logs";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import type { SourceOptionItem } from "@/lib/sources/source-options";
 import {
@@ -209,7 +210,7 @@ export function NewsPageView({
 
       setIsReportModalOpen(false);
     } catch (error) {
-      console.error("Failed to submit news report request.", error);
+      console.error(formatLogMessage("Failed to submit news report request."), error);
       showToast({
         message: error instanceof Error ? error.message : t("report-modal.submit-error"),
         status: "error",

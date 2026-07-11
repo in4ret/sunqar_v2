@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireAuth } from "@/lib/auth/auth";
 import { type ActionMessage, createActionMessage } from "@/lib/i18n/action-messages";
+import { formatLogMessage } from "@/lib/logs";
 import { uploadYoutubePosts, UploadYoutubePostsError } from "@/lib/posts/posts-upload";
 
 export type UploadYoutubePostsState = {
@@ -40,7 +41,7 @@ export async function submitUploadYoutubePosts(
       };
     }
 
-    console.error("Failed to upload YouTube posts from comments tab.", error);
+    console.error(formatLogMessage("Failed to upload YouTube posts from comments tab."), error);
 
     return {
       error: createActionMessage("errors.comments-upload-failed"),

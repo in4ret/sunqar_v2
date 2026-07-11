@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { sources as sourcesTable } from "@/lib/db/schema";
 import { env } from "@/lib/env";
+import { formatLogMessage } from "@/lib/logs";
 import { syncPosts } from "@/lib/posts/posts";
 
 type GlobalMaintenanceState = {
@@ -47,10 +48,6 @@ function buildSourceRowKey(input: {
   type: string | null;
 }) {
   return `${input.name}\u0000${input.type ?? ""}\u0000${input.country ?? ""}`;
-}
-
-export function formatMaintenanceLogMessage(message: string) {
-  return `[${new Date().toISOString()}] ${message}`;
 }
 
 function parseCsvRows(csvText: string) {
@@ -196,7 +193,7 @@ export function parseWebSourceRowsCsv(csvText: string) {
 async function loadTelegramSources(url: string) {
   const csvUrl = buildSourcesGoogleSheetCsvUrl(url, "tg");
 
-  console.log(formatMaintenanceLogMessage(`Loading telegram sources from ${url}`));
+  console.log(formatLogMessage(`Loading telegram sources from ${url}`));
 
   const response = await fetch(csvUrl, {
     cache: "no-store",
@@ -215,7 +212,7 @@ async function loadTelegramSources(url: string) {
 async function loadWebSources(url: string) {
   const csvUrl = buildSourcesGoogleSheetCsvUrl(url, "params");
 
-  console.log(formatMaintenanceLogMessage(`Loading web sources from ${url}`));
+  console.log(formatLogMessage(`Loading web sources from ${url}`));
 
   const response = await fetch(csvUrl, {
     cache: "no-store",
@@ -333,29 +330,29 @@ async function updateSources() {
   });
 
   console.log(
-    formatMaintenanceLogMessage(
+    formatLogMessage(
       `Sources sync finished: inserted ${toInsert.length}, updated ${toUpdate.length}, deleted ${toDelete.length}.`,
     ),
   );
 }
 
 export async function runDailyUpdate() {
-  console.log(formatMaintenanceLogMessage("Daily update started"));
+  console.log(formatLogMessage("Daily update started"));
 
   await updateSources();
-  console.log(formatMaintenanceLogMessage("Posts sync started..."));
+  console.log(formatLogMessage("Posts sync started..."));
   await syncPosts();
 
-  console.log(formatMaintenanceLogMessage("Daily update finished"));
+  console.log(formatLogMessage("Daily update finished"));
 }
 
 export function startMaintenanceScheduler() {
   if (globalMaintenanceState.isMaintenanceSchedulerStarted) {
-    console.log(formatMaintenanceLogMessage("ℹ️ Maintenance scheduler already started"));
+    console.log(formatLogMessage("ℹ️ Maintenance scheduler already started"));
     return;
   }
 
-  console.info(formatMaintenanceLogMessage("✅ Maintenance scheduler started"));
+  console.info(formatLogMessage("✅ Maintenance scheduler started"));
   globalMaintenanceState.isMaintenanceSchedulerStarted = true;
 
   setInterval(async () => {
@@ -373,7 +370,7 @@ export function startMaintenanceScheduler() {
     try {
       await runDailyUpdate();
     } catch (error) {
-      console.error(formatMaintenanceLogMessage("Daily update failed"), error);
+      console.error(formatLogMessage("Daily update failed"), error);
     } finally {
       globalMaintenanceState.isMaintenanceInProgress = false;
     }
