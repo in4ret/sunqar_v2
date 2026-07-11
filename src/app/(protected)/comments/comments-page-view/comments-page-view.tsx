@@ -415,6 +415,7 @@ export function CommentsPageView({
           }}
           onSubmit={handleReportSubmit}
           storageConfig={COMMENTS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG}
+          variant="comments"
         />
       </div>
     </section>

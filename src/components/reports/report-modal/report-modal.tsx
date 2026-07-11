@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Dropdown, Modal } from "@/ui";
 
 import {
   getStoredReportModalAiModel,
+  type ReportModalStorageConfig,
   resolveStoredReportModalAiModel,
   setStoredReportModalAiModel,
-  type ReportModalStorageConfig,
 } from "./report-modal-storage";
+
 import styles from "./report-modal.module.scss";
+
+type ReportModalVariant = "comments" | "news";
 
 type ReportModalAiModel = {
   label: string;
@@ -19,7 +22,9 @@ type ReportModalAiModel = {
 };
 
 type ReportModalSubmitPayload = {
+  additionalData?: string;
   model: string;
+  opinionData?: string;
   prompt: string;
 };
 
@@ -30,6 +35,7 @@ type ReportModalProps = {
   onClose: () => void;
   onSubmit: (payload: ReportModalSubmitPayload) => void | Promise<void>;
   storageConfig: ReportModalStorageConfig;
+  variant: ReportModalVariant;
 };
 
 export function ReportModal({
@@ -39,6 +45,7 @@ export function ReportModal({
   onClose,
   onSubmit,
   storageConfig,
+  variant,
 }: ReportModalProps) {
   if (!isOpen) {
     return null;
@@ -51,6 +58,7 @@ export function ReportModal({
       onClose={onClose}
       onSubmit={onSubmit}
       storageConfig={storageConfig}
+      variant={variant}
     />
   );
 }
@@ -61,7 +69,9 @@ type ReportModalContentProps = {
   onClose: () => void;
   onSubmit: (payload: ReportModalSubmitPayload) => void | Promise<void>;
   storageConfig: ReportModalStorageConfig;
+  variant: ReportModalVariant;
 };
+type NewsReportModalTab = "prompt" | "additional-data" | "opinion-data";
 
 function ReportModalContent({
   aiModels,
@@ -69,10 +79,17 @@ function ReportModalContent({
   onClose,
   onSubmit,
   storageConfig,
+  variant,
 }: ReportModalContentProps) {
   const t = useTranslations();
-  const [selectedAiModel, setSelectedAiModel] = useState("");
+  const [selectedAiModel, setSelectedAiModel] = useState(() =>
+    resolveStoredReportModalAiModel(getStoredReportModalAiModel(storageConfig), aiModels),
+  );
+  const [activeNewsTab, setActiveNewsTab] = useState<NewsReportModalTab>("prompt");
+  const [additionalData, setAdditionalData] = useState("");
+  const [opinionData, setOpinionData] = useState("");
   const [prompt, setPrompt] = useState("");
+  const isNewsVariant = variant === "news";
   const hasAiModels = aiModels.length > 0;
   const aiModelOptions = useMemo(
     () =>
@@ -82,11 +99,33 @@ function ReportModalContent({
     [aiModels, hasAiModels, t],
   );
 
-  useEffect(() => {
-    const storedAiModel = getStoredReportModalAiModel(storageConfig);
-
-    setSelectedAiModel(resolveStoredReportModalAiModel(storedAiModel, aiModels));
-  }, [aiModels, storageConfig]);
+  const newsTabs = useMemo(
+    () => [
+      {
+        id: "prompt" as const,
+        label: t("report-modal.prompt-tab"),
+        name: "sunqar-report-modal-prompt",
+        onChange: setPrompt,
+        value: prompt,
+      },
+      {
+        id: "additional-data" as const,
+        label: t("report-modal.additional-data-tab"),
+        name: "sunqar-report-modal-additional-data",
+        onChange: setAdditionalData,
+        value: additionalData,
+      },
+      {
+        id: "opinion-data" as const,
+        label: t("report-modal.opinion-data-tab"),
+        name: "sunqar-report-modal-opinion-data",
+        onChange: setOpinionData,
+        value: opinionData,
+      },
+    ],
+    [additionalData, opinionData, prompt, t],
+  );
+  const activeNewsTabConfig = newsTabs.find((tab) => tab.id === activeNewsTab) ?? newsTabs[0];
 
   return (
     <Modal
@@ -99,6 +138,12 @@ function ReportModalContent({
             type="button"
             onClick={() => {
               void onSubmit({
+                ...(isNewsVariant
+                  ? {
+                      additionalData,
+                      opinionData,
+                    }
+                  : {}),
                 model: selectedAiModel,
                 prompt,
               });
@@ -128,18 +173,68 @@ function ReportModalContent({
             }}
           />
         </label>
-        <label className={styles["field"]}>
-          <span className={styles["field-label"]}>{t("report-modal.prompt-label")}</span>
-          <textarea
-            className={styles["field-textarea"]}
-            name="sunqar-report-modal-prompt"
-            rows={8}
-            value={prompt}
-            onChange={(event) => {
-              setPrompt(event.target.value);
-            }}
-          />
-        </label>
+        {isNewsVariant ? (
+          <div className={styles["field"]}>
+            <div
+              aria-label={t("report-modal.tabs-label")}
+              className={styles["tab-list"]}
+              role="tablist"
+            >
+              {newsTabs.map((tab) => {
+                const tabPanelId = `report-modal-${tab.id}-panel`;
+                const tabId = `report-modal-${tab.id}-tab`;
+                const isSelected = activeNewsTabConfig.id === tab.id;
+
+                return (
+                  <button
+                    aria-controls={tabPanelId}
+                    aria-selected={isSelected}
+                    className={styles["tab-button"]}
+                    id={tabId}
+                    key={tab.id}
+                    role="tab"
+                    type="button"
+                    onClick={() => {
+                      setActiveNewsTab(tab.id);
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <label
+              aria-labelledby={`report-modal-${activeNewsTabConfig.id}-tab`}
+              className={styles["tab-panel"]}
+              id={`report-modal-${activeNewsTabConfig.id}-panel`}
+              role="tabpanel"
+            >
+              <span className={styles["field-label"]}>{activeNewsTabConfig.label}</span>
+              <textarea
+                className={styles["field-textarea"]}
+                name={activeNewsTabConfig.name}
+                rows={8}
+                value={activeNewsTabConfig.value}
+                onChange={(event) => {
+                  activeNewsTabConfig.onChange(event.target.value);
+                }}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className={styles["field"]}>
+            <span className={styles["field-label"]}>{t("report-modal.prompt-label")}</span>
+            <textarea
+              className={styles["field-textarea"]}
+              name="sunqar-report-modal-prompt"
+              rows={8}
+              value={prompt}
+              onChange={(event) => {
+                setPrompt(event.target.value);
+              }}
+            />
+          </label>
+        )}
       </div>
     </Modal>
   );

@@ -176,15 +176,27 @@ export function NewsPageView({
     router.replace(`${nextUrl.pathname}${nextUrl.search}`);
   }, [activeTab, hasStoredSearchStateToRestore, router, storedSearchState]);
 
-  async function handleReportSubmit({ model, prompt }: { model: string; prompt: string }) {
+  async function handleReportSubmit({
+    additionalData,
+    model,
+    opinionData,
+    prompt,
+  }: {
+    additionalData?: string;
+    model: string;
+    opinionData?: string;
+    prompt: string;
+  }) {
     setIsReportSubmitting(true);
 
     try {
       const response = await fetch("/api/news/report", {
         body: JSON.stringify({
+          additional_data: additionalData ?? "",
           ids: reportIds,
           keyWords: submittedSearchQuery,
           model,
+          opinion_data: opinionData ?? "",
           prompt,
         }),
         headers: {
@@ -330,6 +342,7 @@ export function NewsPageView({
               }}
               onSubmit={handleReportSubmit}
               storageConfig={NEWS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG}
+              variant="news"
             />
           </div>
         )}

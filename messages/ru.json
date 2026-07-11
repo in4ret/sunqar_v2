@@ -331,6 +331,10 @@
     "model-placeholder": "Выберите модель",
     "no-models": "Нет доступных моделей",
     "prompt-label": "Промпт",
+    "tabs-label": "Разделы формы отчета",
+    "prompt-tab": "Промпт",
+    "additional-data-tab": "Доп.данные",
+    "opinion-data-tab": "Социология",
     "submit": "Сформировать",
     "submit-error": "Не удалось запустить формирование отчета."
   },

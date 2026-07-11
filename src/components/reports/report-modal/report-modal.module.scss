@@ -9,9 +9,6 @@
   gap: 1rem;
 }
 
-.field {
-  gap: 0.5rem;
-}
 
 .field-label {
   color: var(--text-secondary);
@@ -33,6 +30,62 @@
   color: var(--text-primary);
   font: inherit;
   resize: vertical;
+}
+
+.tab-list {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 0.125rem;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.tab-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  min-width: 7.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-bottom-color: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.tab-button:hover,
+.tab-button:focus-visible {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.tab-button[aria-selected="true"] {
+  margin-bottom: -1px;
+  border-color: var(--border-default);
+  border-bottom-color: var(--bg-elevated);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.tab-panel {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-default);
+  border-top: 0;
+  border-radius: 0 0 0.9rem 0.9rem;
+  background: var(--bg-elevated);
 }
 
 .modal-footer-actions {
@@ -65,6 +118,17 @@
 }
 
 @media (max-width: $breakpoint-mobile) {
+  .tab-list {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tab-button {
+    min-width: 0;
+    padding-inline: 0.6rem;
+  }
+
   .modal-footer-actions {
     justify-content: stretch;
   }
