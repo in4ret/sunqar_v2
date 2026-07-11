@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ReportModal } from "@/components/reports";
+import { COMMENTS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG } from "@/components/reports/report-modal/report-modal-storage";
 import { formatLogMessage } from "@/lib/logs";
 import type { CommentsTab } from "@/lib/routes";
 import { getCommentsTabRoute } from "@/lib/routes";
@@ -413,6 +414,7 @@ export function CommentsPageView({
             setIsReportModalOpen(false);
           }}
           onSubmit={handleReportSubmit}
+          storageConfig={COMMENTS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG}
         />
       </div>
     </section>

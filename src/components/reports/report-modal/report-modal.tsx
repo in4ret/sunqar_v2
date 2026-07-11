@@ -1,10 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Dropdown, Modal } from "@/ui";
 
+import {
+  getStoredReportModalAiModel,
+  resolveStoredReportModalAiModel,
+  setStoredReportModalAiModel,
+  type ReportModalStorageConfig,
+} from "./report-modal-storage";
 import styles from "./report-modal.module.scss";
 
 type ReportModalAiModel = {
@@ -23,6 +29,7 @@ type ReportModalProps = {
   isSubmitting?: boolean;
   onClose: () => void;
   onSubmit: (payload: ReportModalSubmitPayload) => void | Promise<void>;
+  storageConfig: ReportModalStorageConfig;
 };
 
 export function ReportModal({
@@ -31,6 +38,7 @@ export function ReportModal({
   isSubmitting = false,
   onClose,
   onSubmit,
+  storageConfig,
 }: ReportModalProps) {
   if (!isOpen) {
     return null;
@@ -42,6 +50,7 @@ export function ReportModal({
       isSubmitting={isSubmitting}
       onClose={onClose}
       onSubmit={onSubmit}
+      storageConfig={storageConfig}
     />
   );
 }
@@ -51,6 +60,7 @@ type ReportModalContentProps = {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (payload: ReportModalSubmitPayload) => void | Promise<void>;
+  storageConfig: ReportModalStorageConfig;
 };
 
 function ReportModalContent({
@@ -58,6 +68,7 @@ function ReportModalContent({
   isSubmitting,
   onClose,
   onSubmit,
+  storageConfig,
 }: ReportModalContentProps) {
   const t = useTranslations();
   const [selectedAiModel, setSelectedAiModel] = useState("");
@@ -70,6 +81,12 @@ function ReportModalContent({
         : [{ label: t("report-modal.no-models"), value: "" }],
     [aiModels, hasAiModels, t],
   );
+
+  useEffect(() => {
+    const storedAiModel = getStoredReportModalAiModel(storageConfig);
+
+    setSelectedAiModel(resolveStoredReportModalAiModel(storedAiModel, aiModels));
+  }, [aiModels, storageConfig]);
 
   return (
     <Modal
@@ -106,6 +123,7 @@ function ReportModalContent({
             options={aiModelOptions}
             value={selectedAiModel}
             onChange={(nextValue) => {
+              setStoredReportModalAiModel(storageConfig, nextValue);
               setSelectedAiModel(nextValue);
             }}
           />

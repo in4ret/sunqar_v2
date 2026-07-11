@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ReportModal } from "@/components/reports";
+import { NEWS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG } from "@/components/reports/report-modal/report-modal-storage";
 import { formatLogMessage } from "@/lib/logs";
 import { getNewsTabRoute, type NewsTab } from "@/lib/routes";
 import type { SourceOptionItem } from "@/lib/sources/source-options";
@@ -328,6 +329,7 @@ export function NewsPageView({
                 setIsReportModalOpen(false);
               }}
               onSubmit={handleReportSubmit}
+              storageConfig={NEWS_REPORT_MODAL_AI_MODEL_STORAGE_CONFIG}
             />
           </div>
         )}
