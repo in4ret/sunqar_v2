@@ -5,10 +5,12 @@ import { unstable_cache } from "next/cache";
 import { ONE_HOUR_REVALIDATE } from "@/lib/cache";
 import { manticoreSql } from "@/lib/manticore";
 import {
+  type NewsChartAggregation,
+  type NewsChartBucket,
   type NewsChartGranularity,
-  type NewsChartSourceBucket,
-  type NewsChartSourceStats,
+  type NewsChartStats,
   OTHER_NEWS_SOURCE,
+  UNKNOWN_NEWS_COUNTRY,
   UNKNOWN_NEWS_SOURCE,
 } from "@/lib/news/news-chart-shared";
 import {
@@ -25,7 +27,8 @@ import {
 } from "@/lib/utils";
 
 type NewsChartCountRow = {
-  source: string | null;
+  country?: string | null;
+  source?: string | null;
   total: number | string;
 };
 
@@ -263,28 +266,36 @@ function normalizeNewsSource(value: string | null | undefined) {
   return trimmedValue ? trimmedValue : UNKNOWN_NEWS_SOURCE;
 }
 
-function sortNewsSources(sourceTotalsMap: Map<string, number>) {
-  return [...sourceTotalsMap.entries()]
+function normalizeNewsCountry(value: string | null | undefined) {
+  const trimmedValue = value?.trim();
+
+  return trimmedValue ? trimmedValue : UNKNOWN_NEWS_COUNTRY;
+}
+
+function sortChartItems(itemTotalsMap: Map<string, number>, unknownItem: string) {
+  return [...itemTotalsMap.entries()]
     .sort((left, right) => {
       if (right[1] !== left[1]) {
         return right[1] - left[1];
       }
 
-      if (left[0] === UNKNOWN_NEWS_SOURCE) {
+      if (left[0] === unknownItem) {
         return 1;
       }
 
-      if (right[0] === UNKNOWN_NEWS_SOURCE) {
+      if (right[0] === unknownItem) {
         return -1;
       }
 
-      return left[0].localeCompare(right[0], "en", { sensitivity: "base" });
+      return left[0].localeCompare(right[0], "en", {
+        sensitivity: "base",
+      });
     })
-    .map(([source]) => source);
+    .map(([item]) => item);
 }
 
 function getTopSources(sourceTotalsMap: Map<string, number>) {
-  const sortedSources = sortNewsSources(sourceTotalsMap);
+  const sortedSources = sortChartItems(sourceTotalsMap, UNKNOWN_NEWS_SOURCE);
   const visibleSources = sortedSources.slice(0, MAX_VISIBLE_SOURCES);
 
   if (sortedSources.length <= MAX_VISIBLE_SOURCES) {
@@ -455,19 +466,24 @@ async function getChartBoundaryDates(input: NormalizedNewsQueryInput, fallbackTo
 async function getBucketSourceTotals(
   input: NormalizedNewsQueryInput,
   bucket: ChartBucketSpec,
+  aggregation: NewsChartAggregation,
 ) {
   const bucketStartEpochSeconds = getBucketStartEpochSeconds(bucket);
   const bucketEndExclusiveEpochSeconds = getBucketEndExclusiveEpochSeconds(bucket);
+  const groupField = aggregation === "countries" ? "country" : "source";
   const rows = await manticoreSql<NewsChartCountRow>(
-    `SELECT source, COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to, [
+    `SELECT ${groupField}, COUNT(*) AS total FROM news${buildNewsWhereClause(input.query, input.sources, input.from, input.to, [
       `publishedat >= ${bucketStartEpochSeconds}`,
       `publishedat < ${bucketEndExclusiveEpochSeconds}`,
-    ])} GROUP BY source ORDER BY total DESC LIMIT 100000 OPTION max_matches=10000`,
+    ])} GROUP BY ${groupField} ORDER BY total DESC LIMIT 100000 OPTION max_matches=10000`,
   );
   const sourceTotals = new Map<string, number>();
 
   for (const row of rows) {
-    const source = normalizeNewsSource(row.source);
+    const source =
+      aggregation === "countries"
+        ? normalizeNewsCountry(row.country)
+        : normalizeNewsSource(row.source);
     const total = Number(row.total ?? 0);
 
     sourceTotals.set(source, (sourceTotals.get(source) ?? 0) + total);
@@ -479,9 +495,13 @@ async function getBucketSourceTotals(
 function buildBucketsFromSpecs(
   bucketSpecs: ChartBucketSpec[],
   bucketSourceTotalsMap: Map<string, Map<string, number>>,
-  sources: string[],
-): NewsChartSourceBucket[] {
-  const visibleSources = sources.filter((source) => source !== OTHER_NEWS_SOURCE);
+  items: string[],
+  aggregation: NewsChartAggregation,
+): NewsChartBucket[] {
+  const visibleSources =
+    aggregation === "sources"
+      ? items.filter((source) => source !== OTHER_NEWS_SOURCE)
+      : items;
   const visibleSourceSet = new Set(visibleSources);
 
   return bucketSpecs.map(({ bucketEnd, bucketStart }) => {
@@ -500,10 +520,13 @@ function buildBucketsFromSpecs(
       }
     }
 
-    const segments = sources
+    const segments = items
       .map((source) => ({
-        source,
-        total: source === OTHER_NEWS_SOURCE ? otherTotal : sourceTotals.get(source) ?? 0,
+        key: source,
+        total:
+          aggregation === "sources" && source === OTHER_NEWS_SOURCE
+            ? otherTotal
+            : sourceTotals.get(source) ?? 0,
       }))
       .filter((segment) => segment.total > 0);
     const total = segments.reduce((sum, segment) => sum + segment.total, 0);
@@ -519,7 +542,7 @@ function buildBucketsFromSpecs(
 
 async function getNewsChartData(
   input: NormalizedNewsQueryInput,
-): Promise<NewsChartSourceStats> {
+): Promise<NewsChartStats> {
   const effectiveRange = resolveEffectiveChartRange(input);
   const granularity = getChartGranularity(effectiveRange);
   const boundaryDates =
@@ -532,7 +555,7 @@ async function getNewsChartData(
 
   await Promise.all(
     bucketSpecs.map(async (bucket) => {
-      const bucketSourceTotals = await getBucketSourceTotals(input, bucket);
+      const bucketSourceTotals = await getBucketSourceTotals(input, bucket, input.aggregation);
 
       bucketSourceTotalsMap.set(bucket.bucketStart, bucketSourceTotals);
 
@@ -542,12 +565,16 @@ async function getNewsChartData(
     }),
   );
 
-  const sources = getTopSources(overallSourceTotals);
+  const items =
+    input.aggregation === "countries"
+      ? sortChartItems(overallSourceTotals, UNKNOWN_NEWS_COUNTRY)
+      : getTopSources(overallSourceTotals);
 
   return {
-    buckets: buildBucketsFromSpecs(bucketSpecs, bucketSourceTotalsMap, sources),
+    aggregation: input.aggregation,
+    buckets: buildBucketsFromSpecs(bucketSpecs, bucketSourceTotalsMap, items, input.aggregation),
     granularity,
-    sources,
+    items,
   };
 }
 
@@ -556,14 +583,21 @@ export function resolveNewsChartExecutionMode(input: Pick<NormalizedNewsQueryInp
 }
 
 const getCachedNewsChart = unstable_cache(
-  async (query: string, serializedSources: string, from: string, to: string) =>
+  async (
+    aggregation: NewsChartAggregation,
+    query: string,
+    serializedSources: string,
+    from: string,
+    to: string,
+  ) =>
     getNewsChartData({
+      aggregation,
       from,
       query,
       sources: serializedSources ? serializedSources.split("\u0000") : [],
       to,
     }),
-  ["news-chart-v1"],
+  ["news-chart-v2"],
   {
     revalidate: ONE_HOUR_REVALIDATE,
     tags: ["news:chart"],
@@ -578,6 +612,7 @@ export async function getNewsChart(input: NewsQueryInput) {
   }
 
   return getCachedNewsChart(
+    normalizedInput.aggregation,
     normalizedInput.query,
     normalizedInput.sources.join("\u0000"),
     normalizedInput.from,

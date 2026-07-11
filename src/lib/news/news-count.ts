@@ -31,6 +31,7 @@ export function resolveNewsCountExecutionMode(input: Pick<NormalizedNewsQueryInp
 const getCachedNewsCount = unstable_cache(
   async (query: string, serializedSources: string, from: string, to: string) =>
     getNewsCount({
+      aggregation: "sources",
       from,
       query,
       sources: serializedSources ? serializedSources.split("\u0000") : [],

@@ -1,8 +1,10 @@
 import "server-only";
 
+import type { NewsChartAggregation } from "@/lib/news/news-chart-shared";
 import { normalizeSearchQuery } from "@/lib/utils";
 
 export type NewsQueryInput = {
+  aggregation?: NewsChartAggregation;
   from: string;
   query: string;
   sources: string[];
@@ -10,6 +12,7 @@ export type NewsQueryInput = {
 };
 
 export type NormalizedNewsQueryInput = {
+  aggregation: NewsChartAggregation;
   from: string;
   query: string;
   sources: string[];
@@ -146,6 +149,7 @@ export function buildNewsWhereClause(
 
 export function normalizeNewsQueryInput(input: NewsQueryInput): NormalizedNewsQueryInput {
   return {
+    aggregation: input.aggregation === "countries" ? "countries" : "sources",
     from: input.from.trim(),
     query: normalizeSearchQuery(input.query),
     sources: normalizeNewsSources(input.sources),

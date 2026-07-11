@@ -17,6 +17,8 @@
 
 .news-page-chart-header {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 0.5rem;
 }
 
@@ -38,6 +40,44 @@
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.4;
+}
+
+.news-page-chart-switcher {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.22rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.news-page-chart-switcher-button {
+  padding: 0.42rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.news-page-chart-switcher-button:hover,
+.news-page-chart-switcher-button:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+}
+
+.news-page-chart-switcher-button-active {
+  background: var(--button-primary-bg);
+  color: var(--text-inverse);
 }
 
 .news-page-chart-legend {
@@ -253,6 +293,14 @@
   .news-page-chart-card {
     min-height: 24rem;
     padding: 1rem;
+  }
+
+  .news-page-chart-header {
+    grid-template-columns: 1fr;
+  }
+
+  .news-page-chart-switcher {
+    justify-self: start;
   }
 
   .news-page-chart-legend {

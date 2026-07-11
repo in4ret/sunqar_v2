@@ -11,6 +11,7 @@ import {
   type HomePageNewsCountryChartStats,
   UNKNOWN_NEWS_COUNTRY,
 } from "@/lib/home-page-stats-shared";
+import { getNewsCountryColor } from "@/lib/news/news-chart-colors";
 import { formatCompactNumber } from "@/lib/utils";
 
 import styles from "./news-country-pie-chart.module.scss";
@@ -31,39 +32,6 @@ type TooltipState = {
 const SLICE_LABEL_MIN_SHARE = 0.05;
 const SLICE_LABEL_EDGE_INSET = 6;
 const SLICE_HOVER_OFFSET = 8;
-
-const CHART_COLORS = [
-  "#2f6f9f",
-  "#2d7a57",
-  "#c89f26",
-  "#9a5f97",
-  "#b25f3b",
-  "#5d7ec2",
-  "#7b9244",
-  "#a65c76",
-  "#3f8f8c",
-  "#d1783f",
-];
-const COUNTRY_COLOR_OVERRIDES: Record<string, string> = {
-  [UNKNOWN_NEWS_COUNTRY]: "#64748b",
-};
-
-function getCountryColor(country: string) {
-  const normalizedCountry = country.trim().toLowerCase();
-  const overrideColor = COUNTRY_COLOR_OVERRIDES[normalizedCountry];
-
-  if (overrideColor) {
-    return overrideColor;
-  }
-
-  let hash = 0;
-
-  for (const character of normalizedCountry) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return CHART_COLORS[hash % CHART_COLORS.length];
-}
 
 export function NewsCountryPieChart({
   className,
@@ -250,7 +218,7 @@ export function NewsCountryPieChart({
                             aria-label={`${formatCountryLabel(slice.data.country)}: ${getSlicePercentage(slice.data.total)}`}
                             className={styles["slice"]}
                             d={slicePath}
-                            fill={getCountryColor(slice.data.country)}
+                            fill={getNewsCountryColor(slice.data.country)}
                             onBlur={clearTooltip}
                             onFocus={(event) => updateTooltip(event.currentTarget, index, slice.data)}
                             onKeyDown={(event) => handleSliceKeyDown(event, index, slice.data)}
@@ -305,7 +273,7 @@ export function NewsCountryPieChart({
                   <div className={styles["legend-item"]} key={slice.country}>
                     <span
                       className={styles["legend-swatch"]}
-                      style={{ backgroundColor: getCountryColor(slice.country) }}
+                      style={{ backgroundColor: getNewsCountryColor(slice.country) }}
                     />
                     <span className={styles["legend-name"]}>{formatCountryLabel(slice.country)}</span>
                   </div>

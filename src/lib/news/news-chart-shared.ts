@@ -1,22 +1,26 @@
 export const OTHER_NEWS_SOURCE = "__other__";
+export const UNKNOWN_NEWS_COUNTRY = "__unknown__";
 export const UNKNOWN_NEWS_SOURCE = "__unknown__";
+
+export type NewsChartAggregation = "sources" | "countries";
 
 export type NewsChartGranularity = "day" | "week" | "month";
 
-export type NewsChartSourceSegment = {
-  source: string;
+export type NewsChartSegment = {
+  key: string;
   total: number;
 };
 
-export type NewsChartSourceBucket = {
+export type NewsChartBucket = {
   bucketEnd: string;
   bucketStart: string;
-  segments: NewsChartSourceSegment[];
+  segments: NewsChartSegment[];
   total: number;
 };
 
-export type NewsChartSourceStats = {
-  buckets: NewsChartSourceBucket[];
+export type NewsChartStats = {
+  aggregation: NewsChartAggregation;
+  buckets: NewsChartBucket[];
   granularity: NewsChartGranularity;
-  sources: string[];
+  items: string[];
 };

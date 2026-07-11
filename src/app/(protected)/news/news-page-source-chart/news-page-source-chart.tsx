@@ -6,13 +6,23 @@ import { useLocale, useTranslations } from "next-intl";
 import * as d3 from "d3";
 
 import { useSize } from "@/hooks/use-size";
+import { getNewsChartItemColor } from "@/lib/news/news-chart-colors";
 import {
-  type NewsChartSourceBucket,
-  type NewsChartSourceSegment,
-  type NewsChartSourceStats,
+  type NewsChartAggregation,
+  type NewsChartBucket,
+  type NewsChartSegment,
+  type NewsChartStats,
   OTHER_NEWS_SOURCE,
+  UNKNOWN_NEWS_COUNTRY,
   UNKNOWN_NEWS_SOURCE,
 } from "@/lib/news/news-chart-shared";
+import { formatSourceCountryLabel } from "@/lib/sources/source-country-label";
+
+import {
+  NEWS_PAGE_SOURCE_CHART_STORAGE_CONFIG,
+  setStoredNewsPageSourceChartAggregation,
+  useStoredNewsPageSourceChartAggregation,
+} from "./news-page-source-chart-storage";
 
 import styles from "./news-page-source-chart.module.scss";
 
@@ -34,7 +44,7 @@ type ChartState =
       status: "error";
     }
   | {
-      data: NewsChartSourceStats;
+      data: NewsChartStats;
       status: "success";
     };
 
@@ -42,7 +52,7 @@ type TooltipState = {
   anchorX: number;
   anchorY: number;
   periodLabel: string;
-  segments: NewsChartSourceSegment[];
+  segments: NewsChartSegment[];
   total: number;
   x: number;
   y: number;
@@ -54,18 +64,6 @@ const CHART_MARGIN = {
   bottom: 34,
   left: 50,
 };
-const CHART_COLORS = [
-  "#2f6f9f",
-  "#2d7a57",
-  "#c89f26",
-  "#9a5f97",
-  "#b25f3b",
-  "#5d7ec2",
-  "#7b9244",
-  "#a65c76",
-];
-const OTHER_SOURCE_COLOR = "#8f96a3";
-const UNKNOWN_SOURCE_COLOR = "#708b9f";
 const TOOLTIP_EDGE_PADDING = 12;
 const Y_TICK_COUNT = 4;
 
@@ -90,24 +88,6 @@ function getBarLabelIndices(length: number) {
   return indices;
 }
 
-function getSourceColor(source: string) {
-  if (source === OTHER_NEWS_SOURCE) {
-    return OTHER_SOURCE_COLOR;
-  }
-
-  if (source === UNKNOWN_NEWS_SOURCE) {
-    return UNKNOWN_SOURCE_COLOR;
-  }
-
-  let hash = 0;
-
-  for (const character of source.trim().toLowerCase()) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return CHART_COLORS[hash % CHART_COLORS.length];
-}
-
 export function NewsPageSourceChart({
   hasLoadedStoredSources,
   searchFrom,
@@ -123,6 +103,7 @@ export function NewsPageSourceChart({
   const [state, setState] = useState<ChartState>({ status: "loading" });
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const aggregation = useStoredNewsPageSourceChartAggregation(NEWS_PAGE_SOURCE_CHART_STORAGE_CONFIG);
   const activeIndexRef = useRef<number | null>(null);
   const selectedSourcesRef = useRef(selectedSources);
   const tooltipStateRef = useRef<TooltipState | null>(null);
@@ -154,6 +135,7 @@ export function NewsPageSourceChart({
         const response = await fetch("/api/news/chart", {
           body: JSON.stringify({
             from: searchFrom,
+            aggregation,
             query: searchQuery,
             sources: selectedSourcesRef.current,
             to: searchTo,
@@ -169,12 +151,13 @@ export function NewsPageSourceChart({
           throw new Error(`Request failed with status ${response.status}`);
         }
 
-        const payload = (await response.json()) as Partial<NewsChartSourceStats>;
+        const payload = (await response.json()) as Partial<NewsChartStats>;
 
         if (
           !payload ||
           !Array.isArray(payload.buckets) ||
-          !Array.isArray(payload.sources) ||
+          !Array.isArray(payload.items) ||
+          (payload.aggregation !== "sources" && payload.aggregation !== "countries") ||
           (payload.granularity !== "day" &&
             payload.granularity !== "week" &&
             payload.granularity !== "month")
@@ -183,7 +166,7 @@ export function NewsPageSourceChart({
         }
 
         setState({
-          data: payload as NewsChartSourceStats,
+          data: payload as NewsChartStats,
           status: "success",
         });
       } catch (error) {
@@ -203,11 +186,18 @@ export function NewsPageSourceChart({
     return () => {
       abortController.abort();
     };
-  }, [hasLoadedStoredSources, searchFrom, searchQuery, searchTo, searchTrigger]);
+  }, [aggregation, hasLoadedStoredSources, searchFrom, searchQuery, searchTo, searchTrigger]);
 
   const title = t("news.chart-title");
-  const legendLabel = t("news.chart-legend-label");
+  const legendLabel =
+    aggregation === "countries"
+      ? t("news.chart-legend-label-countries")
+      : t("news.chart-legend-label-sources");
   const totalLabel = t("news.chart-total-label");
+  const chartModeLabel = t("news.chart-mode-label");
+  const chartModeSourcesLabel = t("news.chart-mode-sources");
+  const chartModeCountriesLabel = t("news.chart-mode-countries");
+  const withoutCountryLabel = t("reports.form.sources-without-country");
   const subtitles = useMemo(
     () => ({
       day: t("news.chart-subtitles.day"),
@@ -217,12 +207,19 @@ export function NewsPageSourceChart({
     [t],
   );
   const emptyLabels = useMemo(
-    () => ({
-      day: t("news.chart-empty.day"),
-      month: t("news.chart-empty.month"),
-      week: t("news.chart-empty.week"),
-    }),
-    [t],
+    () =>
+      aggregation === "countries"
+        ? {
+            day: t("news.chart-empty-countries.day"),
+            month: t("news.chart-empty-countries.month"),
+            week: t("news.chart-empty-countries.week"),
+          }
+        : {
+            day: t("news.chart-empty.day"),
+            month: t("news.chart-empty.month"),
+            week: t("news.chart-empty.week"),
+          },
+    [aggregation, t],
   );
   const chartResult = useMemo(
     () => (state.status === "success" ? state.data : null),
@@ -233,8 +230,8 @@ export function NewsPageSourceChart({
     [chartResult],
   );
   const granularity = chartResult?.granularity ?? "day";
-  const sources = useMemo(
-    () => chartResult?.sources ?? [],
+  const items = useMemo(
+    () => chartResult?.items ?? [],
     [chartResult],
   );
   const totalNews = useMemo(
@@ -334,6 +331,18 @@ export function NewsPageSourceChart({
   }, [containerRef, tooltip]);
 
   function formatSourceLabel(source: string) {
+    if (aggregation === "countries") {
+      if (source === UNKNOWN_NEWS_COUNTRY) {
+        return t("news.chart-unknown-country");
+      }
+
+      return formatSourceCountryLabel({
+        country: source,
+        locale,
+        withoutCountryLabel,
+      });
+    }
+
     if (source === OTHER_NEWS_SOURCE) {
       return t("news.chart-other-source");
     }
@@ -345,7 +354,17 @@ export function NewsPageSourceChart({
     return source;
   }
 
-  function formatAxisLabel(item: NewsChartSourceBucket) {
+  function handleAggregationChange(nextAggregation: NewsChartAggregation) {
+    if (nextAggregation === aggregation) {
+      return;
+    }
+
+    setStoredNewsPageSourceChartAggregation(NEWS_PAGE_SOURCE_CHART_STORAGE_CONFIG, nextAggregation);
+    setActiveIndex(null);
+    setTooltip(null);
+  }
+
+  function formatAxisLabel(item: NewsChartBucket) {
     if (granularity === "month") {
       return monthFormatter.format(parseChartDate(item.bucketStart));
     }
@@ -357,7 +376,7 @@ export function NewsPageSourceChart({
     return dayAxisFormatter.format(parseChartDate(item.bucketStart));
   }
 
-  function formatPeriodLabel(item: NewsChartSourceBucket) {
+  function formatPeriodLabel(item: NewsChartBucket) {
     if (granularity === "month") {
       return monthFormatter.format(parseChartDate(item.bucketStart));
     }
@@ -377,7 +396,7 @@ export function NewsPageSourceChart({
     return chartData.innerHeight - chartData.yScale(total);
   }
 
-  function updateTooltipPosition(anchorX: number, anchorY: number, index: number, item: NewsChartSourceBucket) {
+  function updateTooltipPosition(anchorX: number, anchorY: number, index: number, item: NewsChartBucket) {
     const container = containerRef.current;
 
     if (!container) {
@@ -413,7 +432,7 @@ export function NewsPageSourceChart({
   function updateTooltipFromBar(
     eventTarget: EventTarget & SVGRectElement,
     index: number,
-    item: NewsChartSourceBucket,
+    item: NewsChartBucket,
   ) {
     const container = containerRef.current;
 
@@ -444,7 +463,7 @@ export function NewsPageSourceChart({
   function handleBarKeyDown(
     event: KeyboardEvent<SVGRectElement>,
     index: number,
-    item: NewsChartSourceBucket,
+    item: NewsChartBucket,
   ) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -464,22 +483,60 @@ export function NewsPageSourceChart({
         <div className={styles["news-page-chart-copy"]}>
           <h2 className={styles["news-page-chart-title"]}>{title}</h2>
           <p className={styles["news-page-chart-subtitle"]}>
-            {state.status === "success" ? subtitles[granularity] : t("news.chart-loading")}
+            {state.status === "success"
+              ? subtitles[granularity]
+              : t(
+                  aggregation === "countries"
+                    ? "news.chart-loading-countries"
+                    : "news.chart-loading-sources",
+                )}
           </p>
+        </div>
+        <div
+          aria-label={chartModeLabel}
+          className={styles["news-page-chart-switcher"]}
+          role="group"
+        >
+          <button
+            aria-pressed={aggregation === "sources"}
+            className={[
+              styles["news-page-chart-switcher-button"],
+              aggregation === "sources" ? styles["news-page-chart-switcher-button-active"] : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => handleAggregationChange("sources")}
+            type="button"
+          >
+            {chartModeSourcesLabel}
+          </button>
+          <button
+            aria-pressed={aggregation === "countries"}
+            className={[
+              styles["news-page-chart-switcher-button"],
+              aggregation === "countries" ? styles["news-page-chart-switcher-button-active"] : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => handleAggregationChange("countries")}
+            type="button"
+          >
+            {chartModeCountriesLabel}
+          </button>
         </div>
       </div>
 
-      {sources.length > 0 ? (
-        <div
-          aria-label={legendLabel}
-          className={styles["news-page-chart-legend"]}
-          role="list"
-        >
-          {sources.map((source) => (
+      {items.length > 0 ? (
+                <div
+                  aria-label={legendLabel}
+                  className={styles["news-page-chart-legend"]}
+                  role="list"
+                >
+          {items.map((source) => (
             <div className={styles["news-page-chart-legend-item"]} key={source} role="listitem">
               <span
                 className={styles["news-page-chart-legend-swatch"]}
-                style={{ backgroundColor: getSourceColor(source) }}
+                style={{ backgroundColor: getNewsChartItemColor(source, aggregation) }}
               />
               <span className={styles["news-page-chart-legend-text"]}>{formatSourceLabel(source)}</span>
             </div>
@@ -584,9 +641,9 @@ export function NewsPageSourceChart({
 
                         return (
                           <rect
-                            key={`${item.bucketStart}-${segment.source}-${segmentIndex}`}
+                            key={`${item.bucketStart}-${segment.key}-${segmentIndex}`}
                             className={styles["news-page-chart-bar-segment"]}
-                            fill={getSourceColor(segment.source)}
+                            fill={getNewsChartItemColor(segment.key, aggregation)}
                             height={renderedHeight}
                             rx={segmentIndex === item.segments.length - 1 ? 4 : 0}
                             ry={segmentIndex === item.segments.length - 1 ? 4 : 0}
@@ -646,13 +703,13 @@ export function NewsPageSourceChart({
                 ) : null}
                 <div className={styles["news-page-chart-tooltip-segments"]}>
                   {tooltip.segments.map((segment) => (
-                    <div className={styles["news-page-chart-tooltip-segment"]} key={segment.source}>
+                    <div className={styles["news-page-chart-tooltip-segment"]} key={segment.key}>
                       <span
                         className={styles["news-page-chart-legend-swatch"]}
-                        style={{ backgroundColor: getSourceColor(segment.source) }}
+                        style={{ backgroundColor: getNewsChartItemColor(segment.key, aggregation) }}
                       />
                       <span className={styles["news-page-chart-tooltip-segment-label"]}>
-                        {formatSourceLabel(segment.source)}
+                        {formatSourceLabel(segment.key)}
                       </span>
                       <span className={styles["news-page-chart-tooltip-segment-value"]}>
                         {segment.total}
