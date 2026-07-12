@@ -51,9 +51,9 @@ async function processReport(
       return;
     }
 
-    // console.log(formatLogMessage(
-    //   `[scheduler] Initialized nextRunAt for report ${report.id}: ${nextRunAt?.toISOString() ?? "null"}.`,
-    // ));
+    console.log(formatLogMessage(
+      `[scheduler] Initialized nextRunAt for report ${report.id}: ${nextRunAt?.toISOString() ?? "null"}.`,
+    ));
     return;
   }
 

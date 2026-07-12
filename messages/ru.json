@@ -30,6 +30,7 @@
     "sign-in": "Войти",
     "admin-navigation": "Администрирование",
     "ai-models": "AI модели",
+    "directories": "Справочники",
     "users": "Пользователи",
     "logout": "Выйти",
     "tasks": {
@@ -86,6 +87,18 @@
     "ai-models-admin-title": "Администрирование AI моделей",
     "ai-models-admin-description": "Добавляйте, изменяйте и отключайте модели, доступные для AI функций.",
     "ai-models-admin-link": "Открыть управление AI моделями"
+  },
+  "directories": {
+    "eyebrow": "Справочники",
+    "title": "Сводка по справочникам",
+    "description": "Краткий обзор объема данных по источникам и публикациям в локальной базе.",
+    "sources-title": "Источники",
+    "posts-title": "Публикации",
+    "count-label": "Всего записей",
+    "update-button": "Обновить",
+    "update-started": "Обновление справочников запущено...",
+    "update-already-running": "Обновление справочников уже выполняется.",
+    "update-error": "Не удалось запустить обновление справочников."
   },
   "home": {
     "search-placeholder": "Введите поисковый запрос",
@@ -331,10 +344,13 @@
     "model-placeholder": "Выберите модель",
     "no-models": "Нет доступных моделей",
     "prompt-label": "Промпт",
+    "prompt-placeholder": "Ваш запрос. По возможности короткий и конкретный",
     "tabs-label": "Разделы формы отчета",
     "prompt-tab": "Промпт",
     "additional-data-tab": "Доп.данные",
+    "additional-data-placeholder": "Дополнительный контекст к вашему запросу. Только текст",
     "opinion-data-tab": "Социология",
+    "opinion-data-placeholder": "Для анализа комментариев, вставьте ссылки на видео через запятую:\nhttps://youtube.com/watch?v=videoId1,\nhttps://youtube.com/watch?v=videoId2",
     "submit": "Сформировать",
     "submit-error": "Не удалось запустить формирование отчета."
   },

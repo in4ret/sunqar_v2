@@ -30,6 +30,7 @@
     "sign-in": "Кіру",
     "admin-navigation": "Әкімшілеу",
     "ai-models": "AI модельдер",
+    "directories": "Анықтамалықтар",
     "users": "Пайдаланушылар",
     "logout": "Шығу",
     "tasks": {
@@ -86,6 +87,18 @@
     "ai-models-admin-title": "AI модельдерді әкімшілеу",
     "ai-models-admin-description": "AI функцияларына қолжетімді модельдерді қосыңыз, өзгертіңіз және өшіріңіз.",
     "ai-models-admin-link": "AI модельдерді басқаруды ашу"
+  },
+  "directories": {
+    "eyebrow": "Анықтамалықтар",
+    "title": "Анықтамалықтар бойынша қысқаша шолу",
+    "description": "Жергілікті базадағы дереккөздер мен жарияланымдар көлемінің қысқаша көрінісі.",
+    "sources-title": "Дереккөздер",
+    "posts-title": "Жарияланымдар",
+    "count-label": "Жалпы жазбалар",
+    "update-button": "Жаңарту",
+    "update-started": "Анықтамалықтарды жаңарту іске қосылды...",
+    "update-already-running": "Анықтамалықтарды жаңарту қазірдің өзінде орындалып жатыр.",
+    "update-error": "Анықтамалықтарды жаңартуды іске қосу мүмкін болмады."
   },
   "home": {
     "search-placeholder": "Іздеу сұрауын енгізіңіз",
@@ -331,10 +344,13 @@
     "model-placeholder": "Модельді таңдаңыз",
     "no-models": "Қолжетімді модельдер жоқ",
     "prompt-label": "Промпт",
+    "prompt-placeholder": "Сұрауыңыз. Мүмкіндігінше қысқа әрі нақты",
     "tabs-label": "Есеп нысанының бөлімдері",
     "prompt-tab": "Промпт",
     "additional-data-tab": "Қосымша деректер",
+    "additional-data-placeholder": "Сұрауыңызға қосымша контекст. Тек мәтін",
     "opinion-data-tab": "Социология",
+    "opinion-data-placeholder": "Пікірлерді талдау үшін бейне сілтемелерін үтір арқылы енгізіңіз:\nhttps://youtube.com/watch?v=videoId1,\nhttps://youtube.com/watch?v=videoId2",
     "submit": "Қалыптастыру",
     "submit-error": "Есепті қалыптастыруды іске қосу мүмкін болмады."
   },

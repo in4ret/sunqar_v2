@@ -1,0 +1,86 @@
+@use "../../../styles/breakpoints" as *;
+
+.directories-page {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 50rem;
+}
+
+.summary-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.summary-card {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+  flex: 1 1 auto;
+  padding: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.section-title {
+  margin: 0;
+}
+
+.section-head {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.update-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.update-button:focus-visible {
+  outline: 2px solid var(--color-info-500);
+  outline-offset: 2px;
+}
+
+.update-button:disabled {
+  background: var(--button-primary-bg-disabled);
+  color: var(--button-primary-text-disabled);
+  cursor: not-allowed;
+}
+
+.summary-stats {
+  width: 100%;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .directories-page,
+  .summary-layout,
+  .summary-card {
+    min-width: 0;
+  }
+
+  .summary-layout {
+    flex-direction: column;
+  }
+
+  .update-button {
+    width: 100%;
+  }
+
+  .summary-card {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+}

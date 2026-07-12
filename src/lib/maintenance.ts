@@ -10,6 +10,8 @@ import { env } from "@/lib/env";
 import { formatLogMessage } from "@/lib/logs";
 import { syncPosts } from "@/lib/posts/posts";
 
+export { formatLogMessage } from "@/lib/logs";
+
 type GlobalMaintenanceState = {
   isMaintenanceSchedulerStarted?: boolean;
   lastRunDate?: string;
@@ -17,6 +19,8 @@ type GlobalMaintenanceState = {
 };
 
 const globalMaintenanceState = globalThis as typeof globalThis & GlobalMaintenanceState;
+
+export type DirectoriesUpdateStartStatus = "already-running" | "started";
 
 export type SourceRow = {
   name: string;
@@ -336,14 +340,36 @@ async function updateSources() {
   );
 }
 
-export async function runDailyUpdate() {
-  console.log(formatLogMessage("Daily update started"));
+export async function runDirectoriesUpdate(daily = true) {
+  console.log(formatLogMessage(`${daily ? "Daily" : "Forced"} update started`));
 
   await updateSources();
   console.log(formatLogMessage("Posts sync started..."));
   await syncPosts();
 
-  console.log(formatLogMessage("Daily update finished"));
+  console.log(formatLogMessage(`${daily ? "Daily" : "Forced"} update finished`));
+}
+
+export function startDirectoriesUpdate(daily = true): DirectoriesUpdateStartStatus {
+  if (globalMaintenanceState.isMaintenanceInProgress) {
+    console.info(
+      formatLogMessage(`${daily ? "Daily" : "Forced"} update skipped because it is already running.`),
+    );
+
+    return "already-running";
+  }
+
+  globalMaintenanceState.isMaintenanceInProgress = true;
+
+  void runDirectoriesUpdate(daily)
+    .catch((error) => {
+      console.error(formatLogMessage(`${daily ? "Daily" : "Forced"} update failed`), error);
+    })
+    .finally(() => {
+      globalMaintenanceState.isMaintenanceInProgress = false;
+    });
+
+  return "started";
 }
 
 export function startMaintenanceScheduler() {
@@ -368,7 +394,7 @@ export function startMaintenanceScheduler() {
     globalMaintenanceState.isMaintenanceInProgress = true;
 
     try {
-      await runDailyUpdate();
+      await runDirectoriesUpdate();
     } catch (error) {
       console.error(formatLogMessage("Daily update failed"), error);
     } finally {

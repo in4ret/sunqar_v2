@@ -9,6 +9,7 @@ import {
   ChartPieIcon,
   ChartScatterIcon,
   CloudUploadIcon,
+  DatabaseIcon,
   FileTextIcon,
   HouseIcon,
   NewspaperIcon,
@@ -94,6 +95,11 @@ export function AppShellView({
     },
   ];
   const adminNavigationItems = [
+    {
+      href: routes.directories,
+      icon: DatabaseIcon,
+      label: t("header.directories"),
+    },
     {
       href: routes.users,
       icon: UsersIcon,

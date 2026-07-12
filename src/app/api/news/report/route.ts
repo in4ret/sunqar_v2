@@ -31,7 +31,6 @@ export const POST = createNewsReportPostHandler({
 
     const downloadReportDocUrl = new URL("/download_report_doc/", env.apiGatewayUrl);
 
-    console.log("###", payload);
     return fetch(downloadReportDocUrl, {
       body: JSON.stringify(payload),
       cache: "no-store",

@@ -5,6 +5,7 @@ export const routes = {
   commentsChart: "/comments/chart",
   commentsText: "/comments/text",
   commentsUpload: "/comments/upload",
+  directories: "/directories",
   home: "/",
   login: "/login",
   news: "/news",

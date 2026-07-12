@@ -106,6 +106,7 @@ function ReportModalContent({
         label: t("report-modal.prompt-tab"),
         name: "sunqar-report-modal-prompt",
         onChange: setPrompt,
+        placeholder: t("report-modal.prompt-placeholder"),
         value: prompt,
       },
       {
@@ -113,6 +114,7 @@ function ReportModalContent({
         label: t("report-modal.additional-data-tab"),
         name: "sunqar-report-modal-additional-data",
         onChange: setAdditionalData,
+        placeholder: t("report-modal.additional-data-placeholder"),
         value: additionalData,
       },
       {
@@ -120,6 +122,7 @@ function ReportModalContent({
         label: t("report-modal.opinion-data-tab"),
         name: "sunqar-report-modal-opinion-data",
         onChange: setOpinionData,
+        placeholder: t("report-modal.opinion-data-placeholder"),
         value: opinionData,
       },
     ],
@@ -213,6 +216,7 @@ function ReportModalContent({
               <textarea
                 className={styles["field-textarea"]}
                 name={activeNewsTabConfig.name}
+                placeholder={activeNewsTabConfig.placeholder}
                 rows={8}
                 value={activeNewsTabConfig.value}
                 onChange={(event) => {
@@ -227,6 +231,7 @@ function ReportModalContent({
             <textarea
               className={styles["field-textarea"]}
               name="sunqar-report-modal-prompt"
+              placeholder={t("report-modal.prompt-placeholder")}
               rows={8}
               value={prompt}
               onChange={(event) => {
