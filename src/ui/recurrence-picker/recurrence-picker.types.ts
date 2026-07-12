@@ -23,6 +23,7 @@ export type RecurrenceValue = {
 export type RecurrencePickerProps = {
   className?: string;
   disabled?: boolean;
+  normalizationTimeZone?: string;
   onChange: (value: RecurrenceValue) => void;
   value: RecurrenceValue;
 };

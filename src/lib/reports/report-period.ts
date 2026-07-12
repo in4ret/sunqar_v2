@@ -21,6 +21,13 @@ type FormatStoredReportPeriodInput = {
   t: RecurrenceLabelTranslator;
 };
 
+type ReportPeriodNormalizationOptions = {
+  fallbackDate?: Date;
+  timeZone?: string;
+};
+
+export const REPORT_SCHEDULE_TIME_ZONE = "Asia/Almaty";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -33,7 +40,10 @@ function isWeekday(value: unknown): value is Weekday {
   return typeof value === "string" && weekdays.includes(value as Weekday);
 }
 
-export function parseStoredReportPeriod(period: string): RecurrenceValue {
+export function parseStoredReportPeriod(
+  period: string,
+  options?: ReportPeriodNormalizationOptions,
+): RecurrenceValue {
   const parsedValue = JSON.parse(period) as unknown;
 
   if (!isRecord(parsedValue)) {
@@ -83,11 +93,22 @@ export function parseStoredReportPeriod(period: string): RecurrenceValue {
     monthDays: normalizeMonthDays(monthDays as number[] | undefined),
     times: times as string[],
     weekdays: normalizeWeekdays(selectedWeekdays as Weekday[] | undefined),
+  }, {
+    fallbackDate: options?.fallbackDate,
+    timeZone: options?.timeZone ?? REPORT_SCHEDULE_TIME_ZONE,
   });
 }
 
-export function serializeStoredReportPeriod(value: RecurrenceValue) {
-  return JSON.stringify(normalizeRecurrenceValue(value));
+export function serializeStoredReportPeriod(
+  value: RecurrenceValue,
+  options?: ReportPeriodNormalizationOptions,
+) {
+  return JSON.stringify(
+    normalizeRecurrenceValue(value, {
+      fallbackDate: options?.fallbackDate,
+      timeZone: options?.timeZone ?? REPORT_SCHEDULE_TIME_ZONE,
+    }),
+  );
 }
 
 export function formatStoredReportPeriod({

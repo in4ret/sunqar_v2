@@ -10,6 +10,10 @@ import {
 } from "@/app/(protected)/reports/actions";
 import { translateActionMessage } from "@/lib/i18n/action-messages";
 import { useNavigationHistory } from "@/lib/providers";
+import {
+  REPORT_SCHEDULE_TIME_ZONE,
+  serializeStoredReportPeriod,
+} from "@/lib/reports/report-period";
 import { routes } from "@/lib/routes";
 import { buildSourceOptions, type SourceOptionItem } from "@/lib/sources/source-options";
 import {
@@ -19,6 +23,7 @@ import {
   type RecurrenceValue,
   TrashIcon,
 } from "@/ui";
+import { normalizeRecurrenceValue } from "@/ui/recurrence-picker/recurrence-picker.utils";
 
 import styles from "./create-report-form.module.scss";
 
@@ -152,7 +157,9 @@ export function CreateReportForm({
     ) ?? [createBlockDraft()],
   );
   const [period, setPeriod] = useState<RecurrenceValue>(
-    initialValues?.period ?? defaultRecurrenceValue,
+    normalizeRecurrenceValue(initialValues?.period ?? defaultRecurrenceValue, {
+      timeZone: REPORT_SCHEDULE_TIME_ZONE,
+    }),
   );
   const { backToPreviousPathnameOrReplace } = useNavigationHistory();
   const locale = useLocale();
@@ -236,10 +243,15 @@ export function CreateReportForm({
             />
           </label>
           <div className={styles["period-field"]}>
-            <input name="period" type="hidden" value={JSON.stringify(period)} />
+            <input
+              name="period"
+              type="hidden"
+              value={serializeStoredReportPeriod(period)}
+            />
             <span className={styles["field-label"]}>{t("reports.form.report-period")}</span>
             <RecurrencePicker
               disabled={isPending}
+              normalizationTimeZone={REPORT_SCHEDULE_TIME_ZONE}
               value={period}
               onChange={(nextValue) => {
                 setPeriod(nextValue);

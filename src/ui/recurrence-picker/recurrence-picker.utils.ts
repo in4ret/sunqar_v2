@@ -2,6 +2,27 @@ import type { RecurrenceFrequency, RecurrenceValue, Weekday } from "./recurrence
 import { weekdays } from "./recurrence-picker.types";
 
 const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const DEFAULT_TIME = "09:00";
+const WEEKDAY_BY_UTC_DAY: Weekday[] = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+type NormalizeRecurrenceOptions = {
+  fallbackDate?: Date;
+  timeZone?: string;
+};
+
+type LocalDateParts = {
+  day: number;
+  month: number;
+  year: number;
+};
 
 export function normalizeInterval(interval: number) {
   if (!Number.isFinite(interval)) {
@@ -45,13 +66,77 @@ export function normalizeFrequency(frequency: string): RecurrenceFrequency {
   return "daily";
 }
 
-export function normalizeRecurrenceValue(value: RecurrenceValue): RecurrenceValue {
+function getLocalDateParts(date: Date, timeZone?: string): LocalDateParts {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(date);
+
+  return {
+    day: Number(parts.find((part) => part.type === "day")?.value),
+    month: Number(parts.find((part) => part.type === "month")?.value),
+    year: Number(parts.find((part) => part.type === "year")?.value),
+  };
+}
+
+function getFallbackWeekday(date: Date, timeZone?: string): Weekday {
+  const localDateParts = getLocalDateParts(date, timeZone);
+  const utcDay = new Date(
+    Date.UTC(localDateParts.year, localDateParts.month - 1, localDateParts.day, 12),
+  ).getUTCDay();
+
+  return WEEKDAY_BY_UTC_DAY[utcDay] ?? "monday";
+}
+
+export function normalizeRecurrenceValue(
+  value: RecurrenceValue,
+  options?: NormalizeRecurrenceOptions,
+): RecurrenceValue {
+  const frequency = normalizeFrequency(value.frequency);
+  const interval = normalizeInterval(value.interval);
+  const fallbackDate = options?.fallbackDate ?? new Date();
+  const normalizedTimes = normalizeTimes(value.times);
+  const times = normalizedTimes.length > 0 ? normalizedTimes : [DEFAULT_TIME];
+  const normalizedWeekdays = normalizeWeekdays(value.weekdays);
+  const normalizedMonthDays = normalizeMonthDays(value.monthDays);
+
+  if (frequency === "weekly") {
+    return {
+      ...value,
+      frequency,
+      interval,
+      monthDays: normalizedMonthDays,
+      times,
+      weekdays:
+        normalizedWeekdays && normalizedWeekdays.length > 0
+          ? normalizedWeekdays
+          : [getFallbackWeekday(fallbackDate, options?.timeZone)],
+    };
+  }
+
+  if (frequency === "monthly") {
+    return {
+      ...value,
+      frequency,
+      interval,
+      monthDays:
+        normalizedMonthDays && normalizedMonthDays.length > 0
+          ? normalizedMonthDays
+          : [getLocalDateParts(fallbackDate, options?.timeZone).day],
+      times,
+      weekdays: normalizedWeekdays,
+    };
+  }
+
   return {
     ...value,
-    frequency: normalizeFrequency(value.frequency),
-    interval: normalizeInterval(value.interval),
-    monthDays: normalizeMonthDays(value.monthDays),
-    times: normalizeTimes(value.times),
-    weekdays: normalizeWeekdays(value.weekdays),
+    frequency,
+    interval,
+    monthDays: normalizedMonthDays,
+    times,
+    weekdays: normalizedWeekdays,
   };
 }

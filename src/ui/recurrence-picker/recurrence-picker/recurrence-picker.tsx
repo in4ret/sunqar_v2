@@ -19,11 +19,14 @@ import styles from "./recurrence-picker.module.scss";
 export function RecurrencePicker({
   className,
   disabled = false,
+  normalizationTimeZone,
   onChange,
   value,
 }: RecurrencePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const normalizedValue = normalizeRecurrenceValue(value);
+  const normalizedValue = normalizeRecurrenceValue(value, {
+    timeZone: normalizationTimeZone,
+  });
   const [draftValue, setDraftValue] = useState(normalizedValue);
   const dialogTitleId = useId();
   const locale = useLocale();
@@ -89,7 +92,11 @@ export function RecurrencePicker({
   }
 
   function saveDraftValue() {
-    onChange(normalizeRecurrenceValue(draftValue));
+    onChange(
+      normalizeRecurrenceValue(draftValue, {
+        timeZone: normalizationTimeZone,
+      }),
+    );
     setIsOpen(false);
   }
 
@@ -161,7 +168,11 @@ export function RecurrencePicker({
                   onChange={(times) => updateDraftValue({ times })}
                 />
               </div>
-              <HumanReadablePreview value={draftValue} />
+              <HumanReadablePreview
+                value={normalizeRecurrenceValue(draftValue, {
+                  timeZone: normalizationTimeZone,
+                })}
+              />
             </div>
             <div className={styles["actions"]}>
               <button

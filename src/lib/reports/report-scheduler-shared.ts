@@ -9,7 +9,7 @@ import { extractTaskId } from "@/lib/tasks/extract-task-id";
 import type { RecurrenceValue, Weekday } from "@/ui/recurrence-picker/recurrence-picker.types";
 
 import type { ReportBlocks } from "./report-blocks";
-import { parseStoredReportPeriod } from "./report-period";
+import { parseStoredReportPeriod, REPORT_SCHEDULE_TIME_ZONE } from "./report-period";
 
 export type ReportRunItem = {
   authorId: string;
@@ -31,7 +31,7 @@ export type ReportRunErrorCode =
   | "report-run-request-failed"
   | "report-run-url-missing";
 
-const ALMATY_TIME_ZONE = "Asia/Almaty";
+const ALMATY_TIME_ZONE = REPORT_SCHEDULE_TIME_ZONE;
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDAY_NUMBER_BY_NAME: Record<Weekday, number> = {
   monday: 1,
@@ -280,6 +280,23 @@ function calculateNextMonthlyRunAt(
   return null;
 }
 
+export function calculateNextRunAtForPeriod(
+  period: RecurrenceValue,
+  createdAt: Date,
+  now: Date,
+  timeZone: string = ALMATY_TIME_ZONE,
+) {
+  if (period.frequency === "weekly") {
+    return calculateNextWeeklyRunAt(period, createdAt, now, timeZone);
+  }
+
+  if (period.frequency === "monthly") {
+    return calculateNextMonthlyRunAt(period, createdAt, now, timeZone);
+  }
+
+  return calculateNextDailyRunAt(period, createdAt, now, timeZone);
+}
+
 export function getReportRunItemBaseQuery() {
   return db
     .select({
@@ -343,24 +360,18 @@ export async function calcNextRunAt(id: string): Promise<Date | null> {
   }
 
   let period: RecurrenceValue;
+  const now = new Date();
 
   try {
-    period = parseStoredReportPeriod(report.period);
+    period = parseStoredReportPeriod(report.period, {
+      fallbackDate: now,
+      timeZone: ALMATY_TIME_ZONE,
+    });
   } catch {
     return null;
   }
 
-  const now = new Date();
-
-  if (period.frequency === "weekly") {
-    return calculateNextWeeklyRunAt(period, report.createdAt, now, ALMATY_TIME_ZONE);
-  }
-
-  if (period.frequency === "monthly") {
-    return calculateNextMonthlyRunAt(period, report.createdAt, now, ALMATY_TIME_ZONE);
-  }
-
-  return calculateNextDailyRunAt(period, report.createdAt, now, ALMATY_TIME_ZONE);
+  return calculateNextRunAtForPeriod(period, report.createdAt, now, ALMATY_TIME_ZONE);
 }
 
 export async function getReportRunItemById(id: string): Promise<ReportRunItem | null> {
