@@ -17,6 +17,7 @@ export type ReportRunItem = {
   blocks: ReportBlocks;
   description: string;
   id: string;
+  period: string;
   title: string;
 };
 
@@ -55,6 +56,7 @@ type ReportRunItemRow = {
   blocks: ReportBlocks;
   description: string;
   id: string;
+  period: string;
   title: string;
 };
 
@@ -305,6 +307,7 @@ export function getReportRunItemBaseQuery() {
       blocks: reports.blocks,
       description: reports.description,
       id: reports.id,
+      period: reports.period,
       title: reports.title,
     })
     .from(reports)
@@ -328,6 +331,7 @@ export function mapReportRunItem(row: ReportRunItemRow): ReportRunItem {
   return {
     authorId: row.authorId,
     id: row.id,
+    period: row.period,
     title: row.title,
     description: row.description,
     authorName: row.authorName ?? "—",
@@ -406,14 +410,15 @@ export async function triggerReportGeneration(report: ReportRunItem): Promise<{
     title: report.title,
     description: report.description,
     author: report.authorName,
+    period: report.period,
     blocks: report.blocks.map((block) => ({
-      from: block.from,
+      from_ts: block.from,
       key_words: block.keywords,
       title: block.title,
       model: block.aiModel,
       prompt: block.prompt,
       sources: block.sources,
-      to: block.to,
+      to_ts: block.to,
     })),
   };
   const astanaTime = new Intl.DateTimeFormat("en-CA", {

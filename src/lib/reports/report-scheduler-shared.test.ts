@@ -14,7 +14,7 @@ const reportSchedulerShared =
     : reportSchedulerSharedModule;
 
 const { parseStoredReportPeriod, REPORT_SCHEDULE_TIME_ZONE } = reportPeriod;
-const { calculateNextRunAtForPeriod } = reportSchedulerShared;
+const { calculateNextRunAtForPeriod, mapReportRunItem } = reportSchedulerShared;
 
 const CREATED_AT = new Date("2026-07-05T12:00:00.000Z");
 const NOW = new Date("2026-07-12T03:00:00.000Z");
@@ -74,4 +74,32 @@ test("calculateNextRunAtForPeriod returns a runnable date for legacy monthly sch
     calculateNextRunAtForPeriod(period, CREATED_AT, NOW, REPORT_SCHEDULE_TIME_ZONE)?.toISOString(),
     "2026-07-12T04:00:00.000Z",
   );
+});
+
+test("mapReportRunItem preserves the stored report period", () => {
+  const period = JSON.stringify({
+    frequency: "daily",
+    interval: 1,
+    times: ["09:00"],
+  });
+
+  const report = mapReportRunItem({
+    authorId: "user-1",
+    authorName: "Author",
+    blocks: [{
+      aiModel: "model-id",
+      from: null,
+      keywords: [],
+      prompt: "Prompt",
+      sources: [],
+      title: "Block",
+      to: null,
+    }],
+    description: "Description",
+    id: "report-1",
+    period,
+    title: "Report",
+  });
+
+  assert.equal(report.period, period);
 });
