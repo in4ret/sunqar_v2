@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999999;
+  color: var(--text-muted);
   font-size: 13px;
   line-height: 1.35;
   text-align: center;
@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
+  color: var(--text-primary);
   font-size: 26px;
   font-weight: 700;
   line-height: 1.2;
@@ -40,7 +40,7 @@
   width: 7ch;
   height: 0.9em;
   border-radius: 999px;
-  background: linear-gradient(90deg, #e5e5e5 0%, #f2f2f2 50%, #e5e5e5 100%);
+  background: linear-gradient(90deg, var(--bg-skeleton-start) 0%, var(--bg-skeleton-middle) 50%, var(--bg-skeleton-start) 100%);
   background-size: 200% 100%;
   vertical-align: middle;
   animation: value-skeleton-shimmer 1.2s ease-in-out infinite;

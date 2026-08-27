@@ -44,17 +44,17 @@
 
 .toast-success {
   color: var(--color-success-500);
-  background: color-mix(in srgb, var(--color-success-100) 78%, white);
+  background: color-mix(in srgb, var(--color-success-100) 78%, var(--bg-base));
 }
 
 .toast-warning {
   color: var(--color-warning-500);
-  background: color-mix(in srgb, var(--color-warning-100) 82%, white);
+  background: color-mix(in srgb, var(--color-warning-100) 82%, var(--bg-base));
 }
 
 .toast-error {
   color: var(--color-error-500);
-  background: color-mix(in srgb, var(--color-error-100) 82%, white);
+  background: color-mix(in srgb, var(--color-error-100) 82%, var(--bg-base));
 }
 
 @media (max-width: $breakpoint-mobile) {

@@ -10,8 +10,7 @@
   padding: 1.1rem;
   border: 1px solid var(--border-default);
   border-radius: 1.5rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 253, 0.96) 100%);
+  background: var(--bg-card-gradient);
   box-shadow: var(--shadow-soft);
 }
 
@@ -274,7 +273,7 @@
 .news-page-chart-skeleton-bar,
 .news-page-chart-skeleton-axis-label {
   border-radius: 999px;
-  background: linear-gradient(90deg, #e5e5e5 0%, #f2f2f2 50%, #e5e5e5 100%);
+  background: linear-gradient(90deg, var(--bg-skeleton-start) 0%, var(--bg-skeleton-middle) 50%, var(--bg-skeleton-start) 100%);
   background-size: 200% 100%;
   animation: news-page-chart-skeleton-shimmer 1.2s ease-in-out infinite;
 }
