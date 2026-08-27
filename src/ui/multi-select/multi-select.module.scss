@@ -340,6 +340,16 @@
   flex: 0 0 auto;
 }
 
+:global(:root[data-theme="dark"]) .multi-select-option-icon {
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme])) .multi-select-option-icon {
+    filter: invert(1);
+  }
+}
+
 .multi-select-checkbox-label span {
   min-width: 0;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent, type MouseEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
@@ -49,20 +49,20 @@ const COMMENTS_CHART_RANGE_STORAGE = {
 } as const;
 const UNKNOWN_COMMENT_SOURCE = "__unknown__";
 const CHART_COLORS = [
-  "#2f6f9f",
-  "#2d7a57",
-  "#c89f26",
-  "#9a5f97",
-  "#b25f3b",
-  "#5d7ec2",
-  "#7b9244",
-  "#a65c76",
+  "#315fe8",
+  "#129074",
+  "#e29d32",
+  "#8a58d4",
+  "#e55c62",
+  "#1b88c9",
+  "#2d7ef7",
+  "#00a987",
 ];
 const SOURCE_COLOR_OVERRIDES: Record<string, string> = {
-  youtube: "#b25f3b",
-  ig: "#a65c76",
-  tiktok: "#9a5f97",
-  [UNKNOWN_COMMENT_SOURCE]: "#708b9f",
+  youtube: "#f97316",
+  ig: "#f43f5e",
+  tiktok: "#7c5cff",
+  [UNKNOWN_COMMENT_SOURCE]: "#9aa5b4",
 };
 
 function parseChartDate(value: string) {
@@ -242,7 +242,8 @@ export function CommentsBarChart({ className, data }: CommentsBarChartProps) {
   function updateTooltip(
     eventTarget: EventTarget & SVGRectElement,
     index: number,
-    item: HomePageCommentsChartBucket
+    item: HomePageCommentsChartBucket,
+    pointerEvent?: MouseEvent<SVGRectElement>
   ) {
     const container = containerRef.current;
 
@@ -252,13 +253,17 @@ export function CommentsBarChart({ className, data }: CommentsBarChartProps) {
 
     const containerRect = container.getBoundingClientRect();
     const barRect = eventTarget.getBoundingClientRect();
+    const x = pointerEvent
+      ? pointerEvent.clientX - containerRect.left
+      : barRect.left - containerRect.left + barRect.width / 2;
+    const y = pointerEvent ? pointerEvent.clientY - containerRect.top : barRect.top - containerRect.top;
 
     setTooltip({
       periodLabel: formatPeriodLabel(item),
       segments: item.segments,
       total: item.total,
-      x: barRect.left - containerRect.left + barRect.width / 2,
-      y: barRect.top - containerRect.top,
+      x,
+      y,
     });
     setActiveIndex(index);
   }
@@ -404,9 +409,9 @@ export function CommentsBarChart({ className, data }: CommentsBarChartProps) {
                         onBlur={clearTooltip}
                         onFocus={(event) => updateTooltip(event.currentTarget, index, item)}
                         onKeyDown={(event) => handleBarKeyDown(event, index, item)}
-                        onMouseEnter={(event) => updateTooltip(event.currentTarget, index, item)}
+                        onMouseEnter={(event) => updateTooltip(event.currentTarget, index, item, event)}
                         onMouseLeave={clearTooltip}
-                        onMouseMove={(event) => updateTooltip(event.currentTarget, index, item)}
+                        onMouseMove={(event) => updateTooltip(event.currentTarget, index, item, event)}
                         tabIndex={0}
                         width={barWidth}
                         x={x}

@@ -15,17 +15,22 @@ import {
   type SidebarStateDetail,
 } from "../sidebar/sidebar-events";
 import { TaskNotifications } from "../task-notifications/task-notifications";
+import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 
 import styles from "./header.module.scss";
 
 type HeaderProps = {
   brandHref?: string;
   hasSidebar?: boolean;
+  showTaskNotifications?: boolean;
+  showThemeSwitcherOnMobile?: boolean;
 };
 
 export function Header({
   brandHref = routes.home,
   hasSidebar = false,
+  showTaskNotifications = true,
+  showThemeSwitcherOnMobile = false,
 }: HeaderProps) {
   const t = useTranslations();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -107,7 +112,19 @@ export function Header({
           </div>
         ) : null}
         <div className={styles["header-actions"]}>
-          <TaskNotifications />
+          {showTaskNotifications ? <TaskNotifications /> : null}
+          <div
+            className={[
+              styles["header-theme-switcher"],
+              showThemeSwitcherOnMobile
+                ? styles["header-theme-switcher-mobile-visible"]
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            <ThemeSwitcher />
+          </div>
           <LanguageSwitcher />
         </div>
       </div>

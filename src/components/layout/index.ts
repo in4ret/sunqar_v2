@@ -5,3 +5,5 @@ export { HeaderTasksProvider } from "./header-tasks-provider/header-tasks-provid
 export { LanguageSwitcher } from "./language-switcher/language-switcher";
 export { Sidebar } from "./sidebar/sidebar";
 export { TaskNotifications } from "./task-notifications/task-notifications";
+export { ThemeProvider } from "./theme-provider/theme-provider";
+export { ThemeSwitcher } from "./theme-switcher/theme-switcher";

@@ -40,7 +40,7 @@ const CHART_MARGIN = {
   right: 6,
   top: 6,
 };
-const TREND_COLORS = ["#1d4ed8", "#0f766e", "#c2410c"];
+const TREND_COLORS = ["#315fe8", "#129074", "#e29d32"];
 
 function parseChartDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
@@ -243,15 +243,14 @@ export function ReportTrendChart({
       return;
     }
 
-    const containerRect = container.getBoundingClientRect();
     const bucketRect = eventTarget.getBoundingClientRect();
 
     setTooltip({
       blockItems: bucketSeriesItems.get(bucketStart) ?? [],
       periodLabel: formatPeriodLabel(bucketStart, bucketEnd),
       total: bucketTotals.get(bucketStart) ?? 0,
-      x: bucketRect.left - containerRect.left + bucketRect.width / 2,
-      y: bucketRect.top - containerRect.top,
+      x: bucketRect.left + bucketRect.width / 2,
+      y: bucketRect.top,
     });
     setActiveBucketStart(bucketStart);
   }

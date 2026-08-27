@@ -16,6 +16,7 @@ import {
   XIcon,
 } from "@/ui";
 
+import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import {
   SIDEBAR_STATE_EVENT,
   SIDEBAR_TOGGLE_EVENT,
@@ -241,17 +242,20 @@ export function Sidebar({
           >
             <div className={styles["brand-header"]}>
               <Brand href={brandHref} onNavigate={closeDrawer} />
-              <button
-                aria-label={closeLabel}
-                className={styles["close-button"]}
-                type="button"
-                onClick={() => {
-                  closeDrawer();
-                  triggerRef.current?.focus();
-                }}
-              >
-                <XIcon className={styles["close-icon"]} />
-              </button>
+              <div className={styles["drawer-header-actions"]}>
+                <ThemeSwitcher />
+                <button
+                  aria-label={closeLabel}
+                  className={styles["close-button"]}
+                  type="button"
+                  onClick={() => {
+                    closeDrawer();
+                    triggerRef.current?.focus();
+                  }}
+                >
+                  <XIcon className={styles["close-icon"]} />
+                </button>
+              </div>
             </div>
             <SidebarContent
               brandHref={brandHref}

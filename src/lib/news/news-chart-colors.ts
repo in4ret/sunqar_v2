@@ -6,23 +6,39 @@ import {
 } from "./news-chart-shared";
 
 const CHART_COLORS = [
-  "#2f6f9f",
-  "#2d7a57",
-  "#c89f26",
-  "#9a5f97",
-  "#b25f3b",
-  "#5d7ec2",
-  "#7b9244",
-  "#a65c76",
-  "#3f8f8c",
-  "#d1783f",
+  "#315fe8",
+  "#129074",
+  "#e29d32",
+  "#8a58d4",
+  "#e55c62",
+  "#1b88c9",
+  "#2d7ef7",
+  "#00a987",
+  "#6c63ff",
+  "#4cae4f",
+  "#d94f70",
+  "#3b82f6",
+  "#ef7d22",
+  "#9b59b6",
+  "#ff6b6b",
+  "#f59e0b",
+  "#0ea5e9",
+  "#22c55e",
+  "#f43f5e",
+  "#06b6d4",
+  "#6366f1",
+  "#14b8a6",
+  "#84cc16",
+  "#fb7185",
+  "#f97316",
+  "#38bdf8",
 ];
 
-const OTHER_SOURCE_COLOR = "#8f96a3";
-const UNKNOWN_ITEM_COLOR = "#708b9f";
+const OTHER_SOURCE_COLOR = "#9aa5b4";
+const UNKNOWN_ITEM_COLOR = "#9aa5b4";
 const COUNTRY_COLOR_OVERRIDES: Record<string, string> = {
-  kz: "#00afca",
-  ru: "#1f5fbf",
+  kz: "#0ea5e9",
+  ru: "#315fe8",
   [UNKNOWN_NEWS_COUNTRY]: UNKNOWN_ITEM_COLOR,
 };
 

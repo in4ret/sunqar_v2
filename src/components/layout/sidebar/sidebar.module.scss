@@ -60,6 +60,13 @@
   backdrop-filter: blur(14px);
 }
 
+.drawer-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .sidebar-body {
   display: flex;
   min-height: 0;
@@ -94,11 +101,7 @@
   display: block;
   width: 1.75rem;
   height: 1.75rem;
-  background: linear-gradient(
-    180deg,
-    var(--color-accent-300) 0%,
-    var(--color-primary-500) 100%
-  );
+  background: var(--brand-gradient);
   -webkit-mask-image: url("/assets/logo.svg");
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;

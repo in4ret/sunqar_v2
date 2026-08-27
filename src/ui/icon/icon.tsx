@@ -27,10 +27,12 @@ import {
   type LucideIcon,
   type LucideProps,
   Menu,
+  Moon,
   Newspaper,
   Pencil,
   Play,
   Save,
+  Sun,
   Text,
   Trash2,
   UserRound,
@@ -156,6 +158,10 @@ export function LogOutIcon(props: SharedIconProps) {
   return <AppIcon icon={LogOut} {...props} />;
 }
 
+export function MoonIcon(props: SharedIconProps) {
+  return <AppIcon icon={Moon} {...props} />;
+}
+
 export function MenuIcon(props: SharedIconProps) {
   return <AppIcon icon={Menu} {...props} />;
 }
@@ -174,6 +180,10 @@ export function PlayIcon(props: SharedIconProps) {
 
 export function SaveIcon(props: SharedIconProps) {
   return <AppIcon icon={Save} {...props} />;
+}
+
+export function SunIcon(props: SharedIconProps) {
+  return <AppIcon icon={Sun} {...props} />;
 }
 
 export function TextIcon(props: SharedIconProps) {

@@ -134,37 +134,41 @@ export function AppShellView({
   const hasSidebar = Boolean(
     user && navigationSections.some((section) => section.items.length > 0),
   );
-
-  return (
-    <HeaderTasksProvider>
-      <div className={hasSidebar ? "app-shell app-shell-with-sidebar" : "app-shell"}>
-        {user && hasSidebar ? (
-          <Sidebar
-            brandHref={homeHref}
-            closeLabel={t("header.close-menu")}
-            collapseSectionLabel={t("header.collapse-section")}
-            expandSectionLabel={t("header.expand-section")}
-            navigationLabel={t("header.primary-navigation")}
-            openLabel={t("header.open-menu")}
-            sections={navigationSections}
-            user={{
-              accountHref: routes.account,
-              accountLabel: t("header.account"),
-              displayName: user.displayName,
-              isAdmin: user.role === "admin",
-              login: user.login,
-              logoutAction: submitLogout,
-              logoutLabel: t("header.logout"),
-              roleLabel: userRoleLabel,
-            }}
-          />
-        ) : null}
-        <div className="app-content-shell">
-          <Header brandHref={homeHref} hasSidebar={hasSidebar} />
-          <main className={mainClassName}>{children}</main>
-          <Footer />
-        </div>
+  const shell = (
+    <div className={hasSidebar ? "app-shell app-shell-with-sidebar" : "app-shell"}>
+      {user && hasSidebar ? (
+        <Sidebar
+          brandHref={homeHref}
+          closeLabel={t("header.close-menu")}
+          collapseSectionLabel={t("header.collapse-section")}
+          expandSectionLabel={t("header.expand-section")}
+          navigationLabel={t("header.primary-navigation")}
+          openLabel={t("header.open-menu")}
+          sections={navigationSections}
+          user={{
+            accountHref: routes.account,
+            accountLabel: t("header.account"),
+            displayName: user.displayName,
+            isAdmin: user.role === "admin",
+            login: user.login,
+            logoutAction: submitLogout,
+            logoutLabel: t("header.logout"),
+            roleLabel: userRoleLabel,
+          }}
+        />
+      ) : null}
+      <div className="app-content-shell">
+        <Header
+          brandHref={homeHref}
+          hasSidebar={hasSidebar}
+          showTaskNotifications={Boolean(user)}
+          showThemeSwitcherOnMobile={!user}
+        />
+        <main className={mainClassName}>{children}</main>
+        <Footer />
       </div>
-    </HeaderTasksProvider>
+    </div>
   );
+
+  return user ? <HeaderTasksProvider>{shell}</HeaderTasksProvider> : shell;
 }

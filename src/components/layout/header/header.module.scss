@@ -34,6 +34,10 @@
   margin-left: auto;
 }
 
+.header-theme-switcher {
+  display: inline-flex;
+}
+
 .brand-link {
   display: inline-flex;
   align-items: center;
@@ -95,11 +99,7 @@
   display: block;
   width: 1.75rem;
   height: 1.75rem;
-  background: linear-gradient(
-    180deg,
-    var(--color-accent-300) 0%,
-    var(--color-primary-500) 100%
-  );
+  background: var(--brand-gradient);
   -webkit-mask-image: url("/assets/logo.svg");
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
@@ -115,6 +115,14 @@
 }
 
 @media (max-width: $breakpoint-mobile) {
+  .header-theme-switcher {
+    display: none;
+  }
+
+  .header-theme-switcher-mobile-visible {
+    display: inline-flex;
+  }
+
   .site-header {
     height: var(--layout-mobile-header-height);
   }

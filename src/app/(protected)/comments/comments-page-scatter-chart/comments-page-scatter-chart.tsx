@@ -76,11 +76,11 @@ const TOOLTIP_OFFSET = 10;
 const MAX_TOOLTIP_COMMENT_LENGTH = 200;
 const SCORE_TICKS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
 const SOURCE_COLOR_OVERRIDES: Record<string, string> = {
-  ig: "#2d7a57",
-  tiktok: "#c89f26",
-  youtube: "#b25f3b",
+  ig: "#f43f5e",
+  tiktok: "#7c5cff",
+  youtube: "#f97316",
 };
-const FALLBACK_SOURCE_COLOR = "#708b9f";
+const FALLBACK_SOURCE_COLOR = "#9aa5b4";
 const SKELETON_POINTS = [
   { opacity: 0.58, size: 0.9, x: 0.06, y: 0.84 },
   { opacity: 0.72, size: 1.05, x: 0.12, y: 0.68 },

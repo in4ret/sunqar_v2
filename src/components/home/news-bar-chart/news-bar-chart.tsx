@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent, type MouseEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import * as d3 from "d3";
@@ -49,24 +49,24 @@ const NEWS_CHART_RANGE_STORAGE = {
 } as const;
 const UNKNOWN_NEWS_TYPE = "__unknown__";
 const CHART_COLORS = [
-  "#2f6f9f",
-  "#2d7a57",
-  "#c89f26",
-  "#9a5f97",
-  "#b25f3b",
-  "#5d7ec2",
-  "#7b9244",
-  "#a65c76",
+  "#315fe8",
+  "#129074",
+  "#e29d32",
+  "#8a58d4",
+  "#e55c62",
+  "#1b88c9",
+  "#2d7ef7",
+  "#00a987",
 ];
 const TYPE_COLOR_OVERRIDES: Record<string, string> = {
-  telegram: "#2f6f9f",
-  web: "#2d7a57",
-  website: "#2d7a57",
-  instagram: "#a65c76",
-  youtube: "#b25f3b",
-  facebook: "#5d7ec2",
-  tiktok: "#9a5f97",
-  [UNKNOWN_NEWS_TYPE]: "#708b9f",
+  telegram: "#229ed9",
+  web: "#22c55e",
+  website: "#22c55e",
+  instagram: "#f43f5e",
+  youtube: "#f97316",
+  facebook: "#315fe8",
+  tiktok: "#7c5cff",
+  [UNKNOWN_NEWS_TYPE]: "#9aa5b4",
 };
 
 function parseChartDate(value: string) {
@@ -249,7 +249,8 @@ export function NewsBarChart({
   function updateTooltip(
     eventTarget: EventTarget & SVGRectElement,
     index: number,
-    item: HomePageNewsChartBucket
+    item: HomePageNewsChartBucket,
+    pointerEvent?: MouseEvent<SVGRectElement>
   ) {
     const container = containerRef.current;
 
@@ -259,13 +260,17 @@ export function NewsBarChart({
 
     const containerRect = container.getBoundingClientRect();
     const barRect = eventTarget.getBoundingClientRect();
+    const x = pointerEvent
+      ? pointerEvent.clientX - containerRect.left
+      : barRect.left - containerRect.left + barRect.width / 2;
+    const y = pointerEvent ? pointerEvent.clientY - containerRect.top : barRect.top - containerRect.top;
 
     setTooltip({
       periodLabel: formatPeriodLabel(item),
       segments: item.segments,
       total: item.total,
-      x: barRect.left - containerRect.left + barRect.width / 2,
-      y: barRect.top - containerRect.top,
+      x,
+      y,
     });
     setActiveIndex(index);
   }
@@ -411,9 +416,9 @@ export function NewsBarChart({
                         onBlur={clearTooltip}
                         onFocus={(event) => updateTooltip(event.currentTarget, index, item)}
                         onKeyDown={(event) => handleBarKeyDown(event, index, item)}
-                        onMouseEnter={(event) => updateTooltip(event.currentTarget, index, item)}
+                        onMouseEnter={(event) => updateTooltip(event.currentTarget, index, item, event)}
                         onMouseLeave={clearTooltip}
-                        onMouseMove={(event) => updateTooltip(event.currentTarget, index, item)}
+                        onMouseMove={(event) => updateTooltip(event.currentTarget, index, item, event)}
                         tabIndex={0}
                         width={barWidth}
                         x={x}
