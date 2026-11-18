@@ -93,6 +93,11 @@ export function AppShellView({
       icon: NewspaperIcon,
       label: t("header.news"),
     },
+    {
+      href: routes.semantic,
+      icon: BotIcon,
+      label: t("header.semantic-search"),
+    },
   ];
   const adminNavigationItems = [
     {

@@ -1,0 +1,38 @@
+.semantic-page {
+  display: grid;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.status {
+  margin: 0;
+}
+
+.results {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+
+.error {
+  display: grid;
+  gap: 1rem;
+  color: var(--destructive);
+}
+
+.retry-button {
+  justify-self: start;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retry-button:hover,
+.retry-button:focus-visible {
+  background: var(--bg-soft);
+}

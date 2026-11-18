@@ -1,0 +1,60 @@
+@use "@/styles/breakpoints.scss" as breakpoints;
+
+.search-form {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.search-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.search-submit {
+  min-width: 6rem;
+  padding: 0.95rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.search-submit:hover,
+.search-submit:focus-visible {
+  background: var(--button-primary-bg-hover);
+  color: var(--button-primary-text-hover);
+}
+
+.search-submit:active {
+  background: var(--button-primary-bg-active);
+  color: var(--button-primary-text-active);
+}
+
+.search-submit:disabled {
+  cursor: not-allowed;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+
+@media (max-width: breakpoints.$breakpoint-mobile) {
+  .search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .search-submit {
+    width: 100%;
+  }
+}

@@ -48,6 +48,10 @@ Example:
 - Save flows that return to a list must refresh the list after arrival, not before leaving the form route.
 - Modal or embedded forms that close in place should keep using their local `onCancel`/`onSuccess` behavior and must not trigger document route return navigation.
 
+## Tests
+
+- Do not create tests in this project.
+
 ## Commands
 
 - Never run `next build` in this repository.

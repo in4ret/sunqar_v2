@@ -26,6 +26,7 @@
     "reports": "Есептер",
     "comments": "Пікірлер",
     "news": "Жаңалықтар",
+    "semantic-search": "Семантикалық іздеу",
     "account": "Жеке кабинет",
     "sign-in": "Кіру",
     "admin-navigation": "Әкімшілеу",
@@ -624,6 +625,20 @@
     "comments-upload-youtube-api-key-missing": "YOUTUBE_API_KEY орнатылмаған.",
     "comments-upload-no-valid-youtube-urls": "Жарамды YouTube сілтемелері табылмады.",
     "comments-upload-failed": "YouTube роликтерін жүктеу мүмкін болмады."
+  },
+  "semantic": {
+    "table": {
+      "article": "Мақала",
+      "source": "Дереккөз",
+      "distance": "Қашықтық",
+      "empty": "Мақалалар табылмады."
+    },
+    "loading": "Мақалалар ізделуде…",
+    "result-count": "Табылған мақалалар: {count}",
+    "error": "Семантикалық іздеу орындалмады. Қайталап көріңіз.",
+    "retry": "Қайталау",
+    "search-label": "Семантикалық іздеу сұрауы",
+    "search-placeholder": "Сұрауды енгізіңіз"
   },
   "messages": {
     "user-created": "Пайдаланушы сәтті құрылды.",

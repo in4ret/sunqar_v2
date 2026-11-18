@@ -1,0 +1,17 @@
+.score-cell {
+  display: flex;
+  width: calc(100% + 1.1rem);
+  min-height: calc(2.75rem + 0.9rem);
+  margin: -0.45rem -0.55rem;
+  padding: 0.45rem 0.55rem;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  background: linear-gradient(
+    to bottom right,
+    var(--score-cell-background-start),
+    var(--score-cell-background-end)
+  );
+  color: #111d2f;
+  font-variant-numeric: tabular-nums;
+}

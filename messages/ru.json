@@ -26,6 +26,7 @@
     "reports": "Отчёты",
     "comments": "Комментарии",
     "news": "Новости",
+    "semantic-search": "Семантический поиск",
     "account": "Личный кабинет",
     "sign-in": "Войти",
     "admin-navigation": "Администрирование",
@@ -624,6 +625,20 @@
     "comments-upload-youtube-api-key-missing": "Не задан YOUTUBE_API_KEY.",
     "comments-upload-no-valid-youtube-urls": "Не удалось найти валидные ссылки на YouTube.",
     "comments-upload-failed": "Не удалось загрузить YouTube ролики."
+  },
+  "semantic": {
+    "table": {
+      "article": "Статья",
+      "source": "Источник",
+      "distance": "Дистанция",
+      "empty": "Статьи не найдены."
+    },
+    "loading": "Поиск статей…",
+    "result-count": "Найдено статей: {count}",
+    "error": "Не удалось выполнить семантический поиск. Попробуйте ещё раз.",
+    "retry": "Повторить",
+    "search-label": "Запрос для семантического поиска",
+    "search-placeholder": "Введите запрос"
   },
   "messages": {
     "user-created": "Пользователь успешно создан.",

@@ -51,6 +51,7 @@ export type {
   Weekday,
 } from "./recurrence-picker/recurrence-picker.types";
 export { RecurrencePicker } from "./recurrence-picker/recurrence-picker/recurrence-picker";
+export { ScoreCell } from "./score-cell/score-cell";
 export { SearchInput } from "./search-input/search-input";
 export { Stats, type StatsItem, StatsValueSkeleton } from "./stats/stats";
 export { Toast, type ToastStatus } from "./toast/toast";
